@@ -1,0 +1,61 @@
+@(title: String, user: User, section: String = "", moreStylesheets: Seq[String], moreScripts: Seq[String])(content: Html)
+@import com.feth.play.module.pa.views.html._
+@stylesheets = @{Seq(
+        "base.css",
+        "skeleton.css",
+        "layout.css",
+        "ui-lightness/jquery-ui-1.10.3.custom.min.css",
+        "ffi.css"
+)}
+@scripts = @{Seq(
+        "jquery-1.7.1.js",
+        "jquery-play-1.7.1.js",
+        "jquery-ui-1.10.3.custom.min.js",
+        "routes",
+        "weatherscript.js",
+        "main.js"
+)}
+@menuItems = @{Seq(
+("home", "Home", routes.Home.index),
+("calendar", "Calendar", routes.Tasks.getWeekTasks),
+("jobs", "Jobs", routes.Jobs.index),
+("plans", "Plans/Take-offs", routes.Plans.index),
+("vendors", "Vendors/Items", routes.Vendors.index),
+("customers", "Customers", routes.Customers.index),
+("users", "Users", routes.Users.index)
+)}
+@html5(title,stylesheets++moreStylesheets,scripts++moreScripts){
+        <div id="headerBar">
+            <div><a href="/rd">new version</a></div>
+            <div id="welcome">
+                @forProviders(true) { p =>
+                    @if(false && !user.getProviders().contains(p.getKey())) {
+                        @if(p.getKey() == "openid") {
+                            <a href="javascript:void(0);" onclick="askOpenID('@p.getUrl()');">
+                        } else {
+                            <a href="@p.getUrl()">
+                        }
+                        @_providerIcon(p.getKey())</a>
+                    }
+                }
+                Logged in as <a href="@routes.Application.profile">@user.username</a> <a href="@com.feth.play.module.pa.controllers.routes.Authenticate.logout()">x</a>
+            </div>
+            @menuItems.map {
+            case (key, title, _) if key == section => {
+            @if(!(user.authority < Secured.ADMINISTRATOR && key == "users") && !(user.authority < Secured.MANAGER && (key == "vendors" || key == "customers"))){
+            <div class="nav"><a class="active">@title</a></div>
+            }
+            }
+            case (key, title, url) => {
+            @if(!(user.authority < Secured.ADMINISTRATOR && key == "users") && !(user.authority < Secured.MANAGER && (key == "vendors" || key == "customers"))){
+            <div class="nav"><a href="@url">@title</a></div>
+            }
+            }
+            }
+            <div id="search"><input/></div>
+        </div>
+        <div id="content">
+            @content
+        </div>
+        <div id="dialog" style="display:none;"></div>
+        }

@@ -1,0 +1,68 @@
+@(user: User, markets: List[Market], vendors: List[Vendor], date: String, labors: List[Labor], labvendors: List[Vendor], market: String, vendor: String)
+
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("EEE MMM dd yyyy");f.format(d)}
+
+@formatyyyymmddDate(d: Date) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(d)}
+@getDay(d: Integer) = @{val cal = Calendar.getInstance();
+        val splitDate = date.split("-");
+        cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+        cal.add(Calendar.DATE,d+1-cal.get(Calendar.DAY_OF_WEEK));cal}
+@getDayInWeek(t: Task) = @{val f = new java.text.SimpleDateFormat("EEE");f.format(t.date)}
+@getYearMonthDay(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i).getTime())}
+@getYearMonthDayDate(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i))}
+
+
+<table id="calendar" style="width:100%;">
+    <thead>
+    <tr>
+        <th style="width:4%;"><a id="itemReport">Vendor</a></th>
+        @for(a <- 1 to 6) {
+        <th style="width:16%;">@formatDate(getDay(a).getTime())</th>
+        }
+    </tr>
+    </thead>
+
+    <tbody>
+        @if(labvendors.size>0 && labors.size >0){
+            @labvendors.map { cLabven =>
+                @labors.toSeq.sortBy(_.id).map { m =>
+
+                    @if(m.vendor.id==cLabven.id){
+                    <tr data-crew="@cLabven.id">
+                        <td>@cLabven.name</td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(1)">
+
+
+                            @(if(m.vendor.id==cLabven.id && formatyyyymmddDate(m.labordate)== getYearMonthDay(1)) m.amounthours else "")
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(2)">
+                            @(if(m.vendor.id==cLabven.id && formatyyyymmddDate(m.labordate)== getYearMonthDay(2)) m.amounthours else "")
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(3)">
+                            @(if(m.vendor.id==cLabven.id && formatyyyymmddDate(m.labordate)== getYearMonthDay(3)) m.amounthours else "")
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(4)">
+                            @(if(m.vendor.id==cLabven.id && formatyyyymmddDate(m.labordate)== getYearMonthDay(4)) m.amounthours else "")
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(5)">
+                            @(if(m.vendor.id==cLabven.id && formatyyyymmddDate(m.labordate)== getYearMonthDay(5)) m.amounthours else "")
+                    </ol>
+                        </td>
+
+
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(6)">
+                            @(if(m.vendor.id==cLabven.id && formatyyyymmddDate(m.labordate)== getYearMonthDay(6)) m.amounthours else "")
+                        </ol>
+                        </td>
+
+                    </tr>
+                    }
+                }
+            }
+        }
+    </tbody>
+</table>

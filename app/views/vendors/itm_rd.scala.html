@@ -1,0 +1,17 @@
+@(c: Item)
+
+<tr data-user-id="@c.id">
+    <td><a class="deleteUser"><i class="fa fa-trash-o"></i></a></td>
+  @*  <td><a href="/rd/vendors/items/@c.id">@c.name</a></td>*@
+    <td><a href="#" class="clicka">@c.name</a></td>
+    <td>@c.itemType.name</td>
+    <td>
+        @if(c.active==null || c.active == 0 ){
+            <input type="checkbox" class="actinact" value="@c.id"> <br>
+        }
+        @if(c.active!=null  && c.active != 0){
+            <input type="checkbox" checked class="actinact" value="@c.id"> <br>
+            }
+    </td>
+</tr>
+

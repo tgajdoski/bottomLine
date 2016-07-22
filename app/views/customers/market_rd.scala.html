@@ -1,0 +1,33 @@
+@(user: User, formMarket: Form[Market], mark: Market)
+
+@import views.html.helper.FieldConstructor
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+    @scripts = @{Seq(
+
+    )}
+@frame_rd("Market",user,"market",stylesheets,scripts){
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyX">
+            <table cellspacing="0">
+                <tr>
+                    @helper.form(action = routes.Customers_rd.updateMarket()) {
+                    <input type="hidden" name="id" value="@mark.id"/>
+                        @helper.inputText(formMarket("city"), '_label -> "city", 'class -> "form-control")
+                        @helper.inputText(formMarket("state"), '_label -> "state", 'class -> "form-control")
+                        @helper.inputText(formMarket("url"), '_label -> "url", 'class -> "form-control")
+                        @helper.inputText(formMarket("woeid"),'_label -> "woeid", 'class -> "form-control")
+                        @helper.inputText(formMarket("taxrate"),'_label -> "taxrate", 'class -> "form-control")
+                        <input type="submit" class="btn btn-success" value="Save">
+                    }
+                </tr>
+            </table>
+        </div>
+    </div>
+}

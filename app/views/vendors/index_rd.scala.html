@@ -1,0 +1,81 @@
+@(user: User, vendor: Vendor, itemsdivlist: List[VendorItem], allitemsdivlist: List[Item])
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+
+    @scripts = @{Seq(
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery.validate.js",
+        "jquery.js"
+    )}
+
+
+
+    @frame_rd("Vendor",user,"vendor",stylesheets,scripts){
+        @*  @subdivs: List[Subdivision] = { models.Subdivision.findSubbyCustID(customer.id)}*@
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+        <div class="container theme-showcase" role="main">
+            <div class="box-bodyX">
+                <fieldset class="custinfo">
+                    <div class="title">Vendor   <label class="custdivselected">@vendor.name</label> </div>
+                </fieldset>
+                <table cellspacing="0">
+                    <tr>
+
+                        <div class="alert alert-success">
+                            <a class="alert-link" href="/rd/vendors/@vendor.id"> Update vendor infomation</a>
+                        </div>
+                    </tr>
+                    <tr>
+                        <fieldset class="subdiv" >
+                            <div class="title">Add Vendor Item</div>
+                            <table cellspacing="0">
+                                <tr>
+                                    <td>
+                                       @* <input type="text" id ="newSubdivision" class="form-control">*@
+                                        <select id="itemdivisionSelect" class="userAuthority">
+                                            <option value=""></option>
+                                            @allitemsdivlist.toSeq.sortBy(_.id).map { m =>
+                                                    @if(m.name != null){
+                                                        <option value="@m.id">@m.name</option>}
+                                            }
+                                            @* @itemsdivlist.toSeq.sortBy(_.id).map { m =>
+                                            <option value="@m.id" data-url="@m.url">@m.name</option>
+                                            }*@
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input value="Add" type ="submit" class="buttonaddsubdivision">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table id="vendoritems" class="display">
+                                            @itemsdivlist.toSeq.sortBy(_.id).map { m =>
+                                                @if(m.item != null){
+                                                    @if(m.item.id != null){
+                                                        <tr data-user-id="@m.id">
+                                                            <td><a class="deleteUser"><i class="fa fa-trash-o"></i></a></td>
+                                                            <td style="margin:0;padding-left:14px;">@m.item.name</td>
+                                                        </tr>
+                                                }}
+                                            }
+                                       </table>
+
+                                    </td>
+                                </tr>
+                                            <input type="hidden" name="id"  value="@vendor.id">
+                            </table>
+                        </fieldset>
+
+                    </tr>
+                </table>
+            </div>
+        </div>
+    }
+

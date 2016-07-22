@@ -1,0 +1,61 @@
+@(localUser: models.User = null)
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+@import com.feth.play.module.pa.views.html._
+
+@frame_rd(Messages("playauthenticate.profile.title"),localUser,"profile",stylesheets,Seq()) {
+
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyX">
+        <div class="title">@Messages("playauthenticate.profile.title")</div>
+    <p>
+    Your name is @localUser.name and your email address is @if(!localUser.email) {<em>&lt;unknown&gt;</em>.} else {
+    	@localUser.email.
+	    <i>
+	    @if(!localUser.emailValidated && localUser.email) {
+	      (<a href="@routes.Account.verifyEmail">unverified - click to verify</a>)
+	    } else {
+	      (verified)
+	    }</i>
+    }
+    <br />
+    Your first name is @localUser.firstName and your last name is @localUser.lastName
+    <br/>
+    @defining(localUser.getProviders()) { providers =>
+        @if(providers.size() > 0) {
+        @if(providers.size() ==1) {
+            @Messages("playauthenticate.profile.providers_one")
+        } else {
+            @Messages("playauthenticate.profile.providers_many",providers.size().toString())
+        }
+        @for(p <- providers) {
+            @_providerIcon(p)
+        }
+        <br/>
+        }
+    }
+    
+    <br/>
+    @currentAuth() { auth =>
+        @Messages("playauthenticate.profile.logged") @_providerIcon(auth.getProvider())<br/>
+        @if(auth.expires() != -1){
+            @Messages("playauthenticate.profile.session", auth.getId(), Application.formatTimestamp(auth.expires()))
+        } else {
+            @Messages("playauthenticate.profile.session_endless", auth.getId())
+        }
+    }
+    <br/>
+    <ul>
+    	<li><a href="@routes.Account.changePassword_rd">@Messages("playauthenticate.profile.password_change")</a></li>
+    </ul>
+    </p>
+
+        </div>
+    </div>
+}

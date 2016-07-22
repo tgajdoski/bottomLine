@@ -1,0 +1,142 @@
+@(user: User, markets: List[Market], managers: List[User], tasks: List[Task], date: String, market: String, manager: String)
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("EEE MMM dd yyyy");f.format(d)}
+@getDay(d: Integer) = @{val cal = Calendar.getInstance();
+        val splitDate = date.split("-");
+        cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+        cal.add(Calendar.DATE,d+1-cal.get(Calendar.DAY_OF_WEEK));cal}
+@getDayInWeek(t: Task) = @{val f = new java.text.SimpleDateFormat("EEE");f.format(t.date)}
+@getYearMonthDay(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i).getTime())}
+@applyFilter(t: Task) = @{
+        if (manager==null) true
+        else if (manager.isEmpty()) true
+        else if (!t.managers.isEmpty() && t.managers.head.user!=null && t.managers.head.user.id.toString==manager) true
+        else false
+}
+
+@stylesheets = @{Seq(
+)}
+@scripts = @{Seq(
+        "jquery.dragsort-0.5.1.min.js",
+        "jquery.editable.min.js",
+        "calendar.js"
+)}
+@frame("Calendar for "+formatDate(getDay(1).getTime())+" through "+formatDate(getDay(6).getTime()),user,"calendar",stylesheets,scripts){
+<div id="calHead" style="width:100%;padding:1em 0 1em 0;text-align:center;">
+    <table style="margin: 0px auto;"><tbody>
+    <tr>
+        <td rowspan="2">
+            <input type="hidden" id="gotoDatePicker" value="@date"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="previous" href="?date=@getYearMonthDay(-6)&market=@market&manager=@manager">&lt;&lt;</a>&nbsp;
+        </td>
+        <td>
+            <select id="calMarketSelect" style="width:150px;border:0;text-align:center">
+                <option value="">All Markets</option>
+                @markets.toSeq.sortBy(_.id).map { m =>
+                <option value="@m.id"@(if (market&&market==m.id.toString) " selected")>@m.city, @m.state</option>
+                }
+            </select>
+        </td>
+        <td rowspan="2">
+            &nbsp;<a id="next" href="?date=@getYearMonthDay(8)&market=@market&manager=@manager">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a class="printweek" title="Print at 100% Font" style="font-size:100%;">P</a> <a class="printweek" title="Print at 80% Font" style="font-size:80%;">P</a> <a class="printweek" title="Print at 60% Font" style="font-size:60%;">P</a> <a class="printweek" title="Print at 40% Font" style="font-size:40%;">P</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <select id="calManagerSelect" style="width:150px;border:0;text-align:center">
+                <option value="">All Managers</option>
+                @managers.toSeq.sortBy(_.username).map { m =>
+                <option value="@m.id"@(if (manager&&manager==m.id.toString) " selected")>@m.username</option>
+                }
+            </select>
+        </td>
+    </tr>
+    </tbody></table>
+
+</div>
+<table id="calendar" style="width:100%;">
+    <thead>
+    <tr>
+        <th style="width:4%;"><a id="itemReport">items</a></th>
+        @for(a <- 1 to 6) {
+        <th style="width:16%;">@formatDate(getDay(a).getTime())<img data-date="@getYearMonthDay(a)" class="printicon" src="@routes.Assets.at("images/print-icon.gif")"/></th>
+        }
+    </tr>
+    </thead>
+    <tbody>
+    @for(a <- 1 to 20) {
+    @if(!tasks.filter(applyFilter(_)).groupBy(_.crew).get(a).isEmpty) {
+    @tasks.filter(applyFilter(_)).groupBy(_.crew).get(a).map { cTasks =>
+    <tr data-crew="@a">
+        <td>Crew @a</td>
+        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(1)">
+            @{var mon = cTasks.groupBy(getDayInWeek).get("Mon");
+            if (!mon.isEmpty) {
+            mon.head.sortBy(_.cardOrder).map { t =>
+            views.html.task(t)
+            }
+            }
+            }
+        </ol><a class="addJob">+</a></td>
+        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(2)">
+            @{var tue = cTasks.groupBy(getDayInWeek).get("Tue");
+            if (!tue.isEmpty) {
+            tue.head.sortBy(_.cardOrder).map { t =>
+            views.html.task(t)
+            }
+            }
+            }
+        </ol><a class="addJob">+</a></td>
+        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(3)">
+            @{var wed = cTasks.groupBy(getDayInWeek).get("Wed");
+            if (!wed.isEmpty) {
+            wed.head.sortBy(_.cardOrder).map { t =>
+                views.html.task(t)
+            }
+            }
+            }
+        </ol><a class="addJob">+</a></td>
+        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(4)">
+            @{var thu = cTasks.groupBy(getDayInWeek).get("Thu");
+            if (!thu.isEmpty) {
+            thu.head.sortBy(_.cardOrder).map { t =>
+            views.html.task(t)
+            }
+            }
+            }
+        </ol><a class="addJob">+</a></td>
+        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(5)">
+            @{var fri = cTasks.groupBy(getDayInWeek).get("Fri");
+            if (!fri.isEmpty) {
+            fri.head.sortBy(_.cardOrder).map { t =>
+            views.html.task(t)
+            }
+            }
+            }
+        </ol><a class="addJob">+</a></td>
+        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(6)">
+            @{var sat = cTasks.groupBy(getDayInWeek).get("Sat");
+            if (!sat.isEmpty) {
+            sat.head.sortBy(_.cardOrder).map { t =>
+            views.html.task(t)
+            }
+            }
+            }
+        </ol><a class="addJob">+</a></td>
+    </tr>
+    }
+    } else {
+    <tr data-crew="@a">
+        <td>Crew @a</td>
+        <td><ol data-date="@getYearMonthDay(1)"></ol><a class="addJob">+</a></td>
+        <td><ol data-date="@getYearMonthDay(2)"></ol><a class="addJob">+</a></td>
+        <td><ol data-date="@getYearMonthDay(3)"></ol><a class="addJob">+</a></td>
+        <td><ol data-date="@getYearMonthDay(4)"></ol><a class="addJob">+</a></td>
+        <td><ol data-date="@getYearMonthDay(5)"></ol><a class="addJob">+</a></td>
+        <td><ol data-date="@getYearMonthDay(6)"></ol><a class="addJob">+</a></td>
+    </tr>
+    }
+    }
+    </tbody>
+</table>
+}

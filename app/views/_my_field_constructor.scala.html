@@ -1,0 +1,16 @@
+@(elements: helper.FieldElements)
+
+@import views.html.helper._
+
+
+<div class="@if(elements.hasErrors) {error}">
+    <label class = "mylabel" for="@elements.id">@elements.label</label>
+    <div>
+        @elements.input
+        @if(elements.hasErrors){
+        <span class="errors">@elements.errors.mkString(", ")</span>
+        } else {
+      @*  <span class="form-control">@elements.infos.mkString(", ")</span>*@
+        }
+    </div>
+</div>

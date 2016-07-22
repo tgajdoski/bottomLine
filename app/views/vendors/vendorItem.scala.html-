@@ -1,0 +1,13 @@
+@(myForm: Form[VendorItem])
+
+@helper.form(action = routes.Vendors.updateVendorItem()) {
+<input type="hidden" name="id" value="@myForm("id").value"/>
+@helper.inputText(myForm("default_rate"))
+@helper.inputText(myForm("default_units"))
+<input type="submit">
+}
+<br/>
+@helper.form(action = routes.Vendors.deleteVendorItem()) {
+<input type="hidden" name="id" value="@myForm("id").value"/>
+<input type="submit" value="Delete">
+}

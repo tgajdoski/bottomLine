@@ -1,0 +1,143 @@
+@(user: User, jobs: List[Job], markets: List[Market], itemTypes: List[ItemType],  formJob: Form[models.Job])
+
+@*<link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">*@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    /*   "datatables.responsive.css",*/
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+
+)}
+@scripts = @{Seq(
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "jquery.validate.js",
+    "jquery.js",
+    "jquery.dataTables.js",
+    "dataTables.tableTools.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "managejob.js"
+)}
+
+
+<div class="col-sm-user">
+    @frame_rd("Job Administration",user,"job",stylesheets,scripts){
+        <div class="box-body">
+            <table id="jobs" class="display">
+                <thead>
+                <tr aaa="">
+                    <th><a href="#" id ="linkaddnewvendor">ADD NEW</a></th>
+                    <th><div class="title">Job</div></th>
+                    <th><div class="title">Market</div></th>
+                    <th><div class="title">Category</div></th>
+                    <th><div class="title">Subdivision</div></th>
+                    <th><div class="title">Lot</div></th>
+                    <th><div class="title">Date</div></th>
+                </tr>
+                </thead>
+               @*     @plans.filter(!_.name.isEmpty).sortBy(_.name).map { c =>
+                        @views.html.plans.plan_rd(c)
+                    }
+                    @plans.filter(_.name.isEmpty).map { c =>
+                        @views.html.plans.plan_rd(c)
+                    }*@
+                <tbody>
+                    <tr aaa="">
+                       @* <th></th>
+                        <th>row 1 data</th>
+                        <th>row 2 data</th>*@
+                    </tr>
+                </tbody>
+            </table>
+         </div>
+    }
+</div>
+
+
+
+
+
+<div class="modal" id="planmodam" style="">
+    <div class="box-bodyX">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+            <div class="title">
+                <label id="vendivselectedtext">Add new Job</label>
+            </div>
+
+        </div>
+        <div class="modal-body">
+            <table cellspacing="0">
+                <tr>
+                    <td>
+                        <fieldset class="newCustomerview">
+
+
+                           <label class="mylabel">Select Market</label>
+                            <select id="newJobMarket" class="userAuthority">
+                                <option value=""></option>
+                                @markets.toSeq.sortBy(_.id).map { m =>
+                                    <option value="@m.id">@m.city, @m.state</option>
+                                }
+                            </select>
+
+                        <div id="skrijgobezmarket">
+
+                            <label class="mylabel">customer</label>
+                            <select id="newJobcustomer" class="userAuthority">
+                                <option value=""></option>
+                            </select>
+
+
+                            <label class="mylabel">Subdivision</label>
+                            <select  id="newJobsubdivision" class="userAuthority">
+                                <option value=""></option>
+                            </select>
+
+                        </div>
+
+                        <div id="skrijgobezsubdivision">
+                            <label>lot</label>
+                            <input type="text" id ="lot"  class="form-control">
+
+                            <label class="mylabel">Sale item</label>
+                            <select id="newjobitemtype" class="userAuthority">
+                                <option value=""></option>
+                                @itemTypes.toSeq.sortBy(_.id).map { t =>
+                                    <option value="@t.id">@t.name</option>
+                                }
+                            </select>
+
+                            <label class="mylabel">Plan</label>
+                            <select id="newjobplan" class="userAuthority">
+                                <option value=""></option>
+                            </select>
+
+                            <label class="mylabel">Job start date </label>
+                            <p><input type="text" class ="form-control" id="jobstartdatepicker"  style="width: 120px;"></p>
+
+
+                            <input value="Add Job" type = "submit" id="buttonaddplan" class="btn btn-success">
+                         </div>
+                            </fieldset>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" id="close">Close</a>
+            @*    <input type="submit" class="btn btn-success" value="Save">*@
+        </div>
+
+    </div>
+</div>
+

@@ -1,0 +1,79 @@
+@(user: User, plan: Plan, planItems: List[PlanItem])
+
+@stylesheets = @{Seq(
+    "../javasripts/uploadify/uploadify.css",
+    "plan.css",
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+)}
+@scripts = @{Seq(
+    "uploadify/jquery.uploadify.min.js",
+    "jquery.autogrow-textarea.js",
+    "underscore-min.js",
+    "backbone-min.js",
+    "plan.js",
+    "saleitem.js",
+    "budget.js"
+)}
+
+
+
+@frame_rd("Plan "+plan.id+" - "+plan.name,user,"plans",stylesheets,scripts){
+    <div class="container theme-showcase" role="main">
+            <div class="box-bodyl">
+            <div class="title">Plan @plan.id - <span id="planName">@plan.name</span>@if(user.authority >= Secured.MANAGER){<a id="deletePlan">x</a>}</div>
+            @if(user.authority >= Secured.MANAGER){
+                <button id="duplicatePlan" class="btn btn-success">DUPLICATE PLAN</button>
+                <div class="title" id="saleprice">$<span>@("%.2f".format(plan.saleitems.foldLeft(0.0d)(_ + _.saleprice)))</span></div>
+            }
+            @if(user.authority >= Secured.MANAGER){
+                <section id="totals" data-plan-id="@plan.id" data-customer-id="@(if (plan.customer!=null) plan.customer.id)" data-sale="@plan.saleitems.foldLeft(0.0d)(_ + _.saleprice)"
+                data-cost="@plan.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)" style="width:334px;margin-top:20px;margin-right:50px;margin-bottom:30px;float:left;">
+                    <table width="100%">
+                        <tbody>
+                            <tr>
+                                <td> <label class="mylabel">Gross Profit</label></td>
+                                <td id="grossprofit">@("%.2f".format(plan.saleitems.foldLeft(0.0d)(_ + _.saleprice)-plan.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)))</td>
+                            </tr>
+                            <tr>
+                                <td> <label class="mylabel">% Profit</label></td>
+                                <td id="pctprofit">@("%.2f".format(100*(1-plan.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)/plan.saleitems.foldLeft(0.0d)(_ + _.saleprice))))</td>
+                            </tr>
+                            <tr>
+                                <td> <label class="mylabel">$/SQFT</label></td>
+                                <td id="ppsqft">@("%.2f".format(plan.dimensions.filter(!_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))-plan.dimensions.filter(_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))))</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+            }
+            <section id="saleitems" style="width:576px;margin-top:20px;margin-bottom:30px;float:left;">
+                @views.html.saleitems.index_rd(user,plan.saleitems)
+            </section>
+            <section id="plan" style="margin-top:150px;">
+                @views.html.plans.index_rd(user,planItems,plan.dimensions)
+            </section>
+            <section id="budget" style="margin-right:50px;margin-bottom:30px;float:left;">
+                @views.html.budgets.index_rd(user,plan.lineitems)
+            </section>
+            <section id="attachments" style="float:left;width:240px;margin-bottom:30px;">
+                <table id="attachTable" style="width:100%;margin-bottom:10px;">
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                                <b>Attachments:</b>
+                            </td>
+                        </tr>
+                        @plan.attachments.map { attachment =>
+                            @views.html.plans.attachment_rd(user,attachment)
+                        }
+                    </tbody>
+                </table>
+                <input type="file" name="attachment" id="attachment" />
+            </section>
+         </div>
+    </div>
+}

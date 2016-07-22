@@ -1,0 +1,7 @@
+@(markets: List[Market])
+<select id="marketSelect">
+    <option></option>
+    @markets.toSeq.sortBy(_.city).map { market =>
+    <option value="@market.id">@market.city, @market.state</option>
+    }
+</select>

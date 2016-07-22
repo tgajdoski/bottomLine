@@ -1,0 +1,139 @@
+@(user: User, jobs: List[Job])
+@getSale(s: List[Saleitem]) = @{
+        if (s.isEmpty()) 0.0d
+        else s.foldLeft(0.0d)(_ + _.saleprice)
+}
+@getCost(l: List[Lineitem]) = @{
+        if (l.isEmpty()) 0.0d
+        else l.foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)
+}
+@getManagerProfit(j: Job) = @{
+        var sale = getSale(j.saleitems);
+        var actual = getCost(j.lineitems.filter(_.taskType!=null));
+        var budget = getCost(j.lineitems.filter(_.taskType==null));
+        var offset = budget - actual;
+        var profit = sale - actual;
+        if (offset <= 0.0d) {
+            if ((profit*0.15d+offset) < 0.0d) 0.0d
+            else (profit*0.15d+offset)
+        }
+        else (profit*0.15d+offset*0.5d)
+}
+@getFFIProfit(j: Job) = @{
+        var sale = getSale(j.saleitems);
+        var actual = getCost(j.lineitems.filter(_.taskType!=null));
+        var budget = getCost(j.lineitems.filter(_.taskType==null));
+        var offset = budget - actual;
+        var profit = sale - actual;
+        if (offset <= 0.0d) {
+            if ((profit*0.15d+offset) < 0.0d) (profit+offset)
+            else (profit*0.85d)
+        }
+        else (profit*0.85d+offset*0.5d)
+}
+
+
+  @*  <link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">*@
+
+    @stylesheets = @{Seq(
+       /* "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "jquery-ui.css",
+        "font-awesome.min.css",*/
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+
+    @scripts = @{Seq(
+        "jquery.js",
+        "jquery-ui.js",
+        "frontProfit.js"
+    )}
+
+@frame_rd("Job Profit Report",user,"jobs",stylesheets,scripts) {
+
+<style>
+.ui-accordion-content{
+	
+	height: auto !important;
+}
+
+table td{
+	 border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+}
+
+table{
+	font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+}
+</style>
+<div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+
+                    <div id="accordion" >
+                             @jobs.groupBy(_.market).map {
+                                        case (m, marketJobs) => {
+                                    <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">@m.city, @m.state JOB</h3>
+                                        <div style="padding-left: 30px;">
+                                            <p>
+                                            <table style="width:900px;">
+                                                <tbody>
+                                            <tr>
+                                                <td style="padding: 5px; background: #EFEFEF;">@m.city, @m.state JOB</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">FINAL SALE</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">APPLIED COST</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">BUDGET NOT SPENT</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">FFI GROSS PROFIT</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">PROFIT/SALE</td>
+                                            </tr>
+                                            @marketJobs.sortBy(_.id).map { j =>
+                                            <tr>
+                                                <td style="padding: 5px;"><a href="@routes.Jobs_rd.loadJob(j.id)">@j.subdivision.customer.name @j.subdivision.name @j.lot</a></td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(getSale(j.saleitems)))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(getCost(j.lineitems.filter(_.taskType!=null))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(getCost(j.lineitems.filter(_.taskType==null))-getCost(j.lineitems.filter(_.taskType!=null))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null))))</td>
+                                                <td style="padding: 5px;">@("%.2f".format(100*(1-getCost(j.lineitems.filter(_.taskType!=null))/getSale(j.saleitems))))%</td>
+                                            </tr>
+                                            }
+                                            <tr>
+                                                <td style="padding: 5px;">@m.city, @m.state TOTAL:</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType==null))-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                                                <td style="padding: 5px;">@("%.2f".format(100*marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))/marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))%</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="6"><hr/></td>
+                                            </tr>
+                                                </tbody>
+                                            </table>
+                                            </p>
+                                        </div>
+
+                                        }
+
+                                }
+                   </div>
+                    <table style="width:900px;">
+                        <tbody>
+                        <tr>
+                            <td style="padding: 5px;">GRAND TOTAL:</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType==null))-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                            <td style="padding: 5px;">@("%.2f".format(100*jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))/jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))%</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+</div>
+
+}

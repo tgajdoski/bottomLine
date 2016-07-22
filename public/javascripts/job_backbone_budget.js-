@@ -1,0 +1,2297 @@
+
+$(document).ready(function() {
+
+
+
+
+
+    $("#calendarmalendar").datepicker({
+        onSelect: function() {
+            // alert("zedov datum"+ this.value);
+            // treba da proverime dali ima na toj datum task i ako ima da mu go zemime note-od
+            // zemi task od job_id i od datumot
+            // selectedJob i this.value
+            jsRoutes.controllers.Jobs_rd.getTaskNotesPerDay().ajax({
+                data: {
+                    jobid: $("#totals").attr("data-job-id"),
+                    datumo: this.value
+                },
+                success: function(data) {
+                    if (data!=null)
+                        $("#notes").val(data);
+                },
+                error: function(err) {
+                }
+            });
+        }
+    });
+
+    $("#groupcheck").prop("checked", true);
+
+    $('#assigntask').hide();
+    $('#updateTask').hide();
+    $('#lineitemlist').hide();
+
+
+    var d = new Date();
+    var jobMarket = 0;
+    var selectedJob = 0;
+    var postojatstari = 0;
+
+    function getMonday(d) {
+        var day = d.getDay(),
+            diff = d.getDate() - day + (day == 1 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    }
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+    $(function() {
+        $( "#accordionON" ).accordion({
+            heightStyle: "content",
+            collapsible: true
+        });
+    });
+
+    $('#oldversion').click(function () {
+        var jobidno = $("#totals").attr("data-job-id");
+        window.open("/jobsold/"+jobidno);
+    });
+
+    $(".close").click(function() {
+
+        refreshme();
+        refreshmeactuals();
+
+        $('#assigntask').hide();
+      //  $('body').scrollTo(scrollPos);
+
+    });
+    $("#close").click(function() {
+
+
+        refreshme();
+        refreshmeactuals();
+
+        $('#assigntask').hide();
+      //  $('body').scrollTo(scrollPos);
+
+    });
+
+    $(".closeeA").click(function() {
+        $('#updateTask').hide();
+    });
+    $("#closeeA").click(function() {
+        $('#updateTask').hide();
+    });
+
+    $(".closeeB").click(function() {
+        $('#lineitemlist').hide();
+    });
+    $("#closeeB").click(function() {
+        $('#lineitemlist').hide();
+    });
+
+
+
+
+
+    $(function() {
+        $( "#calendarmalendar" ).datepicker();
+        $( "#calendarmalendar" ).datepicker( "option", "dateFormat",'yy-mm-dd' );
+        $( "#calendarmalendar").val($.datepicker.formatDate('yy-mm-dd', new Date()));
+
+        $( "#calendarmalendarA" ).datepicker();
+        $( "#calendarmalendarA" ).datepicker( "option", "dateFormat",'yy-mm-dd' );
+        $( "#calendarmalendarA").val($.datepicker.formatDate('yy-mm-dd', new Date()));
+    });
+
+    $("body").on('change','#groupcheck', function() {
+    // $('#groupcheck').change(function(){
+        cb = $(this);
+        cb.val(cb.prop('checked'));
+
+    });
+
+
+
+    $("body").on('click','.editTasks', function()
+    {
+        $('#updateTask').show();
+
+        // probaj da gi setiras vrednostite
+        var order = this.parentNode.getAttribute("data-card-order").replace(/['"]+/g, '');
+        var crew = this.parentNode.getAttribute("data-crew").replace(/['"]+/g, '');
+        var manager = this.parentNode.getAttribute("data-manager-id").replace(/['"]+/g, '');
+        var notes = this.parentNode.getAttribute("data-notes").replace(/['"]+/g, '');
+        var taskdateon = this.parentNode.getAttribute("data-date").replace(/['"]+/g, '');
+
+        var taskid = this.parentNode.getAttribute("data-task-id").replace(/['"]+/g, '');
+
+        $("#orderA").find("option[value='" + order + "']").prop("selected", true).end().change();
+        $("#boxA").find("option[value='" + crew + "']").prop("selected", true).end().change();
+
+
+        $("#updatetaskon").attr("data-task-id", taskid);
+
+
+       /* $("#crewleaderA").selectedIndex = -1;
+        $("#crewleaderA").attr("selected", "-1");*/
+
+        $('#crewleaderA option').each(function() {
+                $(this).removeAttr('selected');
+        });
+        if (manager !== "0")
+        {
+            $("#crewleaderA").find("option[value='" + manager + "']").prop("selected", true).end().change();
+            // $("#crewleaderA").val($("#crewleaderA").find('option:selected').text());
+        }
+        $("#notesA").val(notes);
+
+        var dateon = new Date(taskdateon + "T12:00:00");
+      //  console.log(dateon);
+        $( "#calendarmalendarA").val($.datepicker.formatDate('yy-mm-dd', dateon));
+    });
+
+    $("#updatetaskon").click(function() {
+
+        if (2==3) // ($("#crewleaderA").val() == 0)
+        {
+            alert("Please select crew leader in order to proceed.");
+            goToByScroll("budget");
+        }
+        else
+        {
+            jsRoutes.controllers.Tasks_rd.updateTask(this.getAttribute("data-task-id")).ajax({
+                data: {
+                    crew: $("#boxA").val(),
+                    cardOrder: $("#orderA").val(),
+                    date: $("#calendarmalendarA").val(),
+                    notes:  $("#notesA").val(),
+                    manager:  $("#crewleaderA").val()
+
+            },
+            success: function(data) {
+                refreshme();
+              //  goToByScroll("budget");
+            },
+            error: function(err) {
+                return alert("There was an error updating the task! Please refresh the page and try again.");
+            }
+           });
+            $('#updateTask').hide();
+        }
+    });
+
+    //  var table = $('#jobbudgetlists').DataTable();
+    $("body").on('click','#jobbudgetlists tbody tr', function(event) {
+        //  var oTable = $('#jobbudgetlists').DataTable();
+        var toogle = $(this).find('td:last').html().toString();
+        var datumstringoy =  $(this).find('td:eq(7)').html().toString();
+
+        // tuka treba
+        // setiraj go calendarot na datetask
+     //   var st = "01.26.2015";
+        var pattern = /(\d{2})\-(\d{2})\-(\d{4})/;
+        var dateoncal = new Date(datumstringoy.replace(pattern,'$3-$1-$2')+ "T12:00:00");
+       // console.log(dateoncal);
+        $( "#calendarmalendar").val($.datepicker.formatDate('yy-mm-dd', dateoncal));
+
+        if (!(event.target.id == "itemSelect" ||  event.target.id == "vendorSelect" || event.target.className == "quantity"  || event.target.className == "deleteLineitem"  || event.target.className == "editTasks" || event.target.className == "needitTasks" || event.target.className == "rate" || event.target.className == 'checkActuals' ||     event.target.className == 'editTask' || event.target.className == 'verifybutt'))
+        {
+      /*     $('#jobbudgetlists').DataTable( {
+         "sDom": 't',
+         "bPaginate": false,
+         "info":     false,
+         "bFilter": false,
+         'bSortable' : false,
+         'bDestroy': true
+
+         });*/
+
+
+            if ($('#groupcheck').is(":checked"))
+            {
+                // grupno klikanje
+               // if(toogle.indexOf("verified") !=-1)
+               // if(!$(this).children().eq(9).text().contains("verified"))
+                if($(this).find('td:eq(9)').text().indexOf("verified")!=-1)
+                {
+                    $('#jobbudgetlists').DataTable().destroy();
+                    //  $(this).removeClass('selected');
+                    $('#jobbudgetlists').DataTable( {
+                        "sDom": 't',
+                        "bPaginate": false,
+                        "info":     false,
+                        "bFilter": false,
+                        'bSortable' : false,
+                        'bDestroy': true,
+                        "aaSorting": [],
+                        "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                            if (aData[7] == datumstringoy && !(aData[9].indexOf("verified")!=-1)) {
+                                $(nRow).toggleClass('selected');
+                            }
+                        }
+                    } );
+                }
+                else
+                {
+
+    //            $(this).toggleClass('selected');
+                    $('#jobbudgetlists').DataTable().destroy();
+                    $('#jobbudgetlists').DataTable( {
+                        "sDom": 't',
+                        "bPaginate": false,
+                        "info":     false,
+                        "bFilter": false,
+                        'bSortable' : false,
+                        'bDestroy': true,
+                        "aaSorting": [],
+                        "fnRowCallback": function (nRow, aData, iDisplayIndex, iDisplayIndexFull) {
+                            if (aData[7] == datumstringoy && !(aData[9].indexOf("verified")!=-1)) {
+                                $(nRow).toggleClass('selected');
+                            }
+                        }
+                    } );
+                }
+            }
+            else
+            {
+
+                // na poedinecno klikanje
+                $('#jobbudgetlists').DataTable().destroy();
+
+                $('#jobbudgetlists').DataTable( {
+                    "sDom": 't',
+                    "bPaginate": false,
+                    "info":     false,
+                    "bFilter": false,
+                    'bSortable' : false,
+                    'bDestroy': true,
+                    "aaSorting": [],
+                } );
+
+                if($(this).find('td:eq(9)').text().indexOf("verified")!=-1)
+                {
+                    $(this).removeClass('selected');
+                }
+                else
+                {
+                    $(this).toggleClass('selected');
+
+                }
+            }
+        }
+    });
+
+    var startPosition;
+    var endPosition;
+    $("#jobbudgetlists tbody").sortable({
+        cursor: "move",
+        start:function(event, ui){
+            startPosition = ui.item.prevAll().length + 1;
+        },
+        update: function(event, ui) {
+            endPosition = ui.item.prevAll().length + 1;
+            //   alert('Start Position: ' + startPosition + ' End Position: ' + endPosition);
+            updateLineItemOrder();
+        }
+    });
+
+   // $('#buttonaddign').click( function() {
+        //  window.scrollTo(0, 0);
+
+   $("body").on('click','#buttonaddign', function() {
+
+        var table = $('#jobbudgetlists').DataTable();
+        var celstring  = "";
+
+        // brisime se na pocetok
+        $('#crewleader option').each(function() {
+            $(this).removeAttr('selected');
+        });
+        $('#fieldManagers option').each(function() {
+            $(this).removeAttr('selected');
+        });
+        $("#notes").val("");
+         // do tuka brisenje
+
+
+        if (table.rows('.selected').data().length ==0)
+        {
+            $('#jobbudgetlists').DataTable( {
+                "sDom": 't',
+                "bPaginate": false,
+                "info":     false,
+                "bFilter": false,
+                'bSortable' : false,
+                'bDestroy': true
+            });
+
+            alert("No budgetline items are selected. Please select some and try again.")
+        }
+        else
+        {
+            try
+            {
+                var idnja= "";
+                var celstring= "";
+                var crew = "";
+                var manager = "";
+                var notes = "";
+                var taskdateon = "";
+
+                var taskid = "";
+                var ovaepoleto;
+
+
+                // tuka treba da se vidi dali od selektiranite linitemi (taskovite nivni) barem eden e verified
+
+
+                // vo toj slucaj da se pojavi poraka deka nemoze da se menuva zosto ima verificirani lineitemi
+
+                (table.rows('.selected')).each(function() {
+                    var idnja = table.rows('.selected')[0];
+                    for (var i=0; i<1; i++)
+                    {
+                         ovaepoleto  = $("#jobbudgetlists tbody tr").eq(idnja[i]).find('td:eq(10)').find(".calTask");
+
+                    }
+                });
+                try{
+                 // crew = ovaepoleto.attr("data-crew").replace(/['"]+/g, '');
+                    $('#crewlast').val(ovaepoleto.attr("data-crew").replace(/['"]+/g, ''));
+                    $('#cardorderlast').val(ovaepoleto.attr("data-card-order").replace(/['"]+/g, ''));
+                }
+                catch(err){
+                    console.log(err);
+                }
+                try{
+                    manager =ovaepoleto.attr("data-assign-manager-id").replace(/['"]+/g, '');
+                }
+                catch(err){
+                    console.log(err);
+                }
+                try{
+                    notes = ovaepoleto.attr("data-notes").replace(/['"]+/g, '');
+                }
+                catch (err){
+                    console.log(err);
+                }
+
+
+
+
+               /* $('#crewleader option').each(function() {
+                    $(this).removeAttr('selected');
+                });
+                $('#fieldManagers option').each(function() {
+                    $(this).removeAttr('selected');
+                });
+*/
+                if (manager !== "0")
+                {
+                    $("#fieldManagers").find("option[value='" + manager + "']").prop("selected", true).end().change();
+                }
+
+               /* if (crew !== "0")
+                {
+                    $("#crewleader").find("option[value='" + crew + "']").prop("selected", true).end().change();
+                }*/
+                $("#notes").val(notes);
+
+                taskdateon = ovaepoleto.attr("data-date").replace(/['"]+/g, '');
+                var dateon = new Date(taskdateon + "T12:00:00");
+                $( "#calendarmalendar").val($.datepicker.formatDate('yy-mm-dd', dateon));
+            }
+            catch(err){
+                console.log(err);
+            }
+
+        $('#assigntask').show();
+        }
+    } );
+
+
+
+
+
+    //  Backbone.history.loadUrl( Backbone.history.fragment );
+
+    $("body").on('click','#addBudgetLineitem', function() {
+        setTimeout(function(){refreshme()}, 300);
+
+    });
+
+    $('#updatedates').click( function() {
+        var table = $('#jobbudgetlists').DataTable();
+        var celstring  = "";
+        var rowCount = 0; // table.rows('.selected').data().length
+
+        (table.rows('.selected')).each(function() {
+            //   celstring+= this[0][rowCount] + " ";
+            var idnja = table.rows('.selected')[0];
+            for (var i=0; i<idnja.length; i++)
+            {
+                celstring+=  $("#jobbudgetlists tbody tr").eq(idnja[i]).attr('id')+ " ";
+            }
+        });
+        updateLineItemAssignments(celstring);
+    });
+
+    $('#assignmanager').click( function() {
+        // alert( table.rows('.selected').data().length +' row(s) selected' );
+        //  var managerid
+        var table = $('#jobbudgetlists').DataTable();
+        var celstring  = "";
+        var datetask = "";
+
+        if ($('#calendarmalendar').val() !="")
+             datetask = $('#calendarmalendar').val();
+
+        // formatDate(datetask);
+
+
+        var pattern = /(\d{4})\-(\d{2})\-(\d{2})/;
+        datetask = datetask.replace(pattern,'$2-$3-$1')+ " 12:00:00.0";
+
+        (table.rows('.selected')).each(function() {
+            var idnja = table.rows('.selected')[0];
+            for (var i=0; i<idnja.length; i++)
+            {
+                celstring+=  $("#jobbudgetlists tbody tr").eq(idnja[i]).attr('id')+ "-";
+                //  datetask += table.cell(table.rows()[0][i], 7).data()+ " ";
+
+            }
+          //  datetask = table.cell('.selected', 7).data(); // table.cell(table.rows('.selected')[0][idnja[0]], 7).data();
+        });
+
+        // celstring gi cuva budget line item id -njata
+        jsRoutes.controllers.Lineitems_rd.CheckExistAssignedLineItemsTaskidsNewJob(celstring).ajax(
+            {
+                async: false,
+                data: {},
+                success: function(data) {
+                    if (data!=null)
+                    {
+                        postojatstari = 1;
+                        var n = noty({
+                            type: 'confirm',
+                            text: 'Some of these lineitems are already assigned <br><br> Assignmets and their tasks and allocated lineitems will be deleted. <br><br> Do you want to reassign selected lineitems ? <br>',
+                            buttons: [
+                                {addClass: 'btn btn-primary', text: 'Reassign', onClick: function($noty) {
+                                    $noty.close();
+                                    noty({type: 'success', text: ' deleting old assignments, task and lineitems',  timeout: 3000});
+
+                                    jsRoutes.controllers.Lineitems_rd.CheckExistAssignedLineItemsNewJob(celstring).ajax(
+                                        {
+                                            async: false,
+                                            data: {
+
+                                            },
+                                            success: function() {
+                                                // ZA DA NAPOLNIME FIELD MANAGER NI TREBA jobid  taskid - MOZE DA TREBA SE OTVORI PRVO NOV TASK ID SO TYPE - 1OO NA TOJ DATUM
+                                                // datetask - TOA E OD LINEITEMITE - STO SE SELEKTIRANI, I MANAGEROT
+                                                // /admin/actualjobs/assigns?jobid='+jobid+'&taskid='+ taskid + '&datetask='+datetask+'&fieldid='+fieldid,
+                                                var jobidno = $("#totals").attr("data-job-id");
+                                                var tasktypeid = 4;
+                                                var fieldid =  $("#fieldManagers option:selected" ).val();
+                                            //    var crewleaderid =  $("#crewleader option:selected" ).val();
+                                                var boxid =  $("#crewlast" ).val();
+                                                var orderid =  $("#cardorderlast" ).val();
+
+                                                var notes = $("#notes").val();
+
+                                                // izbrisano
+                                                // otvori nov task so addTaskNew... a sto e so edit na toj task... dali starite assignmenti treba da se brisat;
+                                                var taskid = 0;
+
+                                                // pred da otovrime nov task moze da vidime dali postoi task za toj datum...
+                                                    // sto ne e assingovan
+                                                var taskidnealociran = "";
+                                                jsRoutes.controllers.Tasks_rd.CheckUnAssingedTask().ajax(
+                                                    {
+                                                        async: false,
+                                                        data: {
+                                                            jobid: jobidno,
+                                                            datumot: datetask
+                                                        },
+                                                        success: function(data) {
+                                                            // id-to na taskot ni treba
+                                                            taskidnealociran = data.id;
+                                                        },
+                                                        error: function(err) {
+                                                            $("#assigntask").hide();
+                                                            refreshme();
+
+                                                            return alert("There was an error adding task! Please refresh the page and try again.");
+                                                        }
+                                                    }
+                                                );
+
+
+
+                                               if (typeof(taskidnealociran) == "undefined" || taskidnealociran == "")
+                                               {
+                                                   // ako nema ne alociran prazen task
+
+                                                jsRoutes.controllers.Tasks_rd.addTaskNewPlans().ajax(
+                                                    {
+                                                        async: false,
+                                                        data: {
+                                                            jobid: jobidno,
+                                                            taskType: tasktypeid,
+                                                            crew: boxid,
+                                                            datumot: datetask
+                                                        },
+                                                        success: function(data) {
+                                                            // id-to na taskot ni treba
+                                                            taskid = data.id;
+                                                        },
+                                                        error: function(err) {
+                                                            $("#assigntask").hide();
+                                                            refreshme();
+
+                                                            return alert("There was an error adding task! Please refresh the page and try again.");
+                                                        }
+                                                    }
+                                                );
+                                               }
+                                                else
+                                               {
+                                                   taskid = taskidnealociran;
+                                               }
+                                                // update napraj mu so
+                                                /*jsRoutes.controllers.Tasks.updateTask(context.el.attr("data-task-id")).ajax
+                                                 data:
+                                                 crew: context.el.attr("data-crew")
+                                                 cardOrder: context.el.attr("data-card-order")
+                                                 date: context.el.attr("data-date")
+                                                 notes: context.el.attr("data-notes")
+                                                 manager: context.el.attr("data-manager-id")*/
+                                                // konecno mapiraj gi lineitems so toj taskid...
+                                                jsRoutes.controllers.Tasks_rd.updateTask(taskid).ajax(
+                                                    {
+                                                        async: false,
+                                                        data: {
+                                                            cardOrder: orderid,
+                                                            notes: notes,
+                                                            crew: boxid
+                                                        },
+                                                        success: function(data) {
+                                                            //   alert(data[0].id);
+                                                        },
+                                                        error: function(err) {
+                                                            $("#assigntask").hide();
+                                                            refreshme();
+
+                                                            return alert("There was an error modifying task! Please refresh the page and try again.");
+                                                        }
+                                                    }
+                                                );
+
+
+
+                                                // do tuka
+
+
+                                                // DA SE STAVI KONECNO ASSIGNMENT na toj TASK
+                                                var st = datetask;
+
+                                                var pattern = /(\d{2})\-(\d{2})\-(\d{4})/;
+                                                //  var dt = new Date(st.replace(pattern,'$3-$1-$2'));
+                                                var dt = st.replace(pattern,'$3-$1-$2');
+
+
+                                                $.ajax({
+                                                    async: false,
+                                                    type: 'POST',
+                                                    url: '/admin/actualjobs/assigns?jobid='+jobidno+'&taskid='+ taskid + '&datetask='+dt+'&fieldid='+fieldid,
+                                                    success: function(datana) {
+                                                        var n = noty({type: 'success', text: 'Task was assigned to ' + $("#fieldManagers option:selected" ).text(),  timeout: 3000});
+                                                        $('.assignTask[data-href-date='+datetask.substring(1,10)+'][data-href='+taskid+']').html(datana);
+                                                        $('#assigntask').hide();
+                                                    },
+                                                    error: function (result) {
+                                                        $("#assigntask").hide();
+                                                        refreshme();
+
+                                                        alert('Some error occurred while assigning the date task.');
+                                                    }
+                                                });
+
+
+                                                /*  (table.rows('.selected')).each(function() {*/
+                                                var idnja = table.rows('.selected')[0];
+                                                for (var i=0; i<idnja.length; i++)
+                                                {
+                                                    (function(i)
+                                                    {
+                                                        //  var jobidto =  $("#jobbudgetlists tbody tr").eq(idnja[i]).attr('id');
+
+                                                        var vendorid =  $("#jobbudgetlists tbody > tr:nth-child("+(idnja[i]+1) +") td:nth-child(2)").attr('data-vendor-id');
+
+
+                                                        /*var vendorid =  $("#jobbudgetlists tbody tr td:nth-child(2)").attr('data-vendor-id');*/
+                                                        var itemid = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(3)").attr('data-item-id');
+                                                        var itemtypeid =  $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +")").attr("data-item-type-id"); //$("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(3)").attr('data-item-type-id');
+
+                                                        // var units =   $("#jobbudgetlists tbody tr").attr("data-units");
+                                                        var units =   $("#jobbudgetlists tbody tr:nth-child("+(idnja[i]+1) +")").attr("data-units");
+                                                        var quantity = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(4)").find('.quantity').val();
+                                                        var rate = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(5)").find('.rate').val();
+                                                        rate = rate.replace(',', '');
+                                                        var saleprice = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(7)").html();
+
+                                                        var lineitemORG = $("#jobbudgetlists tbody > tr:nth-child("+(idnja[i]+1) +")").attr('id');
+
+                                                        var tasktypeid = 4;
+                                                        //    var date = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(8)").html();
+                                                        //   var taskidno =  $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(9)").attr('data-task-id');
+
+                                                        if (itemid != "" && itemtypeid != "" && itemtypeid != "1" && quantity != "" && rate != ""  && tasktypeid != "" && dt != "") // && saleprice !=""
+                                                        {
+                                                            $.ajax({
+                                                                async: false,
+                                                                type: 'POST',
+                                                                url: '/jobs/lineitemsActual/addeditActual?jobid='+jobidno+"&tasktype="+tasktypeid+"&vendor="+vendorid+"&item="+itemid+"&itemtype="+itemtypeid+"&quantity="+quantity+"&units="+units+"&rate="+rate+"&saleprice="+saleprice+"&date="+dt+"&taskidno="+taskid+"&lineitemidORG="+lineitemORG,
+                                                                success: function() {
+                                                                },
+                                                                error: function (result) {
+                                                                    $("#assigntask").hide();
+                                                                    refreshme();
+
+                                                                    alert('Some error occurred while updating lineitems.');
+                                                                }
+                                                            });
+                                                        }
+                                                    })(i);
+                                                }
+                                                // da se osvezi cardot... vidi kako mozeme toa;
+                                                /* });*/
+
+
+                                                // STO TREBA DA SE NAPRAVI SO LINEITEMS otkako ke se popolni TASK-ot
+                                                // update na lineitems set task_id kolona na taskot nas... where sto se selektirani so toj lineid
+
+                                                jsRoutes.controllers.Lineitems_rd.updateLineItemforNewJob(celstring).ajax(
+                                                    {
+                                                        async: false,
+                                                        data: {
+                                                            taskid: taskid
+                                                        },
+                                                        success: function(data) {
+                                                            //   alert("OK");
+                                                            var scrollPos = 0;
+                                                            if(window.location.hash !== ''){
+                                                                scrollPos = parseInt(window.location.hash.substring(1),10);
+                                                            }
+                                                            refreshme();
+                                                            refreshmeactuals();
+
+                                                         //   $('body').scrollTo(scrollPos);
+                                                        },
+                                                        error: function(err) {
+
+                                                            $("#assigntask").hide();
+                                                            refreshme();
+
+                                                            return alert("There was an error modifying task! Please refresh the page and try again.");
+                                                        }
+                                                    }
+                                                );
+                                            },
+                                            error: function(err) {
+                                                $("#assigntask").hide();
+                                                refreshme();
+
+                                                return alert("There was an error deleting old assignments! Please refresh the page and try again.");
+                                            }
+                                        });
+                                }
+                                },
+                                {addClass: 'btn btn-danger', text: 'Cancel', onClick: function($noty) {
+                                    $noty.close();
+                               //     $('#assigntask').hide();
+                                    noty({type: 'success', text: 'please select other lineitems for assignment',  timeout: 3000});
+                                }
+                                }
+                            ]
+                        });
+
+                    }
+
+                },
+                error: function(err) {
+                    $("#assigntask").hide();
+                    refreshme();
+
+                    return alert("There was an error assigning lineitems! Please refresh the page and try again.");
+                }
+            }
+        );
+
+        if (postojatstari==0)
+        {
+            // ZA DA NAPOLNIME FIELD MANAGER NI TREBA jobid  taskid - MOZE DA TREBA SE OTVORI PRVO NOV TASK ID SO TYPE - 1OO NA TOJ DATUM
+            // datetask - TOA E OD LINEITEMITE - STO SE SELEKTIRANI, I MANAGEROT
+            // /admin/actualjobs/assigns?jobid='+jobid+'&taskid='+ taskid + '&datetask='+datetask+'&fieldid='+fieldid,
+            var jobidno = $("#totals").attr("data-job-id");
+            var tasktypeid = 4;
+            var fieldid =  $("#fieldManagers option:selected" ).val();
+            var crewleaderid =  $("#crewleader option:selected" ).val();
+            var boxid =  $("#box option:selected" ).val();
+            var orderid =  $("#order option:selected" ).val();
+
+            var notes = $("#notes").val();
+
+            // izbrisano
+            // otvori nov task so addTaskNew... a sto e so edit na toj task... dali starite assignmenti treba da se brisat;
+            var taskid = 0;
+
+            var taskidnealociran = "";
+            jsRoutes.controllers.Tasks_rd.CheckUnAssingedTask().ajax(
+                {
+                    async: false,
+                    data: {
+                        jobid: jobidno,
+                        datumot: datetask
+                    },
+                    success: function(data) {
+                        // id-to na taskot ni treba
+                        taskidnealociran = data.id;
+                    },
+                    error: function(err) {
+                        $("#assigntask").hide();
+                        refreshme();
+
+                        return alert("There was an error adding task! Please refresh the page and try again.");
+                    }
+                }
+            );
+
+
+
+            if (typeof(taskidnealociran) == "undefined" || taskidnealociran == "")
+            {
+                jsRoutes.controllers.Tasks_rd.addTaskNewPlans().ajax(
+                    {
+                        async: false,
+                        data: {
+                            jobid: jobidno,
+                            taskType: tasktypeid,
+                            crew: boxid,
+                            datumot: datetask
+                        },
+                        success: function(data) {
+                            // id-to na taskot ni treba
+                            taskid = data.id;
+                        },
+                        error: function(err) {
+                            $("#assigntask").hide();
+                            refreshme();
+
+                            return alert("There was an error adding task! Please refresh the page and try again.");
+                        }
+                    }
+                );
+            }
+            else
+            {
+                taskid = taskidnealociran;
+            }
+            // update napraj mu so
+            /*jsRoutes.controllers.Tasks.updateTask(context.el.attr("data-task-id")).ajax
+             data:
+             crew: context.el.attr("data-crew")
+             cardOrder: context.el.attr("data-card-order")
+             date: context.el.attr("data-date")
+             notes: context.el.attr("data-notes")
+             manager: context.el.attr("data-manager-id")*/
+            // konecno mapiraj gi lineitems so toj taskid...
+            jsRoutes.controllers.Tasks_rd.updateTask(taskid).ajax(
+                {
+                    async: false,
+                    data: {
+                        cardOrder: orderid,
+                        notes: notes,
+                        crew: boxid
+                    },
+                    success: function(data) {
+                        //   alert(data[0].id);
+                    },
+                    error: function(err) {
+                        $("#assigntask").hide();
+                        refreshme();
+
+                        return alert("There was an error modifying task! Please refresh the page and try again.");
+                    }
+                }
+            );
+
+
+
+            // do tuka
+
+
+            // DA SE STAVI KONECNO ASSIGNMENT na toj TASK
+            var st = datetask;
+            var pattern = /(\d{2})\-(\d{2})\-(\d{4})/;
+            //  var dt = new Date(st.replace(pattern,'$3-$1-$2'));
+            var dt = st.replace(pattern,'$3-$1-$2');
+
+            //console.log(datetask.substring(11,20));
+            // console.log(datetask.substring(1,10));
+            $.ajax({
+                async: false,
+                type: 'POST',
+                url: '/admin/actualjobs/assigns?jobid='+jobidno+'&taskid='+ taskid + '&datetask='+dt+'&fieldid='+fieldid,
+                success: function(datana) {
+                    var n = noty({type: 'success', text: 'Task was assigned to ' + $("#fieldManagers option:selected" ).text(),  timeout: 3000});
+                    $('.assignTask[data-href-date='+datetask.substring(1,10)+'][data-href='+taskid+']').html(datana);
+                    $('#assigntask').hide();
+                },
+                error: function (result) {
+                    $("#assigntask").hide();
+                    refreshme();
+
+                    alert('Some error occurred while assigning the date task.');
+                }
+            });
+
+
+            /* (table.rows('.selected')).each(function() {*/
+            var idnja = table.rows('.selected')[0];
+            for (var i=0; i<idnja.length; i++)
+            {
+                (function(i)
+                {
+                    //  var jobidto =  $("#jobbudgetlists tbody tr").eq(idnja[i]).attr('id');
+
+                    var vendorid =  $("#jobbudgetlists tbody > tr:nth-child("+(idnja[i]+1) +") td:nth-child(2)").attr('data-vendor-id');
+
+
+                    /*var vendorid =  $("#jobbudgetlists tbody tr td:nth-child(2)").attr('data-vendor-id');*/
+                    var itemid = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(3)").attr('data-item-id');
+                    var itemtypeid =  $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +")").attr("data-item-type-id"); // $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(3)").attr('data-item-type-id');
+
+                    var units =   $("#jobbudgetlists tbody tr:nth-child("+(idnja[i]+1) +")").attr("data-units");
+
+                    var quantity = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(4)").find('.quantity').val();
+                    var rate = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(5)").find('.rate').val();
+                    var saleprice = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(6)").html();
+                    var lineitemORG = $("#jobbudgetlists tbody > tr:nth-child("+(idnja[i]+1) +")").attr('id');
+                    var tasktypeid = 4;
+                    //    var date = $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(8)").html();
+                    //   var taskidno =  $("#jobbudgetlists tbody > tr:nth-child("+ (idnja[i]+1) +") td:nth-child(9)").attr('data-task-id');
+
+                    if (itemid != "" && itemtypeid != "" && itemtypeid != "1" && quantity != "" && rate != ""  && tasktypeid != "" && dt != "") // && saleprice !=""
+                    {
+                        $.ajax({
+                            async: false,
+                            type: 'POST',
+                            url: '/jobs/lineitemsActual/addeditActual?jobid='+jobidno+"&tasktype="+tasktypeid+"&vendor="+vendorid+"&item="+itemid+"&itemtype="+itemtypeid+"&quantity="+quantity+"&units="+units+"&rate="+rate+"&saleprice="+saleprice+"&date="+dt+"&taskidno="+taskid+"&lineitemidORG="+lineitemORG,
+                            success: function() {
+                            },
+                            error: function (result) {
+                                $("#assigntask").hide();
+                                refreshme();
+
+                                alert('Some error occurred while updating lineitems.');
+                            }
+                        });
+                    }
+                })(i);
+            }
+            // da se osvezi cardot... vidi kako mozeme toa;
+            /*  });*/
+
+
+            // STO TREBA DA SE NAPRAVI SO LINEITEMS otkako ke se popolni TASK-ot
+            // update na lineitems set task_id kolona na taskot nas... where sto se selektirani so toj lineid
+
+            jsRoutes.controllers.Lineitems_rd.updateLineItemforNewJob(celstring).ajax(
+                {
+                    async: false,
+                    data: {
+                        taskid: taskid
+                    },
+                    success: function(data) {
+                        refreshme();
+                        refreshmeactuals();
+
+                        //   alert("OK");
+                    },
+                    error: function(err) {
+                        $("#assigntask").hide();
+                        refreshme();
+
+                        return alert("There was an error modifying task! Please refresh the page and try again.");
+                    }
+                }
+            );
+        }
+
+ });
+
+
+    $("body").on('click','.verifybutt', function(e) {
+            e.preventDefault();
+            if (window.confirm("Are you sure?")) {
+                // fati go id-to od verifybutt
+                var lineid = this.parentNode.getAttribute("data-line-id");
+                verifyLineItem(lineid);
+            }
+    });
+
+    $("body").on('click','.unverifybut', function(e) {
+        e.preventDefault();
+        if (window.confirm("LineItem will be unverified. Are you sure?")) {
+            // fati go id-to od verifybutt
+            var lineid = this.parentNode.getAttribute("data-line-id");
+            UnverifyLineItem(lineid);
+        }
+    });
+
+
+
+    $("body").on('click','#buttonverifyall', function(e) {
+            e.preventDefault();
+            if (window.confirm("Are you sure?")) {
+                var jobidno = $("#totals").attr("data-job-id");
+                verifyAllLineItem(jobidno);
+            }
+       // setTimeout(function(){refreshme()}, 1000);
+    });
+});
+
+function updatenewTaskLineItem( lineitemid, Taskid, notes, po , taskType)
+{
+    // vendor=807&item=106&units=&quantity=8&rate=14.00&saleprice=112&task=98656&notes=&po=null
+    var putlink = "";
+    if (po != "")
+    {
+        putlink = "/jobs/lineitems/Actual/"+lineitemid+"?vendor="+vendorid+"&item="+itemid+"&units="+units+"&quantity="+quantity+"&rate="+rate+"&saleprice="+saleprice+"&task="+Taskid +"&notes="+notes +"&po="+po;
+    }
+    else
+    {
+        putlink = "/jobs/lineitems/Actual/"+lineitemid+"?vendor="+vendorid+"&item="+itemid+"&units="+units+"&quantity="+quantity+"&rate="+rate+"&saleprice="+saleprice+"&task="+Taskid +"&notes="+notes +"&po=null";
+    }
+
+    $.ajax({
+        url: putlink,
+        type: 'POST',
+        success: function() {
+            // return existinglineitem.id;
+
+            populateLaborItems(selectedJob, taskType);
+            populateMaterialsItems(selectedJob, taskType);
+            populateConcreteItems(selectedJob, taskType);
+            populateLandscapeItems(selectedJob, taskType);
+            populateMiscellaneousItems(selectedJob, taskType);
+
+        },
+        error:  $.noop
+    });
+}
+
+function datatablefunctions(){
+
+/*
+
+    $("#jobbudgetlists").DataTable({
+        "sDom": 't',
+        "bPaginate": false,
+        "info":     false,
+        "bFilter": false,
+        'bSortable' : false
+    });
+*/
+
+
+}
+
+function updateLineItemOrder(){
+    var celstring  = "";
+    var rowCount = $('#jobbudgetlists tr').length
+
+    $('#jobbudgetlists > tbody > tr').each(function() {
+        celstring+= this.id + " ";
+        $(this).removeClass('selected');
+    });
+
+    jsRoutes.controllers.Jobs_rd.reorderLineItems().ajax(
+        {
+            type: "POST",
+            async: false,
+            data: {
+                lineitemsid: celstring
+            },
+            success: function(datasub) {
+                refreshme();
+
+            },
+            error: function(err) {
+                return alert("There was an error saving job  budget lines order.");
+            }
+        }
+    );
+}
+
+function verifyLineItem(lineitemid){
+    if (lineitemid!=''){
+        jsRoutes.controllers.Jobs_rd.verifyLineItems().ajax(
+            {
+                async: false,
+                type: "POST",
+                data: {
+                    verifylineitemid: lineitemid
+                },
+                success: function(datasub) {
+                    refreshme();
+                    goToByScroll("budget");
+                },
+                error: function(err) {
+                    return alert("There was an error saving job  budget lines order.");
+                }
+            }
+        );
+    }
+}
+
+
+function UnverifyLineItem(lineitemid){
+    if (lineitemid!=''){
+        jsRoutes.controllers.Jobs_rd.unverifyLineItems().ajax(
+            {
+                async: false,
+                type: "POST",
+                data: {
+                    verifylineitemid: lineitemid
+                },
+                success: function(datasub) {
+                    refreshme();
+                    goToByScroll("budget");
+                },
+                error: function(err) {
+                    return alert("There was an error saving job  budget lines order.");
+                }
+            }
+        );
+    }
+}
+
+
+function verifyAllLineItem(jobid){
+    if (jobid!=''){
+        jsRoutes.controllers.Jobs_rd.verifyAllLineItems().ajax(
+            {
+                async: false,
+                type: "POST",
+                data: {
+                    jobid: jobid
+                },
+                success: function() {
+                    refreshme();
+                    goToByScroll("budget");
+                },
+                error: function(err) {
+                    return alert("There was an error saving job  budget lines order.");
+                }
+            }
+        );
+    }
+}
+
+function updateLineItemAssignments(linitemsspilit){
+
+
+    if ($('#calendarmalendar').val() !="")
+        var selectedDate = $('#calendarmalendar').val();
+
+    jsRoutes.controllers.Jobs_rd.reorderLineItemDates().ajax(
+        {
+            type: "POST",
+            async: false,
+            data: {
+                lineitemsid: linitemsspilit,
+                datesel : selectedDate
+            },
+            success: function(datasub) {
+                refreshme();
+                refreshmeactuals();
+                goToByScroll("budget");
+                $('#assigntask').hide();
+            },
+            error: function(err) {
+                return alert("There was an error saving job budget lines dates.");
+            }
+        }
+    );
+
+}
+
+
+function goToByScroll(id){
+    // Remove "link" from the ID
+    id = id.replace("link", "");
+    // Scroll
+    $('html,body').animate({
+            scrollTop: $("#"+id).offset().top},
+        'slow');
+}
+
+
+function refreshme(){
+  /*  var scrollPos = 0;
+    if(window.location.hash !== ''){
+        scrollPos = parseInt(window.location.hash.substring(1),10);
+    }*/
+
+    var jobidno = $("#totals").attr("data-job-id");
+    jsRoutes.controllers.Jobs_rd.reorderLineItemRefresh().ajax(
+        {
+            async: false,
+            type: "GET",
+            data: {
+                jobid: jobidno
+            },
+            success: function(datasub) {
+                $("#budget").empty().append(datasub);
+        //        Backbone.history.loadUrl( Backbone.history.fragment );
+
+                (function() {
+                    var BudgetLineitem, BudgetLineitems;
+                    var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+                        for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+                        function ctor() { this.constructor = child; }
+                        ctor.prototype = parent.prototype;
+                        child.prototype = new ctor;
+                        child.__super__ = parent.prototype;
+                        return child;
+                    };
+                    BudgetLineitems = (function() {
+                        __extends(BudgetLineitems, Backbone.View);
+                        function BudgetLineitems() {
+                            BudgetLineitems.__super__.constructor.apply(this, arguments);
+                        }
+                        BudgetLineitems.prototype.events = {
+                         /*   "click    #addBudgetLineitem": "addBudgetLineitem"*/
+                        };
+                        BudgetLineitems.prototype.initialize = function() {
+                            return this.el.find("#budgetitems").children("tr").each(function(i, lineitem) {
+                                return new BudgetLineitem({
+                                    el: $(lineitem)
+                                });
+                            });
+                        };
+/*                        BudgetLineitems.prototype.addBudgetLineitem = function(e) {
+                            var target;
+                            target = $(e.currentTarget);
+
+                            return jsRoutes.controllers.Lineitems_rd.addBudgetLineitem().ajax({
+                                data: {
+                                    job: $("#totals").attr("data-job-id"),
+                                    plan: $("#totals").attr("data-plan-id")
+                                },
+                                success: function(data) {
+
+                                    var _view;
+                                    return _view = new BudgetLineitem({
+                                        el: $(data).appendTo("#budgetitems")
+                                    });
+                                    refreshme();
+                                },
+                                error: function(err) {
+                                    return alert("There was an error adding the budget line item! Please refresh the page and try again.");
+                                }
+                            });
+                        };*/
+                        return BudgetLineitems;
+                    })();
+                    BudgetLineitem = (function() {
+                        __extends(BudgetLineitem, Backbone.View);
+                        function BudgetLineitem() {
+                            BudgetLineitem.__super__.constructor.apply(this, arguments);
+                        }
+                        BudgetLineitem.prototype.events = {
+                            "click    .deleteLineitem": "deleteBudgetLineitem",
+                            "focus    .vendor>input": "loadVendorSelect",
+                            "focus    .item>input": "loadItemSelect",
+                            "change   .quantity,.rate": "updateBudgetLineitem",
+                            "dblclick .quantity": "editBudgetLineitem"
+                        };
+                        BudgetLineitem.prototype.initialize = function() {
+                            this.id = this.el.attr("data-lineitem-id");
+                            this.vendor = this.el.find("td:eq(1)");
+                            this.item = this.el.find("td:eq(2)");
+                            this.quantity = this.el.find("td:eq(3) input");
+                            this.rate = this.el.find("td:eq(4) input");
+                            this.cost = this.el.find("td:eq(5)");
+                            this.saleprice = this.el.find("td:eq(6)");
+                            return this.recalculate();
+                        };
+                         BudgetLineitem.prototype.deleteBudgetLineitem = function(e) {
+                         e.preventDefault();
+                         // da se vleze so proverka dali e verified
+                         if (confirm('Are you sure?')) {
+                         return jsRoutes.controllers.Lineitems_rd.deleteLineitemNewJob(this.id).ajax({
+                         context: this,
+                         success: function() {
+                         this.quantity.val(0);
+                         this.rate.val(0);
+                         this.recalculate();
+                         return this.el.remove();
+                         },
+                         error: function(err) {
+                         return alert("There was an error deleting the budget line item! Please refresh the page and try again.");
+                         }
+                         });
+                         }
+                         };
+                        BudgetLineitem.prototype.loadVendorSelect = function(e) {
+                            var context, target, v;
+                            target = $(e.currentTarget);
+                            v = $();
+                            context = this;
+                            jsRoutes.controllers.Lineitems_rd.getVendorSelect().ajax({
+                                context: this,
+                                async: false,
+                                data: {
+                                    id: $("#totals").attr("data-market-id"),
+                                    itemType: context.item.attr("data-item-type-id")
+                                },
+                                success: function(data) {
+                                    v = $(data);
+                                    v.find("option[value='" + context.vendor.attr("data-vendor-id") + "']").attr("selected", "selected");
+                                    v.change(function() {
+                                        context.vendor.attr("data-vendor-id", $(this).val());
+                                        context.item.attr("data-item-id", "");
+                                        context.item.attr("data-item-type-id", "");
+                                        return context.item.children("input").val("");
+                                    });
+                                    return v.blur(function() {
+                                        var input;
+                                        input = $("<input/>").css("text-align", "left").val($(this).find("option:selected").html());
+                                        return $(this).replaceWith(input);
+                                    });
+                                },
+                                error: function(err) {
+                                    return alert("There was an error loading the vendors! Please refresh the page and try again.");
+                                }
+                            });
+                            target.replaceWith(v);
+                            return v.focus();
+                        };
+                        BudgetLineitem.prototype.loadItemSelect = function(e) {
+                            var context, i, target;
+                            target = $(e.currentTarget);
+                            i = $();
+                            context = this;
+                            jsRoutes.controllers.Lineitems_rd.getItemSelect().ajax({
+                                context: this,
+                                async: false,
+                                data: {
+                                    id: context.vendor.attr("data-vendor-id")
+                                },
+                                success: function(data) {
+                                    i = $(data);
+                                    i.find("option[value='" + context.item.attr("data-item-id") + "']").attr("selected", "selected");
+                                    i.change(function() {
+                                        var vendorItem;
+                                        vendorItem = $(this).find("option:selected");
+                                        context.item.attr("data-item-id", vendorItem.val());
+                                        context.item.attr("data-item-type-id", vendorItem.attr("data-item-type-id"));
+                                        context.item.closest("tr").attr("data-item-type-id", vendorItem.attr("data-item-type-id"));
+                                        context.item.children("input").val(vendorItem.html());
+                                        context.el.attr("data-rate", vendorItem.attr("data-default-rate"));
+                                        context.rate.val(parseFloat(vendorItem.attr("data-default-rate")).toFixed(2));
+                                        return context.rate.change();
+                                    });
+                                    return i.blur(function() {
+                                        var input;
+                                        input = $("<input/>").css("text-align", "left").val($(this).find("option:selected").html());
+                                        return $(this).replaceWith(input);
+                                    });
+                                },
+                                error: function(err) {
+                                    return alert("There was an error loading the items! Please refresh the page and try again.");
+                                }
+                            });
+                            target.replaceWith(i);
+                            return i.focus();
+                        };
+                        BudgetLineitem.prototype.editBudgetLineitem = function() {
+                            var context, itemTypeId, markup, multiplier, planItems, planUnits, table, task1Budget, task1BudgetInput, task2Budget, task2BudgetInput, task3Budget, task3BudgetInput;
+                            context = this;
+                            planItems = $("<select/>").html($("<option/>")).change(function() {
+                                context.el.attr("data-plan-item-id", $(this).val());
+                                return context.rate.change();
+                            });
+                            $("#planitems").children("div").each(function() {
+                                return planItems.append($("<option/>").html($(this).attr("class")).val($(this).attr("data-plan-item")));
+                            });
+                            planItems.find("option[value='" + this.el.attr("data-plan-item-id") + "']").attr("selected", "selected");
+                            planUnits = $("<select/>").html($("<option/>")).append($("<option/>").html("Linear Feet").val("lnft")).append($("<option/>").html("Square Feet").val("sqft")).append($("<option/>").html("Cubic Yards").val("cuyds")).change(function() {
+                                context.el.attr("data-units", $(this).val());
+                                return context.rate.change();
+                            });
+                            planUnits.find("option[value='" + this.el.attr("data-units") + "']").attr("selected", "selected");
+                            multiplier = $("<input/>").val(this.el.attr("data-multiplier")).change(function() {
+                                context.el.attr("data-multiplier", $(this).val());
+                                return context.rate.change();
+                            });
+                            markup = $("<input/>").val(this.el.attr("data-markup")).change(function() {
+                                context.el.attr("data-markup", $(this).val());
+                                return context.rate.change();
+                            });
+                            itemTypeId = this.item.attr("data-item-type-id");
+                            task1Budget = parseInt(context.el.attr("data-task1-percentage"));
+                            task2Budget = parseInt(context.el.attr("data-task2-percentage"));
+                            task3Budget = parseInt(context.el.attr("data-task3-percentage"));
+                            if (itemTypeId !== '' && task1Budget + task2Budget + task3Budget === 0) {
+                                task1Budget = parseFloat($("#1-" + itemTypeId).attr("data-price-multiplier")) * 100;
+                                task2Budget = parseFloat($("#2-" + itemTypeId).attr("data-price-multiplier")) * 100;
+                                task3Budget = parseFloat($("#3-" + itemTypeId).attr("data-price-multiplier")) * 100;
+                            }
+                            task1BudgetInput = $("<input/>").css("width", "100px").css("visibility", "hidden").attr("id", "task1Budget").attr("data-lineitem-id", this.id).val(task1Budget).change(function() {
+                                var t1b, t2b;
+                                t1b = parseInt($(this).val());
+                                if (t1b === 100) {
+                                    $("#task2Budget").val(0);
+                                    $("#budgetSlider").slider("values", 1, 100);
+                                    $("#task3Budget").val(0);
+                                } else {
+                                    t2b = $("#budgetSlider").slider("values", 1);
+                                    if (t1b > t2b) {
+                                        $("#task2Budget").val(0);
+                                        $("#task3Budget").val(100 - t1b);
+                                        $("#budgetSlider").slider("values", 1, t1b);
+                                    } else {
+                                        $("#task2Budget").val(t2b - t1b);
+                                    }
+                                }
+                                $("#budgetSlider").slider("values", 0, t1b);
+                            /*    return jsRoutes.controllers.Lineitems_rd.updateLineitem(context.el.attr("data-lineitem-id")).ajax({
+                                    context: this,
+                                    data: {
+                                        task1Percentage: $("#task1Budget").val(),
+                                        task2Percentage: $("#task2Budget").val(),
+                                        task3Percentage: $("#task3Budget").val()
+                                    },
+                                    success: function() {
+                                        context.el.attr("data-task1-percentage", $("#task1Budget").val());
+                                        context.el.attr("data-task2-percentage", $("#task2Budget").val());
+                                        context.el.attr("data-task3-percentage", $("#task3Budget").val());
+                                        $("#total-" + context.el.find(".item").attr("data-item-type-id")).find("td:eq(3)").html("0");
+                                        return context.rate.change();
+                                    },
+                                    error: function(err) {
+                                        return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                                    }
+                                });*/
+                            });
+                            task2BudgetInput = $("<input/>").css("width", "100px").css("visibility", "hidden").attr("id", "task2Budget").attr("data-lineitem-id", this.id).val(task2Budget).change(function() {
+                                var t1b, t2b;
+                                t1b = $("#budgetSlider").slider("values", 0);
+                                t2b = parseInt($(this).val());
+                                if (t2b === 100) {
+                                    $("#task1Budget").val(0);
+                                    $("#budgetSlider").slider("values", 0, 0);
+                                    $("#task3Budget").val(0);
+                                    $("#budgetSlider").slider("values", 2, 100);
+                                } else {
+                                    t1b = $("#budgetSlider").slider("values", 0);
+                                    if (t1b + t2b > 100) {
+                                        t1b = 100 - t2b;
+                                        $("#task1Budget").val(t1b);
+                                        $("#task3Budget").val(0);
+                                        $("#budgetSlider").slider("values", 0, t1b);
+                                    } else {
+                                        $("#task3Budget").val(100 - (t1b + t2b));
+                                    }
+                                }
+                                $("#budgetSlider").slider("values", 1, t2b + t1b);
+                               /* return jsRoutes.controllers.Lineitems_rd.updateLineitem(context.el.attr("data-lineitem-id")).ajax({
+                                    context: this,
+                                    data: {
+                                        task1Percentage: $("#task1Budget").val(),
+                                        task2Percentage: $("#task2Budget").val(),
+                                        task3Percentage: $("#task3Budget").val()
+                                    },
+                                    success: function() {
+                                        context.el.attr("data-task1-percentage", $("#task1Budget").val());
+                                        context.el.attr("data-task2-percentage", $("#task2Budget").val());
+                                        context.el.attr("data-task3-percentage", $("#task3Budget").val());
+                                        $("#total-" + context.el.find(".item").attr("data-item-type-id")).find("td:eq(3)").html("0");
+                                        return context.rate.change();
+                                    },
+                                    error: function(err) {
+                                        return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                                    }
+                                });*/
+                            });
+                            task3BudgetInput = $("<input/>").css("width", "100px").css("visibility", "hidden").attr("id", "task3Budget").attr("data-lineitem-id", this.id).val(task3Budget).change(function() {
+                                var t1b, t3b;
+                                t3b = parseInt($(this).val());
+                                $("#task3Budget").val(t3b);
+                                if (t3b === 100) {
+                                    $("#task1Budget").val(0);
+                                    $("#budgetSlider").slider("values", 0, 0);
+                                    $("#task2Budget").val(0);
+                                } else {
+                                    t1b = $("#budgetSlider").slider("values", 0);
+                                    if (t1b + t3b > 100) {
+                                        $("#task1Budget").val(100 - t3b);
+                                        $("#budgetSlider").slider("values", 0, 100 - t3b);
+                                        $("#task2Budget").val(0);
+                                    } else {
+                                        $("#task2Budget").val(100 - (t1b + t3b));
+                                    }
+                                }
+                                $("#budgetSlider").slider("values", 1, 100 - t3b);
+                               /* return jsRoutes.controllers.Lineitems_rd.updateLineitem(context.el.attr("data-lineitem-id")).ajax({
+                                    context: this,
+                                    data: {
+                                        task1Percentage: $("#task1Budget").val(),
+                                        task2Percentage: $("#task2Budget").val(),
+                                        task3Percentage: $("#task3Budget").val()
+                                    },
+                                    success: function() {
+                                        context.el.attr("data-task1-percentage", $("#task1Budget").val());
+                                        context.el.attr("data-task2-percentage", $("#task2Budget").val());
+                                        context.el.attr("data-task3-percentage", $("#task3Budget").val());
+                                        $("#total-" + context.el.find(".item").attr("data-item-type-id")).find("td:eq(3)").html("0");
+                                        return context.rate.change();
+                                    },
+                                    error: function(err) {
+                                        return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                                    }
+                                });*/
+                            });
+                            // table = $("<table/>").css("width", "100%").html($("<tr/>").append($("<td/>").html("Tie to: ").append(planItems).append("With units: ").append(planUnits).append("Multiplier:<br/>").append(multiplier).append("<br/>Markup:<br/>").append(markup)).append($("<td/>").html("Task1: ").append(task1BudgetInput).append("<br/>Task2: ").append(task2BudgetInput).append("<br/>Task3: ").append(task3BudgetInput)));
+                            table = $("<table/>").css("width", "100%").html($("<tr/>").append($("<td/>").html("Tie to: ").append(planItems).append("With units: ").append(planUnits).append("Multiplier:<br/>").append(multiplier).append("<br/>Markup:<br/>").append(markup)).append($("<td/>")));
+                            return $("#dialog").html(table).append("<br/><br/>")/*.append($("<div/>").attr("id", "budgetSlider").slider({
+                                range: true,
+                                min: 0,
+                                max: 100,
+                                values: [task1Budget, task1Budget + task2Budget],
+                                slide: function(e, ui) {
+                                    $("#task1Budget").val(ui.values[0]);
+                                    $("#task2Budget").val(ui.values[1] - ui.values[0]);
+                                    return $("#task3Budget").val(100 - ui.values[1]);
+                                },
+                                stop: function(e, ui) {
+                                    return $("#task1Budget").change();
+                                }
+                            }))*/.dialog("open");
+                        };
+                        BudgetLineitem.prototype.updateBudgetLineitem = function(e) {
+                            var q, target;
+                            target = $(e.currentTarget);
+                            if (target.hasClass("rate")) {
+                                this.el.attr("data-rate", target.val());
+                                q = 0.0;
+                                if (typeof this.el.attr("data-units") !== "undefined" && this.el.attr("data-units") !== "") {
+                                    if (typeof this.el.attr("data-plan-item-id") !== "undefined" && this.el.attr("data-plan-item-id") !== "") {
+                                        if (($("#planitems").find("div[data-plan-item='" + this.el.attr("data-plan-item-id") + "']").length)) {
+                                            q += parseFloat($("#planitems").find("div[data-plan-item='" + this.el.attr("data-plan-item-id") + "']>.planitemtotals ." + this.el.attr("data-units")).html());
+                                        } else {
+                                            this.el.attr("data-plan-item-id", "");
+                                            this.el.attr("data-units", "");
+                                        }
+                                    } else {
+                                        q += parseFloat($("#total" + this.el.attr("data-units")).html());
+                                    }
+                                    if (parseFloat(this.el.attr("data-multiplier"))) {
+                                        q *= parseFloat(this.el.attr("data-multiplier"));
+                                    }
+                                    this.quantity.val(this.roundToHalf(q));
+                                }
+                            } else if (target.hasClass("quantity")) {
+                                this.quantity.val(this.roundToHalf(parseFloat(this.quantity.val())));
+                                this.el.attr("data-plan-item-id", "");
+                                this.el.attr("data-units", "");
+                            }
+                            return jsRoutes.controllers.Lineitems_rd.updateLineitem(this.id).ajax({
+                                context: this,
+                                async: false,
+                                data: {
+                                    vendor: this.vendor.attr("data-vendor-id"),
+                                    item: this.item.attr("data-item-id"),
+                                    itemType: this.item.attr("data-item-type-id"),
+                                    planItem: this.el.attr("data-plan-item-id"),
+                                    units: this.el.attr("data-units"),
+                                    multiplier: this.el.attr("data-multiplier"),
+                                    markup: this.el.attr("data-markup"),
+                                    quantity: this.quantity.val(),
+                                    rate: this.el.attr("data-rate"),
+                                    saleprice: parseFloat(this.quantity.val()) * parseFloat(this.el.attr("data-rate")) / (1 - parseFloat(this.el.attr("data-markup")) / 100)
+                                },
+                                success: function() {
+                                    if (!target.hasClass("name") && !target.hasClass("units")) {
+                                        return this.recalculate();
+                                    }
+                                },
+                                error: function(err) {
+                                    return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                                }
+                            });
+                        };
+                        BudgetLineitem.prototype.recalculate = function() {
+                            var budgetTotal, fprofit, i, left, mprofit, pctprofit, ppsqft, prevTotal, sale, salecosttotal, temp, total, totalsqft, used;
+                            this.rate.val(parseFloat(this.el.attr("data-rate")).toFixed(2));
+                            this.el.attr("data-cost", parseFloat(this.quantity.val()) * parseFloat(this.el.attr("data-rate")));
+                            this.el.attr("data-sale", parseFloat(this.el.attr("data-cost")) / (1 - parseFloat(this.el.attr("data-markup")) / 100));
+                            this.cost.html(parseFloat(this.el.attr("data-cost")).toFixed(2));
+                            this.saleprice.html(parseFloat(this.el.attr("data-sale")).toFixed(2));
+                            total = 0;
+                            salecosttotal = 0;
+                            sale = 0;
+                            temp = {};
+                            $("#budgetitems").children("tr").each(function(i, c) {
+                                var itemCost;
+                                i = $(c).find(".item").attr("data-item-type-id");
+                                if (typeof temp[i] === "undefined") {
+                                    temp[i] = 0;
+                                }
+                                itemCost = parseFloat($(c).find("td:eq(3) input").val()) * parseFloat($(c).attr("data-rate"));
+                                temp[i] += itemCost;
+                                total += itemCost;
+                                sale += itemCost / (1 - parseFloat($(c).attr("data-markup")) / 100);
+                                return salecosttotal += parseFloat($(c).attr("data-sale"));
+                            });
+                            for (i in temp) {
+                                budgetTotal = $("#total-" + i).find("td:eq(3)");
+                                prevTotal = budgetTotal.html();
+                                budgetTotal.html(temp[i].toFixed(2));
+                                if (budgetTotal.length && budgetTotal.html() !== prevTotal) {
+                                    if (($(".actualLineitem").length)) {
+                                        $(".actualLineitem:first").find(".rate").change();
+                                    } else {
+                                        $("#actual").find("." + budgetTotal.attr("class").split(" ")[1]).each(function(j, total) {
+                                            var itemTypeId, taskBudgetTotal, taskTypeId;
+                                            if ($(total).hasClass("hasClass")) {
+                                                taskTypeId = $(total).parent().attr("id").split("-")[0];
+                                                itemTypeId = $(total).parent().attr("id").split("-")[1];
+                                                taskBudgetTotal = 0;
+                                                $("#budgetitems td[data-item-type-id='" + itemTypeId + "']").each(function(k, lineitem) {
+                                                    return taskBudgetTotal += parseFloat($(lineitem).parent().attr("data-task" + taskTypeId + "-percentage")) * 0.01 * parseFloat($(lineitem).parent().attr("data-cost"));
+                                                });
+                                                $(total).html(taskBudgetTotal.toFixed(2));
+                                                return $(total).parent().find(".left").html((parseFloat($(total).html()) - parseFloat($(total).parent().find(".used").html())).toFixed(2));
+                                            }
+                                        });
+                                        used = 0;
+                                        $(".task ." + budgetTotal.attr("class").split(" ")[1]).parent().find(".used").each(function(j, u) {
+                                            return used += parseFloat($(u).html());
+                                        });
+                                        budgetTotal.parent().find(".used").html(used.toFixed(2));
+                                        budgetTotal.parent().find(".left").html((parseFloat(budgetTotal.html()) - used).toFixed(2));
+                                    }
+                                }
+                            }
+                            if ($("#saleitems>table>tbody>tr").length === 0) {
+                                $("#saleprice>span").html(sale.toFixed(2));
+                                $("#totals").attr("data-sale", sale);
+                            } else {
+                                sale = parseFloat($("#totals").attr("data-sale"));
+                            }
+                            $("#actual .saleprice").html(sale.toFixed(2));
+                            $("#totals").attr("data-cost", total);
+                            ppsqft = 0;
+                            totalsqft = parseFloat($("#totalsqft").html());
+                            if (totalsqft > 0) {
+                                ppsqft = sale / totalsqft;
+                            }
+                            $("#totals").attr("data-ppsqft", ppsqft);
+                            pctprofit = 0;
+                            if (sale > 0) {
+                                pctprofit = 100 * (1 - total / sale);
+                            }
+                            $("#ppsqft").html(ppsqft.toFixed(2));
+                            $("#totalcost").html(total.toFixed(2));
+                            $("#totalsale").html(salecosttotal.toFixed(2));
+                            if (($("#actual").length)) {
+                                $("#actual .overhead").html((sale * parseFloat($("#actual").attr("data-op-multiplier"))).toFixed(2));
+                                if ($("#actual .cost").html() !== "") {
+                                    $("#actual .markup").html((parseFloat($("#actual .cost").html()) / sale).toFixed(2));
+                                }
+                                if ($("#actual .actualcost").html() !== "") {
+                                    $("#actual .actualmarkup").html((parseFloat($("#actual .actualcost").html()) / sale).toFixed(2));
+                                }
+                                left = parseFloat($("#actual .diffcost").html());
+                                mprofit = ((sale-total)>0)?(left>0)?((sale-total)*.15+left*.5):((sale-total)*.15+left):0;
+                                fprofit = ((sale-total)>0)?(left>0)?((sale-total)*.85+left*.5):((sale-total)*.85):(sale-total);
+                                $("#managerprofit").html(mprofit.toFixed(2));
+                                return $("#ffiprofit").html(fprofit.toFixed(2));
+                            }
+
+                        };
+                        BudgetLineitem.prototype.roundToHalf = function(converted) {
+                            var decimal;
+                            if (converted < .5) {
+                                return converted.toFixed(1);
+                            } else {
+                                decimal = converted - parseInt(converted, 10);
+                                decimal = Math.round(decimal * 10);
+                                if (decimal === 5) {
+                                    return parseInt(converted, 10) + 0.5;
+                                } else {
+                                    if (decimal < 3 || decimal > 7) {
+                                        return Math.round(converted);
+                                    } else {
+                                        return parseInt(converted, 10) + 0.5;
+                                    }
+                                }
+                            }
+                        };
+                        return BudgetLineitem;
+                    })();
+                    $(function() {
+                        var lineitems;
+                        return lineitems = new BudgetLineitems({
+                            el: $("#budget")
+                        });
+                    });
+                }).call(this);
+
+
+                var startPosition;
+                var endPosition;
+                $("#jobbudgetlists tbody").sortable({
+                    cursor: "move",
+                    start:function(event, ui){
+                        startPosition = ui.item.prevAll().length + 1;
+                    },
+                    update: function(event, ui) {
+                        endPosition = ui.item.prevAll().length + 1;
+                        //   alert('Start Position: ' + startPosition + ' End Position: ' + endPosition);
+                        updateLineItemOrder();
+                    }
+                });
+
+
+                $('#buttonaddign').click( function() {
+                    //  window.scrollTo(0, 0);
+
+
+
+                    var table = $('#jobbudgetlists').DataTable();
+                    var celstring  = "";
+
+                    // brisime se na pocetok
+                    $('#crewleader option').each(function() {
+                        $(this).removeAttr('selected');
+                    });
+                    $('#fieldManagers option').each(function() {
+                        $(this).removeAttr('selected');
+                    });
+                    $("#notes").val();
+                    // do tuka brisenje
+
+
+                    if (table.rows('.selected').data().length ==0)
+                    {
+                        $('#jobbudgetlists').DataTable( {
+                            "sDom": 't',
+                            "bPaginate": false,
+                            "info":     false,
+                            "bFilter": false,
+                            'bSortable' : false,
+                            'bDestroy': true
+                        });
+
+                        alert("No budgetline items are selected. Please select some and try again.")
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var idnja= "";
+                            var celstring= "";
+                            var crew = "";
+                            var manager = "";
+                            var notes = "";
+                            var taskdateon = "";
+
+                            var taskid = "";
+                            var ovaepoleto;
+
+
+                            // tuka treba da se vidi dali od selektiranite linitemi (taskovite nivni) barem eden e verified
+
+
+                            // vo toj slucaj da se pojavi poraka deka nemoze da se menuva zosto ima verificirani lineitemi
+
+                            (table.rows('.selected')).each(function() {
+                                var idnja = table.rows('.selected')[0];
+                                for (var i=0; i<1; i++)
+                                {
+                                    ovaepoleto  = $("#jobbudgetlists tbody tr").eq(idnja[i]).find('td:eq(10)').find(".calTask");
+
+                                }
+                            });
+
+                            crew = ovaepoleto.attr("data-crew").replace(/['"]+/g, '');
+                            manager =ovaepoleto.attr("data-assign-manager-id").replace(/['"]+/g, '');
+                            notes = ovaepoleto.attr("data-notes").replace(/['"]+/g, '');
+                            taskdateon = ovaepoleto.attr("data-date").replace(/['"]+/g, '');
+
+                            $('#crewleader option').each(function() {
+                                $(this).removeAttr('selected');
+                            });
+                            $('#fieldManagers option').each(function() {
+                                $(this).removeAttr('selected');
+                            });
+
+                            if (manager !== "0")
+                            {
+                                $("#fieldManagers").find("option[value='" + manager + "']").prop("selected", true).end().change();
+                            }
+
+                            if (crew !== "0")
+                            {
+                                $("#crewleader").find("option[value='" + crew + "']").prop("selected", true).end().change();
+                            }
+                            $("#notes").val(notes);
+
+                            var dateon = new Date(taskdateon + "T12:00:00");
+                            $( "#calendarmalendar").val($.datepicker.formatDate('yy-mm-dd', dateon));
+                        }
+                        catch(err){
+                            console.log(err);
+                        }
+
+                        $('#assigntask').show();
+                    }
+                } );
+
+            },
+            error: function(err) {
+                return alert("There was an error refreshing job budget lines.");
+            }
+        }
+    );
+
+
+  //  $('body').scrollTo(scrollPos);
+
+
+   // datatablefunctions();
+
+
+    goToByScroll("budget");
+
+}
+
+
+
+
+
+(function() {
+    var BudgetLineitem, BudgetLineitems;
+    var __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+        for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
+        function ctor() { this.constructor = child; }
+        ctor.prototype = parent.prototype;
+        child.prototype = new ctor;
+        child.__super__ = parent.prototype;
+        return child;
+    };
+    BudgetLineitems = (function() {
+        __extends(BudgetLineitems, Backbone.View);
+        function BudgetLineitems() {
+            BudgetLineitems.__super__.constructor.apply(this, arguments);
+        }
+        BudgetLineitems.prototype.events = {
+            "click    #addBudgetLineitem": "addBudgetLineitem"
+        };
+        BudgetLineitems.prototype.initialize = function() {
+            return this.el.find("#budgetitems").children("tr").each(function(i, lineitem) {
+                return new BudgetLineitem({
+                    el: $(lineitem)
+                });
+            });
+        };
+        BudgetLineitems.prototype.addBudgetLineitem = function(e) {
+            var target;
+            target = $(e.currentTarget);
+
+            return jsRoutes.controllers.Lineitems_rd.addBudgetLineitem().ajax({
+                data: {
+                    job: $("#totals").attr("data-job-id"),
+                    plan: $("#totals").attr("data-plan-id")
+
+                },
+                success: function(data) {
+
+                    var _view;
+                    return _view = new BudgetLineitem({
+                        el: $(data).appendTo("#budgetitems")
+                    });
+                    refreshme();
+                },
+                error: function(err) {
+                    return alert("There was an error adding the budget line item! Please refresh the page and try again.");
+                }
+            });
+        };
+        return BudgetLineitems;
+    })();
+    BudgetLineitem = (function() {
+        __extends(BudgetLineitem, Backbone.View);
+        function BudgetLineitem() {
+            BudgetLineitem.__super__.constructor.apply(this, arguments);
+        }
+        BudgetLineitem.prototype.events = {
+            "click    .deleteLineitem": "deleteBudgetLineitem",
+            "focus    .vendor>input": "loadVendorSelect",
+            "focus    .item>input": "loadItemSelect",
+            "change   .quantity,.rate": "updateBudgetLineitem",
+            "dblclick .quantity": "editBudgetLineitem"
+        };
+        BudgetLineitem.prototype.initialize = function() {
+            this.id = this.el.attr("data-lineitem-id");
+            this.vendor = this.el.find("td:eq(1)");
+            this.item = this.el.find("td:eq(2)");
+            this.quantity = this.el.find("td:eq(3) input");
+            this.rate = this.el.find("td:eq(4) input");
+            this.cost = this.el.find("td:eq(5)");
+            this.saleprice = this.el.find("td:eq(6)");
+            return this.recalculate();
+        };
+      BudgetLineitem.prototype.deleteBudgetLineitem = function(e) {
+            e.preventDefault();
+            if (confirm('Are you sure?')) {
+                return jsRoutes.controllers.Lineitems_rd.deleteLineitemNewJob(this.id).ajax({
+                    context: this,
+                    success: function() {
+                        this.quantity.val(0);
+                        this.rate.val(0);
+                        this.recalculate();
+                        return this.el.remove();
+                    },
+                    error: function(err) {
+                        return alert("There was an error deleting the budget line item! Please refresh the page and try again.");
+                    }
+                });
+            }
+        };
+        BudgetLineitem.prototype.loadVendorSelect = function(e) {
+            var context, target, v;
+            target = $(e.currentTarget);
+            v = $();
+            context = this;
+            jsRoutes.controllers.Lineitems_rd.getVendorSelect().ajax({
+                context: this,
+                async: false,
+                data: {
+                    id: $("#totals").attr("data-market-id"),
+                    itemType: context.item.attr("data-item-type-id")
+                },
+                success: function(data) {
+                    v = $(data);
+                    v.find("option[value='" + context.vendor.attr("data-vendor-id") + "']").attr("selected", "selected");
+                    v.change(function() {
+                        context.vendor.attr("data-vendor-id", $(this).val());
+                        context.item.attr("data-item-id", "");
+                        context.item.attr("data-item-type-id", "");
+                        return context.item.children("input").val("");
+                    });
+                    return v.blur(function() {
+                        var input;
+                        input = $("<input/>").css("text-align", "left").val($(this).find("option:selected").html());
+                        return $(this).replaceWith(input);
+                    });
+                },
+                error: function(err) {
+                    return alert("There was an error loading the vendors! Please refresh the page and try again.");
+                }
+            });
+            target.replaceWith(v);
+            return v.focus();
+        };
+        BudgetLineitem.prototype.loadItemSelect = function(e) {
+            var context, i, target;
+            target = $(e.currentTarget);
+            i = $();
+            context = this;
+            jsRoutes.controllers.Lineitems_rd.getItemSelect().ajax({
+                context: this,
+                async: false,
+                data: {
+                    id: context.vendor.attr("data-vendor-id")
+                },
+                success: function(data) {
+                    i = $(data);
+                    i.find("option[value='" + context.item.attr("data-item-id") + "']").attr("selected", "selected");
+                    i.change(function() {
+                        var vendorItem;
+                        vendorItem = $(this).find("option:selected");
+                        context.item.attr("data-item-id", vendorItem.val());
+                        context.item.attr("data-item-type-id", vendorItem.attr("data-item-type-id"));
+                        context.item.children("input").val(vendorItem.html());
+                        context.el.attr("data-rate", vendorItem.attr("data-default-rate"));
+                        context.rate.val(parseFloat(vendorItem.attr("data-default-rate")).toFixed(2));
+                        return context.rate.change();
+                    });
+                    return i.blur(function() {
+                        var input;
+                        input = $("<input/>").css("text-align", "left").val($(this).find("option:selected").html());
+                        return $(this).replaceWith(input);
+                    });
+                },
+                error: function(err) {
+                    return alert("There was an error loading the items! Please refresh the page and try again.");
+                }
+            });
+            target.replaceWith(i);
+            return i.focus();
+        };
+        BudgetLineitem.prototype.editBudgetLineitem = function() {
+            var context, itemTypeId, markup, multiplier, planItems, planUnits, table, task1Budget, task1BudgetInput, task2Budget, task2BudgetInput, task3Budget, task3BudgetInput;
+            context = this;
+            planItems = $("<select/>").html($("<option/>")).change(function() {
+                context.el.attr("data-plan-item-id", $(this).val());
+                return context.rate.change();
+            });
+            $("#planitems").children("div").each(function() {
+                return planItems.append($("<option/>").html($(this).attr("class")).val($(this).attr("data-plan-item")));
+            });
+            planItems.find("option[value='" + this.el.attr("data-plan-item-id") + "']").attr("selected", "selected");
+            planUnits = $("<select/>").html($("<option/>")).append($("<option/>").html("Linear Feet").val("lnft")).append($("<option/>").html("Square Feet").val("sqft")).append($("<option/>").html("Cubic Yards").val("cuyds")).change(function() {
+                context.el.attr("data-units", $(this).val());
+                return context.rate.change();
+            });
+            planUnits.find("option[value='" + this.el.attr("data-units") + "']").attr("selected", "selected");
+            multiplier = $("<input/>").val(this.el.attr("data-multiplier")).change(function() {
+                context.el.attr("data-multiplier", $(this).val());
+                return context.rate.change();
+            });
+            markup = $("<input/>").val(this.el.attr("data-markup")).change(function() {
+                context.el.attr("data-markup", $(this).val());
+                return context.rate.change();
+            });
+            itemTypeId = this.item.attr("data-item-type-id");
+            task1Budget = parseInt(context.el.attr("data-task1-percentage"));
+            task2Budget = parseInt(context.el.attr("data-task2-percentage"));
+            task3Budget = parseInt(context.el.attr("data-task3-percentage"));
+            if (itemTypeId !== '' && task1Budget + task2Budget + task3Budget === 0) {
+                task1Budget = parseFloat($("#1-" + itemTypeId).attr("data-price-multiplier")) * 100;
+                task2Budget = parseFloat($("#2-" + itemTypeId).attr("data-price-multiplier")) * 100;
+                task3Budget = parseFloat($("#3-" + itemTypeId).attr("data-price-multiplier")) * 100;
+            }
+            task1BudgetInput = $("<input/>").css("width", "100px").css("visibility", "hidden").attr("id", "task1Budget").attr("data-lineitem-id", this.id).val(task1Budget).change(function() {
+                var t1b, t2b;
+                t1b = parseInt($(this).val());
+                if (t1b === 100) {
+                    $("#task2Budget").val(0);
+                    $("#budgetSlider").slider("values", 1, 100);
+                    $("#task3Budget").val(0);
+                } else {
+                    t2b = $("#budgetSlider").slider("values", 1);
+                    if (t1b > t2b) {
+                        $("#task2Budget").val(0);
+                        $("#task3Budget").val(100 - t1b);
+                        $("#budgetSlider").slider("values", 1, t1b);
+                    } else {
+                        $("#task2Budget").val(t2b - t1b);
+                    }
+                }
+                $("#budgetSlider").slider("values", 0, t1b);
+            /*    return jsRoutes.controllers.Lineitems_rd.updateLineitem(context.el.attr("data-lineitem-id")).ajax({
+                    context: this,
+                    data: {
+                        task1Percentage: $("#task1Budget").val(),
+                        task2Percentage: $("#task2Budget").val(),
+                        task3Percentage: $("#task3Budget").val()
+                    },
+                    success: function() {
+                        context.el.attr("data-task1-percentage", $("#task1Budget").val());
+                        context.el.attr("data-task2-percentage", $("#task2Budget").val());
+                        context.el.attr("data-task3-percentage", $("#task3Budget").val());
+                        $("#total-" + context.el.find(".item").attr("data-item-type-id")).find("td:eq(3)").html("0");
+                        return context.rate.change();
+                    },
+                    error: function(err) {
+                        return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                    }
+                });*/
+            });
+            task2BudgetInput = $("<input/>").css("width", "100px").css("visibility", "hidden").attr("id", "task2Budget").attr("data-lineitem-id", this.id).val(task2Budget).change(function() {
+                var t1b, t2b;
+                t1b = $("#budgetSlider").slider("values", 0);
+                t2b = parseInt($(this).val());
+                if (t2b === 100) {
+                    $("#task1Budget").val(0);
+                    $("#budgetSlider").slider("values", 0, 0);
+                    $("#task3Budget").val(0);
+                    $("#budgetSlider").slider("values", 2, 100);
+                } else {
+                    t1b = $("#budgetSlider").slider("values", 0);
+                    if (t1b + t2b > 100) {
+                        t1b = 100 - t2b;
+                        $("#task1Budget").val(t1b);
+                        $("#task3Budget").val(0);
+                        $("#budgetSlider").slider("values", 0, t1b);
+                    } else {
+                        $("#task3Budget").val(100 - (t1b + t2b));
+                    }
+                }
+                $("#budgetSlider").slider("values", 1, t2b + t1b);
+            /*    return jsRoutes.controllers.Lineitems_rd.updateLineitem(context.el.attr("data-lineitem-id")).ajax({
+                    context: this,
+                    data: {
+                        task1Percentage: $("#task1Budget").val(),
+                        task2Percentage: $("#task2Budget").val(),
+                        task3Percentage: $("#task3Budget").val()
+                    },
+                    success: function() {
+                        context.el.attr("data-task1-percentage", $("#task1Budget").val());
+                        context.el.attr("data-task2-percentage", $("#task2Budget").val());
+                        context.el.attr("data-task3-percentage", $("#task3Budget").val());
+                        $("#total-" + context.el.find(".item").attr("data-item-type-id")).find("td:eq(3)").html("0");
+                        return context.rate.change();
+                    },
+                    error: function(err) {
+                        return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                    }
+                });*/
+            });
+            task3BudgetInput = $("<input/>").css("width", "100px").css("visibility", "hidden").attr("id", "task3Budget").attr("data-lineitem-id", this.id).val(task3Budget).change(function() {
+                var t1b, t3b;
+                t3b = parseInt($(this).val());
+                $("#task3Budget").val(t3b);
+                if (t3b === 100) {
+                    $("#task1Budget").val(0);
+                    $("#budgetSlider").slider("values", 0, 0);
+                    $("#task2Budget").val(0);
+                } else {
+                    t1b = $("#budgetSlider").slider("values", 0);
+                    if (t1b + t3b > 100) {
+                        $("#task1Budget").val(100 - t3b);
+                        $("#budgetSlider").slider("values", 0, 100 - t3b);
+                        $("#task2Budget").val(0);
+                    } else {
+                        $("#task2Budget").val(100 - (t1b + t3b));
+                    }
+                }
+                $("#budgetSlider").slider("values", 1, 100 - t3b);
+           /*     return jsRoutes.controllers.Lineitems_rd.updateLineitem(context.el.attr("data-lineitem-id")).ajax({
+                    context: this,
+                    data: {
+                        task1Percentage: $("#task1Budget").val(),
+                        task2Percentage: $("#task2Budget").val(),
+                        task3Percentage: $("#task3Budget").val()
+                    },
+                    success: function() {
+                        context.el.attr("data-task1-percentage", $("#task1Budget").val());
+                        context.el.attr("data-task2-percentage", $("#task2Budget").val());
+                        context.el.attr("data-task3-percentage", $("#task3Budget").val());
+                        $("#total-" + context.el.find(".item").attr("data-item-type-id")).find("td:eq(3)").html("0");
+                        return context.rate.change();
+                    },
+                    error: function(err) {
+                        return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                    }
+                });*/
+            });
+            // table = $("<table/>").css("width", "100%").html($("<tr/>").append($("<td/>").html("Tie to: ").append(planItems).append("With units: ").append(planUnits).append("Multiplier:<br/>").append(multiplier).append("<br/>Markup:<br/>").append(markup)).append($("<td/>").html("Task1: ").append(task1BudgetInput).append("<br/>Task2: ").append(task2BudgetInput).append("<br/>Task3: ").append(task3BudgetInput)));
+            table = $("<table/>").css("width", "100%").html($("<tr/>").append($("<td/>").html("Tie to: ").append(planItems).append("With units: ").append(planUnits).append("Multiplier:<br/>").append(multiplier).append("<br/>Markup:<br/>").append(markup)));
+            return $("#dialog").html(table).append("<br/><br/>")/*.append($("<div/>").attr("id", "budgetSlider").slider({
+                range: true,
+                min: 0,
+                max: 100,
+                values: [task1Budget, task1Budget + task2Budget],
+                slide: function(e, ui) {
+                    $("#task1Budget").val(ui.values[0]);
+                    $("#task2Budget").val(ui.values[1] - ui.values[0]);
+                    return $("#task3Budget").val(100 - ui.values[1]);
+                },
+                stop: function(e, ui) {
+                    return $("#task1Budget").change();
+                }
+            }))*/.dialog("open");
+        };
+        BudgetLineitem.prototype.updateBudgetLineitem = function(e) {
+            var q, target;
+            target = $(e.currentTarget);
+            if (target.hasClass("rate")) {
+                this.el.attr("data-rate", target.val());
+                q = 0.0;
+                if (typeof this.el.attr("data-units") !== "undefined" && this.el.attr("data-units") !== "") {
+                    if (typeof this.el.attr("data-plan-item-id") !== "undefined" && this.el.attr("data-plan-item-id") !== "") {
+                        if (($("#planitems").find("div[data-plan-item='" + this.el.attr("data-plan-item-id") + "']").length)) {
+                            q += parseFloat($("#planitems").find("div[data-plan-item='" + this.el.attr("data-plan-item-id") + "']>.planitemtotals ." + this.el.attr("data-units")).html());
+                        } else {
+                            this.el.attr("data-plan-item-id", "");
+                            this.el.attr("data-units", "");
+                        }
+                    } else {
+                        q += parseFloat($("#total" + this.el.attr("data-units")).html());
+                    }
+                    if (parseFloat(this.el.attr("data-multiplier"))) {
+                        q *= parseFloat(this.el.attr("data-multiplier"));
+                    }
+                    this.quantity.val(this.roundToHalf(q));
+                }
+            } else if (target.hasClass("quantity")) {
+                this.quantity.val(this.roundToHalf(parseFloat(this.quantity.val())));
+                this.el.attr("data-plan-item-id", "");
+                this.el.attr("data-units", "");
+            }
+            return jsRoutes.controllers.Lineitems_rd.updateLineitem(this.id).ajax({
+                context: this,
+                async: false,
+                data: {
+                    vendor: this.vendor.attr("data-vendor-id"),
+                    item: this.item.attr("data-item-id"),
+                    itemType: this.item.attr("data-item-type-id"),
+                    planItem: this.el.attr("data-plan-item-id"),
+                    units: this.el.attr("data-units"),
+                    multiplier: this.el.attr("data-multiplier"),
+                    markup: this.el.attr("data-markup"),
+                    quantity: this.quantity.val(),
+                    rate: this.el.attr("data-rate"),
+                    saleprice: parseFloat(this.quantity.val()) * parseFloat(this.el.attr("data-rate")) / (1 - parseFloat(this.el.attr("data-markup")) / 100)
+                },
+                success: function() {
+                    if (!target.hasClass("name") && !target.hasClass("units")) {
+                        return this.recalculate();
+                    }
+                },
+                error: function(err) {
+                    return alert("There was an error updating the budget line item! Please refresh the page and try again.");
+                }
+            });
+        };
+        BudgetLineitem.prototype.recalculate = function() {
+            var budgetTotal, fprofit, i, left, mprofit, pctprofit, ppsqft, prevTotal, sale, salecosttotal, temp, total, totalsqft, used;
+            this.rate.val(parseFloat(this.el.attr("data-rate")).toFixed(2));
+            this.el.attr("data-cost", parseFloat(this.quantity.val()) * parseFloat(this.el.attr("data-rate")));
+            this.el.attr("data-sale", parseFloat(this.el.attr("data-cost")) / (1 - parseFloat(this.el.attr("data-markup")) / 100));
+            this.cost.html(parseFloat(this.el.attr("data-cost")).toFixed(2));
+            this.saleprice.html(parseFloat(this.el.attr("data-sale")).toFixed(2));
+            total = 0;
+            salecosttotal = 0;
+            sale = 0;
+            temp = {};
+            $("#budgetitems").children("tr").each(function(i, c) {
+                var itemCost;
+                i = $(c).find(".item").attr("data-item-type-id");
+                if (typeof temp[i] === "undefined") {
+                    temp[i] = 0;
+                }
+                itemCost = parseFloat($(c).find("td:eq(3) input").val()) * parseFloat($(c).attr("data-rate"));
+                temp[i] += itemCost;
+                total += itemCost;
+                sale += itemCost / (1 - parseFloat($(c).attr("data-markup")) / 100);
+                return salecosttotal += parseFloat($(c).attr("data-sale"));
+            });
+            for (i in temp) {
+                budgetTotal = $("#total-" + i).find("td:eq(3)");
+                prevTotal = budgetTotal.html();
+                budgetTotal.html(temp[i].toFixed(2));
+                if (budgetTotal.length && budgetTotal.html() !== prevTotal) {
+                    if (($(".actualLineitem").length)) {
+                        $(".actualLineitem:first").find(".rate").change();
+                    } else {
+                        $("#actual").find("." + budgetTotal.attr("class").split(" ")[1]).each(function(j, total) {
+                            var itemTypeId, taskBudgetTotal, taskTypeId;
+                            if ($(total).hasClass("hasClass")) {
+                                taskTypeId = $(total).parent().attr("id").split("-")[0];
+                                itemTypeId = $(total).parent().attr("id").split("-")[1];
+                                taskBudgetTotal = 0;
+                                $("#budgetitems td[data-item-type-id='" + itemTypeId + "']").each(function(k, lineitem) {
+                                    return taskBudgetTotal += parseFloat($(lineitem).parent().attr("data-task" + taskTypeId + "-percentage")) * 0.01 * parseFloat($(lineitem).parent().attr("data-cost"));
+                                });
+                                $(total).html(taskBudgetTotal.toFixed(2));
+                                return $(total).parent().find(".left").html((parseFloat($(total).html()) - parseFloat($(total).parent().find(".used").html())).toFixed(2));
+                            }
+                        });
+                        used = 0;
+                        $(".task ." + budgetTotal.attr("class").split(" ")[1]).parent().find(".used").each(function(j, u) {
+                            return used += parseFloat($(u).html());
+                        });
+                        budgetTotal.parent().find(".used").html(used.toFixed(2));
+                        budgetTotal.parent().find(".left").html((parseFloat(budgetTotal.html()) - used).toFixed(2));
+                    }
+                }
+            }
+            if ($("#saleitems>table>tbody>tr").length === 0) {
+                $("#saleprice>span").html(sale.toFixed(2));
+                $("#totals").attr("data-sale", sale);
+            } else {
+                sale = parseFloat($("#totals").attr("data-sale"));
+            }
+            $("#actual .saleprice").html(sale.toFixed(2));
+            $("#totals").attr("data-cost", total);
+            ppsqft = 0;
+            totalsqft = parseFloat($("#totalsqft").html());
+            if (totalsqft > 0) {
+                ppsqft = sale / totalsqft;
+            }
+            $("#totals").attr("data-ppsqft", ppsqft);
+            pctprofit = 0;
+            if (sale > 0) {
+                pctprofit = 100 * (1 - total / sale);
+            }
+            $("#ppsqft").html(ppsqft.toFixed(2));
+            $("#totalcost").html(total.toFixed(2));
+            $("#totalsale").html(salecosttotal.toFixed(2));
+            if (($("#actual").length)) {
+                $("#actual .overhead").html((sale * parseFloat($("#actual").attr("data-op-multiplier"))).toFixed(2));
+                if ($("#actual .cost").html() !== "") {
+                    $("#actual .markup").html((parseFloat($("#actual .cost").html()) / sale).toFixed(2));
+                }
+                if ($("#actual .actualcost").html() !== "") {
+                    $("#actual .actualmarkup").html((parseFloat($("#actual .actualcost").html()) / sale).toFixed(2));
+                }
+                left = parseFloat($("#actual .diffcost").html());
+                mprofit = ((sale-total)>0)?(left>0)?((sale-total)*.15+left*.5):((sale-total)*.15+left):0;
+                fprofit = ((sale-total)>0)?(left>0)?((sale-total)*.85+left*.5):((sale-total)*.85):(sale-total);
+                $("#managerprofit").html(mprofit.toFixed(2));
+                return $("#ffiprofit").html(fprofit.toFixed(2));
+            }
+
+
+        };
+        BudgetLineitem.prototype.roundToHalf = function(converted) {
+            var decimal;
+            if (converted < .5) {
+                return converted.toFixed(1);
+            } else {
+                decimal = converted - parseInt(converted, 10);
+                decimal = Math.round(decimal * 10);
+                if (decimal === 5) {
+                    return parseInt(converted, 10) + 0.5;
+                } else {
+                    if (decimal < 3 || decimal > 7) {
+                        return Math.round(converted);
+                    } else {
+                        return parseInt(converted, 10) + 0.5;
+                    }
+                }
+            }
+        };
+        return BudgetLineitem;
+    })();
+    $(function() {
+        var lineitems;
+        return lineitems = new BudgetLineitems({
+            el: $("#budget")
+        });
+    });
+}).call(this);
+
+
+

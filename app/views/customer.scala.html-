@@ -1,0 +1,121 @@
+@(user: User, saleitems: List[Saleitem])
+@stylesheets = @{Seq(
+)}
+@scripts = @{Seq(
+)}
+@frame("Invoice Errors",user,"customers",stylesheets,scripts) {
+@if(!saleitems.isEmpty){
+<script>
+    $(function(){
+        $(".invoice").click(function(){
+            target = $(this);
+            so = "";
+            if (target.hasClass("invoice")) {
+                so = prompt("Please enter a Sales Order #, or just click OK to add line automatically.", "...");
+            }
+            jsRoutes.controllers.Saleitems.updateSaleitem(target.parent().parent().attr("data-saleitem-id")).ajax({
+                data: {so:so},
+                success: function(){
+                    target.replaceWith($("<span/>").attr("class","salesorder").html(so));
+                }
+            });
+        });
+        $(".addToQB").click(function(){
+            target = $(this);
+            type = target.attr("data-type");
+            if ((type!="job"&&type!="subdivision")
+                ||(type=="job"&&confirm("This job's customer and/or subdivision MAY be added to QuickBooks if they aren't already linked. Are you sure?"))
+                ||(type=="subdivision"&&confirm("This subdivision's customer MAY be added to QuickBooks if it isn't already linked. Are you sure?"))) {
+                jsRoutes.controllers.Lineitems.addToQuickbooks().ajax({
+                    data: {id:target.attr("data-id"),type:type},
+                    success: function(){
+                        target.replaceWith("...");
+                    }
+                });
+            }
+        });
+    });
+</script>
+<h1>QuickBooks Errors:</h1>
+<table style="width:760px;">
+    <thead>
+    <tr>
+        <th>Job</th>
+        <th>Sale Item</th>
+        <th>Quantity</th>
+        <th>Units</th>
+        <th>Rate</th>
+        <th>Total</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @saleitems.map { saleitem =>
+    <tr data-saleitem-id="@saleitem.id">
+        <td>@saleitem.job.id</td>
+        <td>@saleitem.name</td>
+        <td>@("%.1f".format(saleitem.quantity))</td>
+        <td>@saleitem.units</td>
+        <td>$@("%.2f".format(saleitem.rate))</td>
+        <td>$@("%,.2f".format(saleitem.quantity*saleitem.rate))</td>
+        @if(user.authority >= Secured.MANAGER && saleitem.job != null){<td style="width: 52px;text-align:center;">
+        @if(saleitem.qb_refnumber!=null && saleitem.qb_refnumber!="" && saleitem.qb_refnumber!="ERR"){
+        <span class="salesorder">@Html(saleitem.qb_refnumber)</span>
+        }
+        @if(saleitem.qb_refnumber==null||saleitem.qb_refnumber==""||saleitem.qb_refnumber=="ERR"){
+        <button class="invoice">INV</button>
+        }
+    </td>}
+    </tr>
+    }
+    </tbody>
+</table>
+<br />
+<h1>Objects missing from QuickBooks:</h1>
+<table style="width:760px;">
+    <tbody>
+    @saleitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.subdivision!=null).map(_.subdivision).toList.distinct.filter(_.customer!=null).map(_.customer).toList.distinct.filter(_.qb_listid==null).map{ customer =>
+    <tr>
+        <td>Customer</td>
+        <td>@customer.name</td>
+        <td></td>
+        <td></td>
+        <td><button data-id="@customer.id" data-type="customer" class="addToQB">ADD</button></td>
+    </tr>
+    }
+    @saleitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.subdivision!=null).map(_.subdivision).toList.distinct.filter(_.qb_listid==null).map{ subdivision =>
+    <tr>
+        <td>Subdivision</td>
+        <td>@subdivision.customer.name</td>
+        <td>@subdivision.name</td>
+        <td></td>
+        <td><button data-id="@subdivision.id" data-type="subdivision" class="addToQB">ADD</button></td>
+    </tr>
+    }
+    @saleitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.qb_listid==null).map{ job =>
+    <tr>
+        <td>Job</td>
+        <td>@job.subdivision.customer.name</td>
+        <td>@job.subdivision.name</td>
+        <td>@job.id Lot @job.lot</td>
+        <td><button data-id="@job.id" data-type="job" class="addToQB">ADD</button></td>
+    </tr>
+    }
+    @saleitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.item==null).map{ job =>
+    <tr>
+        <td colspan="5">Please select a Sale Item for <a href="/jobs/@job.id">Job @job.id</a></td>
+    </tr>
+    }
+    @saleitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.item!=null).map(_.item).toList.distinct.filter(_.qb_listid==null).map{ item =>
+    <tr>
+        <td>Item</td>
+        <td></td>
+        <td></td>
+        <td>@item.name</td>
+        <td><button data-id="@item.id" data-type="item" class="addToQB">ADD</button></td>
+    </tr>
+    }
+    </tbody>
+</table>
+}
+}

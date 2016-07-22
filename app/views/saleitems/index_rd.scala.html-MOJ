@@ -1,0 +1,18 @@
+@(user: User, saleitems: List[Saleitem])
+<table>
+    <thead>
+    <th colspan="2" style="width: 260px;text-align:left;">
+        @if(user.authority >= Secured.MANAGER){<a style="cursor: pointer;" id="addSaleitem">add sale item</a>}
+    </th>
+    <th style="width: 60px;text-align:right;">quantity</th>
+    <th style="width: 48px;text-align:right;">units</th>
+    @if(user.authority >= Secured.MANAGER){<th style="width: 60px;text-align:right;">rate</th>}
+    @if(user.authority >= Secured.MANAGER){<th style="width: 96px;text-align:right;">total</th>}
+    @if(user.authority >= Secured.MANAGER){<th style="width: 52px;text-align:center;">SO</th>}
+    </thead>
+    <tbody>
+    @saleitems.map { saleitem =>
+    @views.html.saleitems.saleitem_rd(user,saleitem)
+    }
+    </tbody>
+</table>

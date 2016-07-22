@@ -1,0 +1,104 @@
+@(user: User, markets: List[Market], vendors: List[Vendor], date: String, labors: List[Labor], labvendors: List[Vendor], market: String, vendor: String, vendorhours : String)
+
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("EEE MMM dd yyyy");f.format(d)}
+
+@formatyyyymmddDate(d: Date) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(d)}
+@getDay(d: Integer) = @{val cal = Calendar.getInstance();
+        val splitDate = date.split("-");
+        cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+        cal.add(Calendar.DATE,d+1-cal.get(Calendar.DAY_OF_WEEK));cal}
+@getDayInWeek(t: Task) = @{val f = new java.text.SimpleDateFormat("EEE");f.format(t.date)}
+@getYearMonthDay(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i).getTime())}
+@getYearMonthDayDate(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i))}
+
+
+<table id="calendar" style="width:100%;">
+    <thead>
+    <tr>
+
+        @for(a <- 1 to 6) {
+        <th style="width:16%;">@formatDate(getDay(a).getTime())</th>
+        }
+
+    </tr>
+    </thead>
+
+    <tbody>
+
+                    <tr>
+
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(1)">
+                            <label> <span>Bill date</span> </label>
+                            <br>
+                            <input type="text" class ="form-control startdatepicker" id="startdatepicker1">
+                            <br>
+                            <input  type="text" name="" value="" class="form-control hours"  data-date="@getYearMonthDay(1)" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <input   type="text" name="" value="@vendorhours" class="form-control hourrate" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <button class="btn btn-success" type="submit">Add</button>
+                            <input   type="note" name="" value="" placeholder="note" class="form-control note" style="width: 190px; float: left; margin-right: 5px;"/>
+                        </ol>
+                        </td>
+
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(2)">
+                            <label> <span>Bill date</span> </label>
+                            <br>
+                            <input type="text" class ="form-control startdatepicker" id="startdatepicker2">
+                            <br>
+                            <input   type="text" name="" value="" class="form-control hours"  data-date="@getYearMonthDay(2)" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <input   type="text" name="" value="@vendorhours" class="form-control hourrate" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <button class="btn btn-success" type="submit">Add</button>
+                            <input   type="note" name="" value="" placeholder="note" class="form-control note" style="width: 190px; float: left; margin-right: 5px;"/>
+
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(3)">
+                            <label> <span>Bill date</span> </label>
+                            <br>
+                            <input type="text" class ="form-control startdatepicker" id="startdatepicker3">
+                            <br>
+                            <input  type="text" name="" value="" class="form-control hours"  data-date="@getYearMonthDay(3)" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <input   type="text" name="" value="@vendorhours" class="form-control hourrate" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <button class="btn btn-success" type="submit">Add</button>
+                            <input   type="note" name="" value="" placeholder="note" class="form-control note" style="width: 190px; float: left; margin-right: 5px;"/>
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(4)">
+                            <label> <span>Bill date</span> </label>
+                            <br>
+                            <input type="text" class ="form-control startdatepicker" id="startdatepicker4">
+                            <br>
+                            <input   type="text" name="" value="" class="form-control hours"  data-date="@getYearMonthDay(4)" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <input   type="text" name="" value="@vendorhours" class="form-control hourrate" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <button class="btn btn-success" type="submit">Add</button>
+                            <input   type="note" name="" value="" placeholder="note" class="form-control note" style="width: 190px; float: left; margin-right: 5px;"/>
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(5)">
+                            <label> <span>Bill date</span> </label>
+                            <br>
+                            <input type="text" class ="form-control startdatepicker" id="startdatepicker5">
+                            <br>
+                            <input   type="text" name="" value="" class="form-control hours"  data-date="@getYearMonthDay(5)" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <input   type="text" name="" value="@vendorhours" class="form-control hourrate" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <button class="btn btn-success" type="submit">Add</button>
+                            <input   type="note" name="" value="" placeholder="note" class="form-control note" style="width: 190px; float: left; margin-right: 5px;"/>
+                        </ol>
+                        </td>
+                        <td style="vertical-align: top;"><ol data-date="@getYearMonthDay(6)">
+                            <label> <span>Bill date</span> </label>
+                            <br>
+                            <input type="text" class ="form-control startdatepicker" id="startdatepicker6">
+                            <br>
+                            <input   type="text" name="" value="" class="form-control hours"  data-date="@getYearMonthDay(6)" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <input   type="text" name="" value="@vendorhours" class="form-control hourrate" style="width: 65px; float: left; margin-right: 5px;"/>
+                            <button class="btn btn-success" type="submit">Add</button>
+                            <input   type="note" name="" value="" placeholder="note" class="form-control note" style="width: 190px; float: left; margin-right: 5px;"/>
+                        </ol>
+                        </td>
+
+
+                    </tr>
+
+
+    </tbody>
+</table>

@@ -1,0 +1,18 @@
+@(c: Plan)
+
+@if(c.id != null){
+<tr data-user-id="@c.id">
+
+    <td><a class="deleteUser"><i class="fa fa-trash-o"></i></a></td>
+        @if(c.name != null){
+            <td><a href="#" class="clicka">@c.name</a></td>
+            }else{<td>no name</td>}
+
+        @if(!Option(c.customer).isEmpty){
+            @if(!Option(c.customer.id).isEmpty){
+                @if(!Option(Customer.find.byId(c.customer.id)).isEmpty){
+                    <td>@Customer.find.byId(c.customer.id).name </td>}else{<td></td>}}
+        }else{<td></td>}
+</tr>
+}
+

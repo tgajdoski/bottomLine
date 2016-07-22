@@ -1,0 +1,74 @@
+@(user: User, lineitems: List[Lineitem], actuallineitems: List[Lineitem], jobassigns: List[Assigns], users: List[User], tasks: List[Task])@* *@
+
+
+<div>
+        <button id="buttonaddign">Assign</button>
+        <input type="checkbox" id="groupcheck" checked>  group selection by planned dates
+        @if(user.authority >= 6){<button id="buttonverifyall" style="float:right;">verify all</button>}
+</div>
+<table id="jobbudgetlists" class="display">
+
+    <thead>
+    <tr>
+  @*      <th style="width:24px;">Position</th>*@
+        <th style="width:24px;">@if(user.authority >= Secured.MANAGER){<a id="addBudgetLineitem">add</a>}</th>
+        <th style="width:200px;">Vendor</th>
+        <th style="width:200px;">Item</th>
+        <th style="width:50px;">Qty</th>
+        @if(user.authority >= Secured.MANAGER){<th style="width:50px;">Rate</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:40px;">Cost</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:40px;">Sale</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:95px;">Planned</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">AssignTo</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Status</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:9px;">ActDate</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Act Total</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Leftover</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="display:none;">Position</th>}
+    </tr>
+    </thead>
+    <tbody id="budgetitems">
+    @lineitems.map { li =>
+            @views.html.budgets.lineitem_new_job(user,li , actuallineitems, jobassigns, users, tasks.distinct)
+    }
+
+    </tbody>
+</table>
+<table style="border-top:1px solid #333;">
+    <tbody>
+    <tr>
+        <td style="width:37px;"></td>
+        @if(user.authority >= Secured.MANAGER){<td style="width:200px;">TOTALS</td>}
+        <td style="width:200px;"></td>
+        <td style="width:50px;"></td>
+        <td style="width:50px;"></td>
+        @if(user.authority >= Secured.MANAGER){<td style="width:40px; text-align: right;" id="totalcost"></td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:40px; text-align: right;"  id="totalsale"></td>}
+        <td style="width:95px;"></td>
+        <td style="width:67px;"></td>
+        <td style="width:60px;"></td>
+        <td style="width:95px;"></td>
+        @if(user.authority >= Secured.MANAGER){<td style="width:55px; text-align: right;"  id="totalact"></td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:55px; text-align: right;"  id="totaldiff"></td>}
+
+    </tr>
+    </tbody>
+</table>
+<br>
+<br>
+
+<table style="border-top:1px solid #333; float: right">
+    <tbody>
+        <tr style="width:400px;">
+            <td style="width:180px;">
+                <label class="mylabel">Reschedule job start date</label>
+            </td>
+            <td style="width:200px;">
+                <input type="text" class ="form-control" id="jobstartdatepicker"  style="width: 120px;">
+            </td>
+            <td style="width:100px;">
+                <input value="Reschedule" type = "submit" id="buttonReschedule" class="btn btn-success">
+            </td>
+        </tr>
+    </tbody>
+</table>

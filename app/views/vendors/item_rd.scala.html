@@ -1,0 +1,48 @@
+@(user: User,  formItem: Form[Item], item: Item)
+    @import views.html.helper.FieldConstructor
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.7.1,js",
+        "jquery-1.9.0.min.js",
+        "jquery-play-1.7.1.js"
+    )}
+
+
+    @implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+    @frame_rd("vendor",user,"new vendor",stylesheets,scripts) {
+        <div class="container theme-showcase" role="main">
+            <div class="box-bodyX">
+                <table cellspacing="0">
+                    <tr>
+                    @helper.form(action = routes.Vendors_rd.updateItem()) {
+                        <fieldset class="step2">
+                            <div class="title">Item  <label class="custdivselected">@item.name<label> </div>
+                            <br>
+                            <input type="hidden" name="id" value="@formItem("id").value"/>
+                            @helper.select(
+                                formItem("itemType.id"),
+                                options = helper.options(ItemType.options()),
+                                '_label -> "item type",
+                                '_showConstraints -> false
+                            )
+                            @helper.inputText(formItem("name"), '_showConstraints -> false)
+
+                            <input type="hidden" name="id"  value="@item.id">
+                            <input type="submit" class="btn btn-success" value="Save">
+                        </fieldset>
+                    }
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+    }
+

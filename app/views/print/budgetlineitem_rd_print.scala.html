@@ -1,0 +1,97 @@
+@(user: User, lineitem: Lineitem, actuallineitems: List[Lineitem], jobassigns: List[Assigns], users: List[User])
+@getYearMonthDay(li: Lineitem) = @{val f = new java.text.SimpleDateFormat("MM-dd-yyyy");f.format(li.daysdate)}
+
+    @getshortYearMonthDay(li: Lineitem) = @{val f = new java.text.SimpleDateFormat("MM-dd-yy");f.format(li.daysdate)}
+
+    @getAssigns(li: Lineitem) = @{
+        if (li.task!= null){
+            jobassigns.find(_.jobid == li.job.id).getOrElse(null)
+            jobassigns.find(_.taskid == li.task.id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+    @getAssignUser(li: Lineitem) = @{
+        if (getAssigns(li)!= null){
+             getAssigns(li).fieldmanagerid
+        }
+        else
+            0
+    }
+
+    @getUserById(id: Long ) = @{
+        if (id!= null){
+            users.find(_.id == id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+    @getActualTotals(li: Lineitem) = @{
+        if (li.task!= null && li.task.date !=null)
+            if (li.itemType !=null &&  li.itemType.id !=1)
+                actuallineitems.filter(x => (x.vendor == li.vendor && x.item == li.item && x.task.date == li.task.date)).foldLeft(0.0)(_ + _.saleprice)
+            else
+                actuallineitems.filter(x => (x.position.longValue()  == li.id && x.task.date == li.task.date)).foldLeft(0.0)(_ + _.saleprice)
+        else
+            if (li.itemType !=null && li.itemType.id !=1)
+                actuallineitems.filter(x => (x.vendor == li.vendor && x.item == li.item)).foldLeft(0.0)(_ + _.saleprice)
+            else
+                actuallineitems.filter(x => (x.position.longValue()  == li.id)).foldLeft(0.0)(_ + _.saleprice)
+    }
+
+    @formatDate(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+    @getparsedhml( t: Task) = @{
+            <div class="calTask" data-task-id="lineitem.task.id"  data-task-type-id="lineitem.task.taskType.id" data-date="formatDate(lineitem.task)"
+            data-crew="lineitem.task.crew" data-card-order="lineitem.task.cardOrder" data-notes="lineitem.task.notes">
+
+                <a class="editTask"></a>
+                {formatDate(t)}
+            </div>
+         /*   </tr>*/
+    }
+
+    @quote(s: Long) = @{"\"" + s.toString() + "\""}
+    @quotestr(s: String) = @{"\"" + s.toString() + "\""}
+    @quoteint(s: Int) = @{"\"" + s.toString() + "\""}
+    @quotemanager(t: Task) = @{(if(t.managers != null && t.managers.size() > 0 && t.managers.get(0).user!=null) t.managers.get(0).user.id.toString() else "0")}
+    @getredstyle() = {color: #ff0000;@*border: 1px solid #ff0000;*@}
+    @getgreenstyle() = {border: 1px solid #006400;}
+
+<tr id = "@lineitem.id"  data-lineitem-id="@lineitem.id" class="budgetLineitem @(if (lineitem.itemType != null && lineitem.itemType.id == 1) "gradeA")" data-units="@lineitem.units"
+data-multiplier="@lineitem.multiplier" data-markup="@lineitem.markup" data-rate="@lineitem.rate"
+data-item-type-id ="@(if (lineitem.itemType != null ) lineitem.itemType.id else ' ')"
+data-plan-item-id="@(if (lineitem.planItem != null) lineitem.planItem.id)"
+data-task1-percentage="@(if (!lineitem.percentages.filter(_.taskType.id==1).isEmpty) lineitem.percentages.filter(_.taskType.id==1).head.percentage else '0')"
+data-task2-percentage="@(if (!lineitem.percentages.filter(_.taskType.id==2).isEmpty) lineitem.percentages.filter(_.taskType.id==2).head.percentage else '0')"
+data-task3-percentage="@(if (!lineitem.percentages.filter(_.taskType.id==3).isEmpty) lineitem.percentages.filter(_.taskType.id==3).head.percentage else '0')">
+    <td style="width:24px;">@if(user.authority >= Secured.MANAGER){<a class="deleteLineitem">x</a>}</td>
+    <td style="width:200px;" data-vendor-id="@(if (lineitem.vendor != null) lineitem.vendor.id)" class="vendor"><input style="text-align:left;" value="@(if (lineitem.vendor != null) lineitem.vendor.name)"/></td>
+    <td style="width:200px; @(if (lineitem.itemType != null && lineitem.itemType.id == 1) getgreenstyle())" class="item" data-item-id="@(if (lineitem.item != null) lineitem.item.id)"><input style="text-align:left;" value="@(if (lineitem.item != null) lineitem.item.name)"/></td>
+    <td style="width:40px;"><input class="quantity"  style="text-align:left; width:50px;" value="@("%.1f".format(lineitem.quantity))"/></td>
+    @if(user.authority >= Secured.MANAGER){<td style="width:40px;"><input class="rate" style="text-align:left; width:50px;" value="@("%,.2f".format(lineitem.rate))"/></td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:40px;" class="total">@("%,.2f".format(lineitem.saleprice))</td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:40px;" class="saleprice">@("%,.2f".format(lineitem.saleprice))</td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:95px;" class="planned">@(if (lineitem.daysdate != null) getshortYearMonthDay(lineitem) else ' ')</td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:60px;" class="assingedTo" data-task-id="@(if (lineitem != null && lineitem.task != null) lineitem.task.id else ' ')">@(if (lineitem != null && lineitem.task != null) (if(getAssigns(lineitem)!= null && getAssignUser(lineitem) != 0) getUserById(getAssigns(lineitem).fieldmanagerid).name else " ") else " ")</td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:60px;" class="verify" data-line-id="@(if (lineitem != null && lineitem.id != null) lineitem.id else ' ')">@(if (lineitem != null && lineitem.verify != 1) {<button type="button" class="verifybutt">verify</button>} else {"verified"})</td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:90px;" class="actualsdate" data-line-id="@(if (lineitem != null && lineitem.id != null) lineitem.id else ' ')">
+        @(if(lineitem.task != null && lineitem.task.id != null)
+        <div style="text-align:right;width:90px;" class="calTask" data-task-id={quote(lineitem.task.id)}
+        data-task-type-id={quote(lineitem.task.taskType.id)} data-date={quotestr(formatDate(lineitem.task))}
+        data-crew={quoteint(lineitem.task.crew)} data-card-order={quoteint(lineitem.task.cardOrder)}
+        data-manager-id={quotemanager(lineitem.task)}
+        data-notes={quotestr(lineitem.task.notes)}>
+            <a class="editTasks">
+                <img src="/assets/images/calendar.gif"/>{formatDate(lineitem.task)}
+            </a>
+
+        </div>
+                )
+    </td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:60px;" class="actualtotal">@(if (lineitem != null && lineitem.vendor != null && lineitem.item != null) ("%,.2f".format(  getActualTotals(lineitem))) else "NA")</td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:60px;" class="actualdiff"><button type="button" style=" @(if(lineitem.saleprice - getActualTotals(lineitem) < 0) getredstyle()) " class="checkActuals" data-line-id="@(if (lineitem != null && lineitem.id != null) lineitem.id else ' ')"  data-market-id="@(if (lineitem != null && lineitem.job != null && lineitem.job.market != null) lineitem.job.market.id else ' ')" data-task-id="@(if (lineitem != null && lineitem.task != null) lineitem.task.id else ' ')"  data-job-id="@(if (lineitem != null && lineitem.job != null) lineitem.job.id else ' ')" data-line-type="@(if (lineitem != null && lineitem.itemType != null) lineitem.itemType.name else ' ')" data-line-type-id="@(if (lineitem != null && lineitem.itemType != null) lineitem.itemType.id else ' ')">@("%,.2f".format(lineitem.saleprice - getActualTotals(lineitem)))</button></td>}
+
+</tr>

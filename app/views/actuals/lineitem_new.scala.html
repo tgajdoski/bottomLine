@@ -1,0 +1,52 @@
+@(user: User, lineitem: Lineitem,  jobassigns: List[Assigns], users: List[User])
+
+@formatDate(t: Task) = @{val f = new java.text.SimpleDateFormat("MM-dd");f.format(t.date)}
+
+
+ @getYearMonthDay(li: Lineitem) = @{val f = new java.text.SimpleDateFormat("MM-dd-yyyy");f.format(li.daysdate)}
+
+    @getAssigns(li: Lineitem) = @{
+        if (li.task!= null){
+            jobassigns.find(_.jobid == li.job.id).getOrElse(null)
+            jobassigns.find(_.taskid == li.task.id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+      @getAssignUser(li: Lineitem) = @{
+        if (getAssigns(li)!= null){
+             getAssigns(li).fieldmanagerid
+        }
+        else
+            0
+    }
+
+    @getUserById(id: Long ) = @{
+        if (id!= null){
+            users.find(_.id == id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+
+
+<tr data-lineitem-id="@lineitem.id" class="actualLineitem" data-units="@lineitem.units"
+    data-multiplier="@lineitem.multiplier" data-markup="@lineitem.markup"
+    data-plan-item-id="@(if (lineitem.planItem != null) lineitem.planItem.id)" data-notes="@lineitem.notes"
+    data-task-id="@(if (lineitem.task != null) lineitem.task.id)" data-po="@(if (lineitem.qb_refnumber!=null && lineitem.qb_refnumber!="") lineitem.qb_refnumber)">
+    <td style="width:14px;border-top:1px dotted #333;">@if(user.authority >= Secured.MANAGER){<a class="deleteLineitemactual">x</a>}</td>
+    <td style="width:50px;border-top:1px dotted #333;"><span class="notes" style="color:@(if (lineitem.notes != "") "#F00" else "#000")" title="Last updated by @(if (lineitem.user != null) lineitem.user.username else "no one") at @lineitem.updateTimestamp">@(if(lineitem.task!=null) formatDate(lineitem.task) else "NOTE")</span></td>
+    <td style="width:173px;border-top:1px dotted #333;" data-vendor-id="@(if (lineitem.vendor != null) lineitem.vendor.id)" class="vendor"><input style="text-align:left;" value="@(if (lineitem.vendor != null) lineitem.vendor.name)"/></td>
+    <td style="width:154px;border-top:1px dotted #333;" data-item-id="@(if (lineitem.item != null) lineitem.item.id)"
+        data-item-type-id="@(if (lineitem.itemType != null) lineitem.itemType.id)"
+        class="item"><input style="text-align:left;" value="@(if (lineitem.item != null) lineitem.item.name)"/></td>
+    <td style="width:62px;border-top:1px dotted #333;"><input class="quantity" value="@("%.1f".format(lineitem.quantity))"/></td>
+    <td style="width:32px;border-top:1px dotted #333;">&nbsp;&nbsp;@@&nbsp;&nbsp;&nbsp;&nbsp;$</td>
+    <td style="width:47px;border-top:1px dotted #333;"><input style="text-align:left;" class="rate" value="@("%.2f".format(lineitem.rate))"/></td>
+    <td style="width:38px;border-top:1px dotted #333;">&nbsp;per&nbsp;</td>
+    <td style="width:46px;border-top:1px dotted #333;" class="units">@lineitem.units</td>
+    <td style="width:62px;border-top:1px dotted #333;text-align:right;" class="total"></td>
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:100px;" class="assingedTo" data-task-id="@(if (lineitem != null && lineitem.task != null) lineitem.task.id else ' ')">@(if (lineitem != null && lineitem.task != null) (if(getAssigns(lineitem)!= null && getAssignUser(lineitem) != 0) getUserById(getAssigns(lineitem).fieldmanagerid).name else " ") else " ")</td>}
+</tr>

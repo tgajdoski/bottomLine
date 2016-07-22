@@ -1,0 +1,336 @@
+@(user: User, vendors: List[Vendor], allitemsdivlist: List[Item], markets: List[Market], acctypes: List[AccountType])
+
+
+@*<link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">*@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+   "jquery.dataTables.css",
+    "theme.css"
+)}
+@scripts = @{Seq(
+    "jquery.validate.js",
+    "jquery.dataTables.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "managevend.js"
+   )}
+
+
+<div class="col-sm-user">
+    @frame_rd("Vendor Administration",user,"vendors",stylesheets,scripts){
+        <div class="box-body">
+            <table id="vendors" class="display">
+                <thead>
+                <tr>
+                    <th><a href="#" id ="linkaddnewvendor">ADD NEW</a></th>
+                    <th>id</th>
+                    <th><div class="title">Vendor</div></th>
+                    <th><div class="title">Market</div></th>
+                    <th><div class="title">Items</div></th>
+                    <th><div class="title">Emp</div></th>
+                    <th><div class="title">1099</div></th>
+                    <th><div class="title">Inv</div></th>
+                    <th><div class="title">Act</div></th>
+                </tr>
+                </thead>
+                    @vendors.filter(!_.name.isEmpty).sortBy(_.name).map { c =>
+                        @views.html.vendors.vend_rd(c)
+                    }
+                    @vendors.filter(_.name.isEmpty).map { c =>
+                        @views.html.vendors.vend_rd(c)
+                    }
+
+            </table>
+         </div>
+    <tr>
+        <td>
+            <button id="qbexport"  class="btn-excel">export to QB format</button>
+        </td>
+    </tr>
+    }
+
+</div>
+
+    <div class="modal" id="vendormodal" style="">
+        <div class="box-bodyX">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+                <div class="title">
+                    <label id="vendivselectedtext"></label>
+                </div>
+
+            </div>
+      <div class="modal-body">
+
+                <div id="addnewvendorfrontdiv">
+                    <td>
+                        <fieldset class="newCustomerview">
+                            <label class="mylabel">select market</label>
+                            <select id="newCustomerMarket" class="userAuthority">
+                                <option value="">All Markets</option>
+                                @markets.toSeq.sortBy(_.id).map { m =>
+                                    <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                                }
+                            </select>
+                            <div class="newcust">
+                                <label>Vendor name</label>
+                                <input type="text" id ="newCustomerName"  class="form-control">
+                                <input value="Add Vendor" type = "submit" id="buttonaddcustomer">
+                            </div>
+                        </fieldset>
+                    </td>
+
+                </div>
+        <div id="accordion">
+
+
+            <h3>Update vendor information</h3>
+            <div id="updatevendorinformationdiv">
+
+                <div class="">
+                    <label class = "mylabel" for="name">Name</label>
+                    <div>
+                        <input type="text" id="name" name="name" value="" class="form-control">
+                    </div>
+                </div>
+
+                <div class="">
+                    <label class = "mylabel" for="address1">Address1</label>
+                    <div>
+                        <input type="text" id="address1" name="address1" value="" class="form-control">
+                    </div>
+                </div>
+
+                <div class="">
+                    <label class = "mylabel" for="address2">Address2</label>
+                    <div>
+                        <input type="text" id="address2" name="address2" value="" class="form-control">
+                    </div>
+                </div>
+                <div class="">
+                    <label class = "mylabel" for="city">City</label>
+                    <div>
+                        <input type="text" id="city" name="city" value="" class="form-control">
+                    </div>
+                </div>
+
+                <div class="">
+                    <label class = "mylabel" for="state">State</label>
+                    <div>
+                        <input type="text" id="state" name="state" value="" class="form-control">
+                    </div>
+                </div>
+                <div class="">
+                    <label class = "mylabel" for="zip">Zip</label>
+                    <div>
+                        <input type="text" id="zip" name="zip" value="" class="form-control">
+                    </div>
+                </div>
+
+                <div class="">
+                    <label class = "mylabel" for="contact_name">Contact name</label>
+                    <div>
+                        <input type="text" id="contact_name" name="contact_name" value="" class="form-control">
+                    </div>
+                </div>
+                <div class="">
+                    <label class = "mylabel" for="contact_number1">Contact number1</label>
+                    <div>
+                        <input type="text" id="contact_number1" name="contact_number1" value="" class="form-control">
+                    </div>
+                </div>
+
+
+                <div class="">
+                    <label class = "mylabel" for="contact_number2">Contact number2</label>
+                    <div>
+                        <input type="text" id="contact_number2" contact_number2="name" value="" class="form-control">
+                    </div>
+                </div>
+                <div class="">
+                    <label class = "mylabel" for="contact_fax">Contact fax</label>
+                    <div>
+                        <input type="text" id="contact_fax" name="contact_fax" value="" class="form-control">
+                    </div>
+                </div>
+
+
+                <div class="">
+                    <label class = "mylabel" for="contact_email1">Contact email 1</label>
+                    <div>
+                        <input type="text" id="contact_email1" name="contact_email1" value="" class="form-control">
+                    </div>
+                </div>
+                <div class="">
+                    <label class = "mylabel" for="contact_email2">Contact email 2</label>
+                    <div>
+                        <input type="text" id="contact_email2" name="contact_email2" value="" class="form-control">
+                    </div>
+                </div>
+
+
+                <div class="">
+                    <label class = "mylabel" for="contact_email3">Contact email 3</label>
+                    <div>
+                        <input type="text" id="contact_email3" name="contact_email3" value="" class="form-control">
+                    </div>
+                </div>
+
+                <div class="">
+                    <label class = "mylabel"> <span>insurance  date </span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="insurancedatepicker">
+                    <br>
+                </div>
+
+                <div class="">
+                    <!--<label style="display: block;
+                            padding-left: 15px !important;
+                            text-indent: -15px !important;">
+                        <input type="checkbox" id="employee" style = "width: 13px  !important;
+    height: 13px !important;
+    padding: 0 !important;
+    margin:0  !important;
+    vertical-align: top  !important;
+    position: relative  !important;
+    top: -1px  !important;
+    *overflow: hidden  !important;" />
+                        employee
+                    </label>-->
+
+
+                        <input style = "width: 13px  !important;
+    height: 13px !important;
+    padding: 0 !important;
+    margin:0  !important;
+    vertical-align: top  !important;
+    position: relative  !important;
+    top: -1px  !important;
+    *overflow: hidden  !important;"  type="radio" name="gender" id="employee"  checked>  <label class = "mylabel"> <span>Employee</span> </label><br>
+                        <input style = "width: 13px  !important;
+    height: 13px !important;
+    padding: 0 !important;
+    margin:0  !important;
+    vertical-align: top  !important;
+    position: relative  !important;
+    top: -1px  !important;
+    *overflow: hidden  !important;" type="radio" name="gender" id="type_1099" value="type_1099"> <label class = "mylabel"> <span>1099</span> </label><br>
+                        <input style = "width: 13px  !important;
+    height: 13px !important;
+    padding: 0 !important;
+    margin:0  !important;
+    vertical-align: top  !important;
+    position: relative  !important;
+    top: -1px  !important;
+    *overflow: hidden  !important;"  type="radio" name="gender" id="invoice" value="invoice"><label class = "mylabel"> <span> Invoice</span> </label>
+
+                    <br>
+                    <br>
+                </div>
+
+
+                <div class="">
+                    <label class = "mylabel"> <span>Select account type </span> </label>
+                    <br>
+                    <select id="accounttypeSelect" class="userAuthority">
+                        @acctypes.toSeq.sortBy(_.id).map { m =>
+                        <option value="@m.id">@m.account, @m.tpe</option>
+                        }
+                    </select>
+                    <br>
+                </div>
+                <input id="dataDiv" type="hidden" name="id"  value="">
+                <input id="addorupdate" type="hidden" name="id"  value="0">
+                <a href="#" id="updatevendorinformation" class="btn btn-primary">Update vendor information</a>
+            </div>
+
+        <h3>Add vendor item</h3>
+        <div id="updatevendoritemsdiv">
+        <table cellspacing="0">
+            <tr>
+                <td>
+                    <select id="itemdivisionSelect" class="userAuthority">
+                        <option value=""></option>
+                        @allitemsdivlist.toSeq.sortBy(_.id).map { m =>
+                            @if(m.name != null){
+                                <option value="@m.id">@m.name</option>}
+                        }
+                    </select>
+                </td>
+                <td>
+                    <a href="#" id="updatevendoritem" class="btn btn-primary">Add</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table id="vendoritems" class="display">
+
+                    </table>
+
+                </td>
+            </tr>
+        </table>
+            <div id="defaultrateandunits">
+                <table>
+                    <tr>
+                        <br>
+                        <div class="title" id="selectedvendoritemnamediv"></div>
+                    </tr>
+                    <tr>
+                        <br>
+                        <div class="">
+                            <label class = "mylabel" for="default_rate">Default rate</label>
+                            <div>
+                                <input type="text" id="default_rate" name="default_rate" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="default_units">Default units</label>
+                            <div>
+                                <input type="text" id="default_units" name="default_units" value="" class="form-control">
+                            </div>
+                        </div>
+                    </tr>
+                    <tr>
+                        <a href="#" id="updatevendoritemdefaults" class="btn btn-primary">Update vendor item</a>
+                         <input id="vendoritemid" type="hidden" name="vendoritemid"  value="">
+                    </tr>
+                    <input type="hidden" name="id"   value="">
+                </table>
+            </div>
+
+    </div>
+        @*_________________________*@
+        <h3>Update vendor market</h3>
+        <div id="updatevenodormarketinformationdiv">
+            <fieldset class="newCustomerview">
+                <label class="mylabel">select market</label>
+                <select id="editVendorMarket" class="userAuthority">
+                    <!--<option value="">All Markets</option>-->
+                    @markets.toSeq.sortBy(_.id).map { m =>
+                        <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                    }
+                </select>
+                <input id="addorupdate" type="hidden" name="id"  value="0">
+                <a href="#" id="updatevendormarket" class="btn btn-primary">Update vendor market</a>
+            </fieldset>
+        </div>
+        @*__________________________*@
+</div>
+      </div>
+    <div class="modal-footer">
+       <a href="#" class="btn" id="close">Close</a>
+        @*    <input type="submit" class="btn btn-success" value="Save">*@
+    </div>
+
+    </div>
+</div>

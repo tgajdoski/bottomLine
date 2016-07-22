@@ -1,0 +1,9 @@
+@(task: Task)
+@isCompleted() = @{if (task.completed) true else false}
+<li style="list-style: none;display: list-item;" data-task-id="@task.id">
+    <strong style="font-weight: bold;cursor: pointer;">@task.cardOrder</strong>
+    <abbr title="@task.job.jobCategory.name" style="font-weight: bold;color: red;">@task.job.jobCategory.abbr</abbr>
+    <a class="openJob" href="/jobs/@task.job.id" style="font-weight: bold;text-decoration:none;@(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.id</a>
+    <a class="openTask" href="/jobs/@task.job.id?task=@task.id" style="font-weight: bold;text-decoration:none;@(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.subdivision.name @task.job.lot@(if (!task.managers.isEmpty && task.managers.head.user!=null) " - "+task.managers.head.user.username)</a>
+    <span class="@(if (!isCompleted()) "notes")">@task.notes</span>
+</li>

@@ -1,0 +1,170 @@
+@(user: User, markets: List[Market], managers: List[User], itemTypes: List[ItemType], jobCategories: List[JobCategory])
+@getDay(d: Integer) = @{val cal = Calendar.getInstance();
+cal.add(Calendar.DATE,d+1-cal.get(Calendar.DAY_OF_WEEK));cal}
+@getYearMonthDay(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i).getTime())}
+
+@stylesheets = @{Seq(
+    "buttons.css"
+)}
+@scripts = @{Seq(
+        "home.js",
+        "inner.js",
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "switchversion.js"
+)}
+@frame("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+<div id="home">
+    <table cellspacing="0">
+        <tbody>
+        <tr>
+            <td>
+                Actions for@if(user.authority >= Secured.ADMINISTRATOR){ (<a id="editMarket">edit</a>)}
+                <br/>
+                (in new window <input id="newWindow" type="checkbox" checked/>)
+            </td>
+            <td colspan="2" class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="marketSelect">
+                    <option value="">All Markets</option>
+                    @markets.toSeq.sortBy(_.id).map { m =>
+                    <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                    }
+                    @if(user.authority >= Secured.ADMINISTRATOR){<option value="0">New Market</option>}
+                </select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+            <tr class="weatherrow">
+                <td>
+
+                </td>
+                <td colspan="2" id="weatherbody">
+
+                </td>
+
+            </tr>
+        </tbody>
+    </table>
+
+    <table cellspacing="0">
+        <thead>
+        <tr><th colspan="3">Run report</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>For date range</td>
+            <td class="formElement"><input id="startDate" value="@getYearMonthDay(1)"/></td>
+            <td class="formElement"><input id="endDate" value="@getYearMonthDay(6)"/></td>
+        </tr>
+        <tr>
+            <td><a id="itemReport">REPORT</a> on items</td>
+            <td class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="managerSelect">
+                    <option value="">All Managers</option>
+                    @managers.toSeq.sortBy(_.username).map { m =>
+                    <option value="@m.id">@m.username</option>
+                    }
+                </select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+            <td class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="reportSelect">
+                    <option value="">All Items</option>
+                    @itemTypes.toSeq.sortBy(_.id).map { i =>
+                    <option value="@i.id">@i.name</option>
+                    }
+                </select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+        <tr>
+            <td><a id="jobsReport">REPORT</a> on jobs</td>
+            <td colspan="2" class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="reportJobCategory">
+                    <option value="">All Categories</option>
+                    @jobCategories.toSeq.sortBy(_.id).map { c =>
+                    <option value="@c.id">@c.name</option>
+                    }
+                </select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3"><a id="profitReport">REPORT</a> on profit</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table cellspacing="0">
+        <thead>
+        <tr><th colspan="3">Load detail</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>From</td>
+            <td colspan="2" class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="typeSelect"><option value="jobs">Jobs</option><option value="plans">Plans</option></select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+        <tr>
+            <td>With Customer@if(user.authority >= Secured.MANAGER){ (<a id="editCustomer">edit</a>)}</td>
+            <td class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="customerSelect"></select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+            <td class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="subdivisionSelect"></select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td colspan="2" class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="jobSelect"></select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <table cellspacing="0">
+        <thead>
+        <tr><th colspan="2">Update Vendor/Item</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="vendorSelect"></select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+            <td class="formElement">
+                <!--[if !IE]> --> <div class="notIE"> <!-- <![endif]-->
+                <label/>
+                <select id="itemSelect"></select>
+                <!--[if !IE]> --></div> <!-- <![endif]-->
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" id="vendorItemUpdate"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+}

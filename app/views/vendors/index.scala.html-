@@ -1,0 +1,24 @@
+@(myForm: Form[Vendor])
+
+@helper.form(action = routes.Vendors.updateVendor()) {
+<input type="hidden" name="id" value="@myForm("id").value"/>
+@helper.inputText(myForm("name"), '_showConstraints -> false)
+@helper.inputText(myForm("address1"))
+@helper.inputText(myForm("address2"))
+@helper.inputText(myForm("city"))
+@helper.inputText(myForm("state"))
+@helper.inputText(myForm("zip"))
+@helper.inputText(myForm("contact_name"))
+@helper.inputText(myForm("contact_number1"))
+@helper.inputText(myForm("contact_number2"))
+@helper.inputText(myForm("contact_fax"))
+@helper.inputText(myForm("contact_email1"))
+@helper.inputText(myForm("contact_email2"))
+@helper.inputText(myForm("contact_email3"))
+<input type="submit">
+}
+<br/>
+@helper.form(action = routes.Vendors.deleteVendor()) {
+<input type="hidden" name="id" value="@myForm("id").value"/>
+<input type="submit" value="Delete">
+}

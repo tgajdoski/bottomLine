@@ -1,0 +1,33 @@
+@(c: Customer)
+    @subdiv = @{Subdivision.find.where().eq("customer_id", c.id).findList()}
+
+<tr data-user-id="@c.id">
+    <td><a class="deleteUser"><i class="fa fa-trash-o"></i></a></td>
+    <td><a href="#" class="clicka">@c.name</a></td>
+
+@if(c.market != null){
+    @if(Market.find.byId(c.market.id) != null){
+        <td>@Market.find.byId(c.market.id).city</td>}else{<td></td>}
+}
+
+    <td>
+        <select id="subdivisionSelect" class="userAuthority">
+            <option value=""></option>
+            @subdiv.toSeq.sortBy(_.id).map { m =>
+                @if(m.id != null){
+                    <option value="@m.id" cast-id="@c.id" data-url="@m.url">@m.name</option>
+                }
+            }
+        </select>
+    </td>
+   @* <td style="padding: 5px;"><a class="resetPassword">reset</a></td>*@
+    <td>
+        @if(c.active==null || c.active == 0 ){
+                <input type="checkbox" class="actinact" value="0"> <br>
+            }
+        @if(c.active!=null  && c.active != 0){
+                <input type="checkbox" checked class="actinact" value="@c.id"> <br>
+        }
+    </td>
+</tr>
+

@@ -1,0 +1,97 @@
+@(user: User, markets: List[Market], formVendor: Form[models.Vendor])
+@import views.html.helper.FieldConstructor
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+    )}
+@scripts = @{Seq(
+        "jquery-1.7.1,js",
+        "jquery-1.9.0.min.js",
+        "jquery-play-1.7.1.js",
+        "addVendor.js"
+    )}
+
+
+    @implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+    <div class="box-bodyX">
+        <table cellspacing="0">
+            <tr>
+                <td>
+                    <fieldset class="newCustomerview">
+                        <div class="title">Add new vendor</div>
+                        <label class="mylabel">select market</label>
+                        <select id="newCustomerMarket" class="userAuthority">
+                            <option value="">All Markets</option>
+                            @markets.toSeq.sortBy(_.id).map { m =>
+                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                            }
+                        </select>
+                        <div class="newcust">
+                            <label>Vendor name</label>
+                            <input type="text" id ="newCustomerName"  class="form-control">
+    @*                        /*@@*helper.inputText(formCustomer("name"), '_label -> "name")*/*@
+                            <input value="Add Vendor" type = "submit" id="buttonaddcustomer" class="btn btn-success">
+                        </div>
+                    </fieldset>
+                 @*   <fieldset class="custdivselectedview">
+                        <label class="custdivselected"></label>
+                     *@@*   <label class="custiddivselected"></label>*@@*
+                    </fieldset>*@
+                </td>
+                <td>
+                    <fieldset class="subdiv" >
+                        <h1>Add an item for this vendor</h1>
+                        <input type="text" id ="newSubdivision">
+
+                        <select class="subdivisionSelect">
+                            <option value=""></option>
+                        </select>
+                @*        @helper.inputText(formCustomer("subdivision"), '_label -> "subdivision")*@
+                        <input value="Add Item" type ="submit" class="buttonaddsubdivision">
+                        @*tuka treba customer object da se ima za da se praka na subdivision*@
+                    </fieldset>
+                    <fieldset class="subdivselectedview">
+                        <label class="subdivselected"></label>
+                    </fieldset>
+                </td>
+            </tr>
+                <tr>
+                @helper.form(action = routes.Vendors_rd.updateVendor()) {
+                    <fieldset class="step2">
+                        <div class="title">Vendor  <label class="custdivselected"></label> </div>
+                        @*# wizard varijanta STEP3 dodaj go ostatokot za customer *@
+                        @*# ILI AKO NE E VIZARD TOGAS MORA DA IMA NACINA DA SE IZBERE PRVO MARKET PA POSLE SUBDIVISION *@
+                        @* PA TOGAS SE SNIMA CELOTO NAEDNAS *@
+                        @*<legend>User (@formUser("name").valueOr("New"))</legend>*@
+                        <br>
+                        @helper.inputText(formVendor("name"), '_label -> "name", 'class -> "form-control-invisible")
+                        @helper.inputText(formVendor("address1"), '_label -> "address1", 'class -> "form-control")
+                        @helper.inputText(formVendor("address2"), '_label -> "address2", 'class -> "form-control")
+                        @helper.inputText(formVendor("city"),'_label -> "city", 'class -> "form-control")
+                        @helper.inputText(formVendor("state"),'_label -> "state", 'class -> "form-control")
+                        @helper.inputText(formVendor("zip"),'_label -> "zip", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_name"),'_label -> "contact name", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_number1"),'_label -> "contact number1", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_number2"),'_label -> "contact number2", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_fax"),'_label -> "contact fax", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_email1"),'_label -> "contact email1", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_email2"),'_label -> "contact email2", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_email3"),'_label -> "contact email3", 'class -> "form-control")
+
+                        <input type="hidden" name="id"  value="">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </fieldset>
+                    }
+                </tr>
+
+        </table>
+    </div>
+    </div>
+}

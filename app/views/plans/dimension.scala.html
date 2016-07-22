@@ -1,0 +1,15 @@
+@(user: User, dimension: Dimension)
+
+<tr data-dimension-id="@dimension.id" class="dimension@(if(dimension.deduction) " deduction")">
+    <td style="width:20px;">@if(user.authority >= Secured.MANAGER){<a class="deleteDimension" style="cursor: pointer;">x</a>}</td>
+    <td><input class="notes" value="@dimension.notes" style="width:153px"/></td>
+    <td style="width:19px;">&nbsp;@(if(dimension.deduction) "-" else "+")&nbsp;</td>
+    <td><input class="length feet" value="@dimension.length_feet" style="width:96px;"/></td>
+    <td><input class="length inches" value="@dimension.length_inches" style="width:96px;"/></td>
+    <td><input class="width feet" value="@dimension.width_feet" style="width:96px;"/></td>
+    <td><input class="width inches" value="@dimension.width_inches" style="width:96px;"/></td>
+    <td><input class="depth feet" value="@dimension.depth_feet" style="width:96px;"/></td>
+    <td><input class="depth inches" value="@dimension.depth_inches" style="width:96px;"/></td>
+    <td style="text-align:right;width:96px;"></td>
+    <td style="text-align:right;width:96px;"></td>
+</tr>

@@ -1,0 +1,590 @@
+# Routes
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET           /                                                   controllers.Home_rd.index()
+GET           /weather/:provider                                  controllers.weather.getWeather(provider: String)
+# GET           /users                                     controllers.Home.getUserSelect()
+
+# Authentication
+GET           /logout                                             com.feth.play.module.pa.controllers.Authenticate.logout
+GET           /authenticate/:provider                             com.feth.play.module.pa.controllers.Authenticate.authenticate(provider: String)
+GET           /authenticate/:provider/denied                      controllers.Application.oAuthDenied(provider: String)
+GET           /login                                              controllers.Application.login()
+POST          /login                                              controllers.Application.doLogin()
+# GET     /logout                     controllers.Application.logout()
+
+GET           /profile                                            controllers.Application.profile
+GET           /restricted                                         controllers.Application.restricted
+GET           /accounts/password/change                           controllers.Account.changePassword
+POST          /accounts/password/change                           controllers.Account.doChangePassword
+
+GET           /accounts/verify                                    controllers.Account.verifyEmail
+
+GET           /accounts/add                                       controllers.Account.link
+
+GET           /accounts/link                                      controllers.Account.askLink
+POST          /accounts/link                                      controllers.Account.doLink
+
+GET           /accounts/merge                                     controllers.Account.askMerge
+POST          /accounts/merge                                     controllers.Account.doMerge
+
+GET           /signup                                             controllers.Application.signup
+POST          /signup                                             controllers.Application.doSignup
+POST          /empty                                              controllers.Application.emptyok
+GET           /accounts/unverified/:id                            controllers.Signup.unverified(id: Long)
+GET           /accounts/verify/:token                             controllers.Signup.verify(token: String)
+GET           /accounts/exists                                    controllers.Signup.exists
+GET           /accounts/password/reset/:token                     controllers.Signup.resetPassword(token: String)
+POST          /accounts/password/reset                            controllers.Signup.doResetPassword
+GET           /login/password/forgot                              controllers.Signup.forgotPassword(email: String ?= "")
+POST          /login/password/forgot                              controllers.Signup.doForgotPassword
+
+#GET           /test                                      controllers.Home.test()
+#
+#GET           /calendar                                  controllers.Tasks.getWeekTasks()
+#GET           /calendar/print                            controllers.Tasks.printWeekTasks()
+#GET           /calendar/jobcards                         controllers.Tasks.printDayTasks()
+#GET           /calendar/items                            controllers.Reports.getWeeklyItems()
+#
+
+GET           /calendar/malendar/print                            controllers.Tasks_rd.testPdf()
+GET           /calendar/malendar                                  controllers.Tasks_rd.initPdf()
+#
+#GET           /jobs/markets                              controllers.Jobs.getMarketSelect()
+#GET           /jobs/customers                            controllers.Jobs.getCustomerSelect()
+#POST          /jobs/subdivisions                         controllers.Jobs.getSubdivisionSelect()
+#POST          /jobs/lots                                 controllers.Jobs.getJobsByLot()
+#GET           /jobs/saleitems                            controllers.Jobs.getSaleitems()
+#POST          /jobs/plans                                controllers.Jobs.getPlanSelect()
+#POST          /jobs/search                               controllers.Jobs.searchJobs()
+#POST          /jobs/copy                                 controllers.Jobs.copyToPlans()
+#POST          /jobs/template                             controllers.Jobs.applyTemplate()
+#
+## Plans
+#POST          /plans/item                                controllers.Plans.addPlanItem()
+#POST          /plans/attachments                         controllers.Plans.addAttachment()
+#DELETE        /plans/attachments/:id                     controllers.Plans.deleteAttachment(id: Long)
+#POST          /plans/dimensions                          controllers.Plans.addDimension()
+#DELETE        /plans/dimensions/:id                      controllers.Plans.deleteDimension(id: Long)
+#PUT           /plans/dimensions/:id                      controllers.Plans.updateDimension(id: Long)
+#
+#POST          /plans/add                                 controllers.Plans.addPlan()
+#POST          /plans/del                                 controllers.Plans.deletePlan()
+#GET           /plans/:id                                 controllers.Plans.loadPlan(id: Long)
+#POST          /plans                                     controllers.Plans.updatePlan()
+#GET           /plans                                     controllers.Plans.index()
+#
+#POST          /jobs/saleitems                            controllers.Saleitems.addSaleitem()
+#DELETE        /jobs/saleitems/:id                        controllers.Saleitems.deleteSaleitem(id: Long)
+#PUT           /jobs/saleitems/:id                        controllers.Saleitems.updateSaleitem(id: Long)
+#
+#POST          /jobs/lineitems/budget                     controllers.Lineitems.addBudgetLineitem()
+#POST          /jobs/lineitems/actual                     controllers.Lineitems.addActualLineitem()
+#GET           /jobs/lineitems/vendors                    controllers.Lineitems.getVendorSelect()
+#GET           /jobs/lineitems/items                      controllers.Lineitems.getItemSelect()
+#DELETE        /jobs/lineitems/:id                        controllers.Lineitems.deleteLineitem(id: Long)
+#PUT           /jobs/lineitems/:id                        controllers.Lineitems.updateLineitem(id: Long)
+#
+#PUT           /quickbooks/add                            controllers.Lineitems.addToQuickbooks()
+#
+#POST          /jobs/tasks                                controllers.Tasks.addTask()
+#DELETE        /jobs/tasks/:id                            controllers.Tasks.deleteTask(id: Long)
+#PUT           /jobs/tasks/:id                            controllers.Tasks.updateTask(id: Long)
+#
+#POST          /jobs/add                                  controllers.Jobs.addJobTask()
+#POST          /jobs/del                                  controllers.Jobs.deleteJob()
+#GET           /jobs/:id                                  controllers.Jobs.loadJob(id: Long)
+#POST          /jobs                                      controllers.Jobs.updateJob()
+#GET           /jobs                                      controllers.Jobs.index()
+#
+#POST          /customers/markets                         controllers.Customers.updateMarket()
+#POST          /customers/markets/add                     controllers.Customers.addMarket()
+#POST          /customers/markets/del                     controllers.Customers.deleteMarket()
+#GET           /customers/markets/:id                     controllers.Customers.getMarket(id: Long)
+#GET           /customers/woeid/:para                     controllers.Customers.getMarketwoeid(para: Long)
+#POST          /customers/subdivisions                    controllers.Customers.updateSubdivision()
+#POST          /customers/subdivisions/add                controllers.Customers.addSubdivision()
+#POST          /customers/subdivisions/del                controllers.Customers.deleteSubdivision()
+#GET           /customers/subdivisions/:id                controllers.Customers.getSubdivision(id: Long)
+#POST          /customers                                 controllers.Customers.updateCustomer()
+#POST          /customers/add                             controllers.Customers.addCustomer()
+#POST          /customers/del                             controllers.Customers.deleteCustomer()
+#GET           /customers/:id                             controllers.Customers.getCustomer(id: Long)
+#
+#GET           /customers                                 controllers.Customers.index()
+#
+#POST          /vendors/items                             controllers.Vendors.updateItem()
+#POST          /vendors/items/add                         controllers.Vendors.addItem()
+#POST          /vendors/items/del                         controllers.Vendors.deleteItem()
+#GET           /vendors/items/:id                         controllers.Vendors.getItem(id: Long)
+#POST          /vendors/vendor_items                      controllers.Vendors.updateVendorItem()
+#POST          /vendors/vendor_items/add                  controllers.Vendors.addVendorItem()
+#POST          /vendors/vendor_items/del                  controllers.Vendors.deleteVendorItem()
+#GET           /vendors/vendor_items/:id                  controllers.Vendors.getVendorItem(id: Long)
+#POST          /vendors                                   controllers.Vendors.updateVendor()
+#POST          /vendors/add                               controllers.Vendors.addVendor()
+#POST          /vendors/del                               controllers.Vendors.deleteVendor()
+#GET           /vendors/:id                               controllers.Vendors.getVendor(id: Long)
+#GET           /vendors                                   controllers.Vendors.index()
+#
+#GET           /report/items                              controllers.Reports.getItemsReport()
+#GET           /report/jobs                               controllers.Reports.getJobsReport()
+#GET           /report/profit                             controllers.Reports.getProfitReport()
+#
+#POST          /admin/users/add                           controllers.Users.addUser()
+#POST          /admin/users/del                           controllers.Users.deleteUser()
+#POST          /admin/users                               controllers.Users.updateUser()
+#GET           /admin/users                               controllers.Users.index()
+
+# Javascript routing
+GET           /assets/javascripts/routes                          controllers.Application.javascriptRoutes()
+
+# Map uploaded attachments
+GET           /attachments/*file                                  controllers.Plans_rd.getAttachment(file: String)
+
+# Map static resources from the /public folder to the /assets URL path
+GET           /assets/*file                                       controllers.Assets.at(path="/public", file)
+
+
+#######################################################################################################################
+
+# Home page
+
+POST          /plans/upload                                       controllers.Plans_rd.upload()
+# GET                                                   controllers.Home_rd.index()
+GET           /weather/:provider                                  controllers.weather.getWeather(provider: String)
+GET           /users                                              controllers.Home_rd.getUserSelect()
+GET           /crewleadres                                        controllers.Home_rd.getCrewLeader()
+
+# Authentication
+
+GET           /authenticate/:provider                             com.feth.play.module.pa.controllers.Authenticate.authenticate(provider: String)
+GET           /authenticate/:provider/denied                      controllers.Application.oAuthDenied(provider: String)
+
+# GET     /logout                     controllers.Application.logout()
+
+GET           /profile                                            controllers.Application.profile_rd
+# GET           /restricted                            controllers.Application.restricted
+GET           /accounts/password/change                           controllers.Account.changePassword_rd
+POST          /accounts/password/change                           controllers.Account.doChangePassword_rd
+
+# GET           /accounts/verify                       controllers.Account.verifyEmail
+
+
+GET           /accounts/unverified/:id                            controllers.Signup.unverified(id: Long)
+GET           /accounts/verify/:token                             controllers.Signup.verify(token: String)
+#GET           /accounts/exists                             controllers.Signup.exists
+GET           /accounts/password/reset/:token                     controllers.Signup.resetPassword(token: String)
+# POST          /accounts/password/reset                    controllers.Signup.doResetPassword
+# GET           /login/password/forgot                      controllers.Signup.forgotPassword(email: String ?= "")
+# POST          /login/password/forgot                      controllers.Signup.doForgotPassword
+
+GET           /test                                               controllers.Home_rd.test()
+
+GET           /calendar                                           controllers.Tasks_rd.getWeekTasks()
+GET           /movejobs                                           controllers.Tasks_rd.getMoveJobs()
+GET           /calendar/print                                     controllers.Tasks_rd.printWeekTasks()
+GET           /calendar/jobcards                                  controllers.Tasks_rd.printDayTasks()
+GET           /calendar/items                                     controllers.Reports_rd.getWeeklyItems()
+GET           /calendar/daily                                     controllers.Tasks_rd.getDailyTasks()
+GET           /calendar/dailycatuals                              controllers.Tasks_rd.getDailyTasksActuals()
+
+GET           /calendar/dailylaboractuals                         controllers.Tasks_rd.getDailyTasksLaborActuals()
+
+GET           /calendar/dailyhome                                 controllers.Tasks_rd.getDailyTasksHome()
+GET           /jobs/actualtasks                                   controllers.Tasks_rd.getAcualTasksperJobperType()
+
+
+GET           /jobcard/print                                      controllers.Jobs_rd.printjobcard()
+GET           /jobcard/email                                      controllers.Jobs_rd.emailjobcard()
+
+
+GET           /jobs/markets                                       controllers.Jobs_rd.getMarketSelect()
+GET           /jobs/customers                                     controllers.Jobs_rd.getCustomerSelect()
+POST          /jobs/subdivisions                                  controllers.Jobs_rd.getSubdivisionSelect()
+POST          /jobs/lots                                          controllers.Jobs_rd.getJobsByLot()
+GET           /jobs/saleitems                                     controllers.Jobs_rd.getSaleitems()
+POST          /jobs/plans                                         controllers.Jobs_rd.getPlanSelect()
+POST          /jobs/search                                        controllers.Jobs_rd.searchJobs()
+POST          /jobs/copy                                          controllers.Jobs_rd.copyToPlans()
+POST          /jobs/template                                      controllers.Jobs_rd.applyTemplate()
+POST          /jobs/templatenew                                   controllers.Jobs_rd.applyTemplateNewJob()
+
+
+# Plans
+POST          /plans/item                                         controllers.Plans_rd.addPlanItem()
+POST          /plans/attachments                                  controllers.Plans_rd.addAttachment()
+DELETE        /plans/attachments/:id                              controllers.Plans_rd.deleteAttachment(id: Long)
+POST          /plans/dimensions                                   controllers.Plans_rd.addDimension()
+DELETE        /plans/dimensions/:id                               controllers.Plans_rd.deleteDimension(id: Long)
+PUT           /plans/dimensions/:id                               controllers.Plans_rd.updateDimension(id: Long)
+
+POST          /plans/add                                          controllers.Plans_rd.addPlan()
+POST          /plans/add/price                                    controllers.Plans_rd.addPlanNewPrice()
+GET           /plans/add_rd                                       controllers.Plans_rd.addPlan_rd()
+POST          /plans/del                                          controllers.Plans_rd.deletePlan()
+GET           /plans/:id                                          controllers.Plans_rd.loadPlan(id: Long)
+POST          /plans                                              controllers.Plans_rd.updatePlan()
+GET           /plans                                              controllers.Plans_rd.index()
+POST          /plans/pricechange                                  controllers.Plans_rd.checkPrices()
+POST          /plans/lineitems/reorder                            controllers.Plans_rd.reorderLineItems()
+POST          /jobs/lineitems/reorder                             controllers.Jobs_rd.reorderLineItems()
+
+POST          /jobs/lineitems/verifyLineItem                      controllers.Jobs_rd.verifyLineItems()
+POST          /jobs/lineitems/unverifyLineItem                    controllers.Jobs_rd.unverifyLineItems()
+
+
+POST          /jobs/lineitems/verifyAllLineItem                   controllers.Jobs_rd.verifyAllLineItems()
+
+
+GET           /jobs/lineitems/refresh                             controllers.Plans_rd.reorderLineItemRefresh()
+GET           /jobs/lineitems/refreshjobsbuget                    controllers.Jobs_rd.reorderLineItemRefresh()
+GET           /jobs/lineitems/refreshjobsactual                   controllers.Jobs_rd.reorderLineItemActualRefresh()
+
+
+GET           /plans/lineitems/reorderDates                       controllers.Plans_rd.reorderLineItemDates()
+GET           /jobs/lineitems/reorderDates                        controllers.Jobs_rd.reorderLineItemDates()
+
+GET           /admin/plans                                        controllers.Plans_rd.listPlans()
+GET           /admin/ajax/plans                                   controllers.Plans_rd.listPlansAjax()
+GET           /admin/planactivate                                 controllers.Plans_rd.updateActive()
+GET           /admin/cutomeractivate                              controllers.Customers_rd.updateActive()
+GET           /admin/vendoractivate                               controllers.Vendors_rd.updateActive()
+GET           /admin/vendoremployee                               controllers.Vendors_rd.updateEmployee()
+GET           /admin/vendorupdate1099                               controllers.Vendors_rd.update1099()
+GET           /admin/vendorinvoice                               controllers.Vendors_rd.updateInvoice()
+
+
+GET           /admin/itemactivate                                 controllers.Vendors_rd.updateItemActive()
+
+
+
+
+GET           /customers/plans/newjob/:id                         controllers.Plans_rd.getPlanListformCustomerid(id: Long)
+
+GET           /labors/calendar                                    controllers.Labors.getWeekLabor()
+GET           /labors/getperiod                                    controllers.Labors.getLaborperiod()
+GET           /labors/calendartable                               controllers.Labors.getTableWeekLabor()
+POST          /labors/addlabor                                    controllers.Labors.addLabor()
+GET           /labors/calendar/print                              controllers.Labors.printWeekLabor()
+GET           /labors/getlistlabors                               controllers.Labors.listLabors()
+
+POST           /labor/delete                                      controllers.Labors.deleteLabor()
+
+
+GET           /labors/getlistlaborsperiod                         controllers.Labors.listperiodLabors()
+GET           /reports/getlistlaborreport                         controllers.Reports_rd.getLaborperiod()
+GET           /reports/getlistlaborper                            controllers.Reports_rd.getLaborperiodreport()
+
+
+GET           /labors/getvendorperhour                            controllers.Labors.getVendorHourrate()
+
+
+POST          /jobs/saleitems                                     controllers.Saleitems_rd.addSaleitem()
+DELETE        /jobs/saleitems/:id                                 controllers.Saleitems_rd.deleteSaleitem(id: Long)
+PUT           /jobs/saleitems/:id                                 controllers.Saleitems_rd.updateSaleitem(id: Long)
+
+POST          /jobs/lineitems/budget                              controllers.Lineitems_rd.addBudgetLineitem()
+POST          /jobs/lineitems/actual                              controllers.Lineitems_rd.addActualLineitem()
+POST          /jobs/lineitems/actualnew                           controllers.Lineitems_rd.addActualNewLineitem()
+
+POST          /jobs/lineitems/newactual                           controllers.Lineitems_rd.addNewActualLineitem()
+
+
+POST          /jobs/lineitems/editfrompurchase                    controllers.Lineitems_rd.EditBudgetLineItemfromPO()
+
+GET           /jobs/lineitems/vendors                             controllers.Lineitems_rd.getVendorSelect()
+GET           /jobs/lineitems/items                               controllers.Lineitems_rd.getItemSelect()
+DELETE        /jobs/lineitems/:id                                 controllers.Lineitems_rd.deleteLineitem(id: Long)
+DELETE        /jobs/lineitemsNew/:id                              controllers.Lineitems_rd.deleteLineitemNewJob(id: Long)
+PUT           /jobs/lineitems/:id                                 controllers.Lineitems_rd.updateLineitem(id: Long)
+PUT           /jobs/lineitems/newactualnew/                       controllers.Lineitems_rd.updateNewLineitemNeww(id: Long)
+
+GET           /jobs/lineitems/getexistask                         controllers.Lineitems_rd.CheckExistTaskperDateJob(str: String)
+
+
+POST          /jobs/lineitems/Actual/:id                          controllers.Lineitems_rd.updateNewLineitem(id: Long)
+POST          /jobs/lineitems/newjobcardupdate/:str               controllers.Lineitems_rd.updateLineItemforNewJob( str: String)
+
+
+POST          /jobs/lineitemsActual/addeditActual                 controllers.Lineitems_rd.AddEditNewLineitem()
+POST          /jobs/lineitemsActual/addnegativeActuals            controllers.Lineitems_rd.AddEditNegativeLineitem()
+POST          /jobs/lineitemsActual/noteupdatel                   controllers.Lineitems_rd.EditNoteLineitem(id: Long)
+GET           /jobs/lineitemsActual/getnote                       controllers.Lineitems_rd.GetNoteLineitem(id: Long)
+
+
+GET           /jobs/lineitems/notebylineitem                      controllers.Lineitems_rd.updateTaskNoteLineItem()
+GET           /jobs/lineitems/deleteactualpo                      controllers.Lineitems_rd.deleteActualLinefromPO()
+
+POST          /jobs/lineitems/addactualpo                         controllers.Lineitems_rd.addActualLinefromPO()
+POST          /jobs/lineitems/addlinecalendarlabor                controllers.Lineitems_rd.addLineCalendarLabor()
+
+
+GET           /jobs/lineitemspos/updatepo/:id                     controllers.Lineitem_POs_rd.updatePo(id: Long)
+GET           /jobs/lineitemspos/savepo                           controllers.Lineitem_POs_rd.savePo()
+
+
+
+GET           /emailtest                                          controllers.Home_rd.sendEmailTest()
+GET           /emailtest/sendemail                                controllers.Home_rd.sendemail()
+
+
+PUT           /quickbooks/add                                     controllers.Lineitems_rd.addToQuickbooks()
+
+
+POST          /jobs/tasks                                         controllers.Tasks_rd.addTask()
+POST          /jobs/tasksnew                                      controllers.Tasks_rd.addTaskNewPlans()
+GET           /jobs/tasksnewunasigned                             controllers.Tasks_rd.CheckUnAssingedTask()
+POST          /jobs/tasksactual                                   controllers.Tasks_rd.addTaskActual()
+
+GET           /jobs/tasks/:id                                     controllers.Tasks_rd.getTasksbyJob(id: Long)
+
+DELETE        /jobs/tasks/:id                                     controllers.Tasks_rd.deleteTask(id: Long)
+PUT           /jobs/tasks/:id                                     controllers.Tasks_rd.updateTask(id: Long)
+
+POST           /jobs/taskslabor                                   controllers.Tasks_rd.addNewTaskLabor()
+
+
+
+POST          /jobs/add                                           controllers.Jobs_rd.addJobTask()
+POST          /jobs/del                                           controllers.Jobs_rd.deleteJob()
+GET           /jobs/:id                                           controllers.Jobs_rd.loadJob(id: Long)
+GET           /jobsnew/:id                                        controllers.Jobs_rd.loadNewJob(id: Long)
+GET           /jobsold/:id                                        controllers.Jobs_rd.loadOldJob(id: Long)
+
+
+POST           /expenses/add                                      controllers.Expenses.addExpence()
+POST           /expenses/del                                      controllers.Expenses.deleteExpence()
+POST           /expenses/udpate                                   controllers.Expenses.UpdateExpence()
+GET            /expenses/list                                     controllers.Expenses.expenseslist()
+
+GET           /quickbooks/expenses                                controllers.Expenses.getExpensesView()
+GET           /quickbooks/expenses/:id                            controllers.Expenses.editExpensesView(id: Long)
+
+GET           /expenses/getdata                                   controllers.Expenses.selectExpenses()
+GET           /expenses/getlistexpenses                           controllers.Expenses.listExpenses()
+
+POST          /jobs                                               controllers.Jobs_rd.updateJob()
+POST          /appendcommentjobs                                  controllers.Jobs_rd.appendCommentJob()
+
+GET           /jobs                                               controllers.Jobs_rd.index()
+GET           /actualJob/:id                                      controllers.Jobs_rd.getJobforActuals(id: Long)
+GET           /actualJobLineitemsids/:id                          controllers.Jobs_rd.getselectedJoblineitems(id: Long)
+GET           /actualJobActualLineitemsids/:id                    controllers.Jobs_rd.getselectedJobActuallineitems(id: Long)
+GET           /actualJobActualLineitemsidsLaborUser/:id           controllers.Jobs_rd.getselectedJobActuallineitemsLaborUser(id: Long)
+
+GET           /actualJobActualLineitemsPerLIorg/:id               controllers.Jobs_rd.getselectedJobActuallineitemsLaborPerLineitemORG(id: Long)
+
+GET           /actualJobActualLineitemsidsbyLineitem/:id          controllers.Jobs_rd.getselectedJobActuallineitemsbyLineItem(id: Long)
+
+GET           /actualJobSingleLineitems/:id                       controllers.Jobs_rd.getsinglelineitem(id: Long)
+GET           /actualJobSingleLineitemsPercentge/:id              controllers.Jobs_rd.getsinglelineitempersentage(id: Long)
+
+
+GET           /lineitems/lineitemstasksnewjob/:str                controllers.Lineitems_rd.CheckExistAssignedLineItemsTaskidsNewJob( str: String)
+GET           /lineitems/lineitemsnewjob/:str                     controllers.Lineitems_rd.CheckExistAssignedLineItemsNewJob( str: String)
+GET           /lineitems/lineitemsfromadd/                        controllers.Lineitems_rd.CheckDailyTasks()
+GET           /lineitems/countelineitemspertask/                  controllers.Lineitems_rd.getLineItemCount()
+
+GET           /lineitems/deletetaskactualsassignresetplan/        controllers.Lineitems_rd.deleteTaskActualsAssignsResetPlanItems()
+
+GET           /lineitems/deletetaskswithoutlineitems/             controllers.Lineitems_rd.DeleteTasksWithoutLineitems()
+GET           /lineitems/deletetaskactuals/                       controllers.Lineitems_rd.deleteTaskActuals()
+
+POST           /lineitems/deleteTaskNotAllActuals/:str            controllers.Lineitems_rd.deleteTaskNotAllActuals( str: String)
+
+GET           /lineitems/checktaskactuals/                        controllers.Lineitems_rd.checkTaskActuals()
+
+GET           /jobs/newjob/add_rd                                 controllers.Jobs_rd.addJob_rd()
+GET           /admin/jobs                                         controllers.Jobs_rd.listJobs()
+GET           /admin/actualjobs                                   controllers.Jobs_rd.actualJobs()
+
+GET           /admin/ajax/jobs                                    controllers.Jobs_rd.listJobsAjax()
+GET           /admin/ajax/actuals                                 controllers.Jobs_rd.listJobsActualsAjax()
+
+GET           /jobs/admin/rescheduleTasks                         controllers.Jobs_rd.rescheduleTasks()
+GET           /jobs/admin/rescheduleCalendarTasks                 controllers.Jobs_rd.rescheduleCalendarTasks()
+
+
+GET           /jobs/admin/add_rd                                  controllers.Jobs_rd.getTaskNotesPerDay()
+
+POST          /customers/markets                                  controllers.Customers_rd.updateMarket()
+POST          /customers/markets/add                              controllers.Customers_rd.addMarket()
+#GET          /customers/markets/add_rd                           controllers.Customers_rd.addMarket_rd()
+POST          /admin/actualjobs/assigns                           controllers.Assignes_rd.saveAssign()
+POST          /admin/actualjobs/editassigns                       controllers.Assignes_rd.editAssign()
+
+POST          /admin/actualjobs/assignsUpdate                     controllers.Assignes_rd.updateAssign(id: Long)
+
+GET           /customers/markets/newjob/:id                       controllers.Customers_rd.getCustomerList(id: Long)
+
+GET           /customers/markets/getcustomersbymarket             controllers.Customers_rd.getCustomerpermarket()
+GET           /customers/markets/getcustomersbymarkets            controllers.Customers_rd.getCustomerpermarketS()
+
+
+POST          /customers/markets/del                              controllers.Customers_rd.deleteMarket()
+GET           /customers/markets/:id                              controllers.Customers_rd.getMarket(id: Long)
+GET           /customers/woeid/:para                              controllers.Customers_rd.getMarketwoeid(para: Long)
+POST          /customers/subdivisions/cvrk/:id                    controllers.Customers_rd.updateSubdivision(id: Long)
+POST          /customers/subdivisions/add                         controllers.Customers_rd.addSubdivision()
+POST          /customers/subdivisions/del                         controllers.Customers_rd.deleteSubdivision()
+POST          /customers/subdivisions/delete/:id                  controllers.Customers_rd.deleteCustomerSubdivision(id: Long)
+GET           /customers/subdivisions/:id                         controllers.Customers_rd.getSubdivision(id: Long)
+GET           /customers/subdivisions/all/:id                     controllers.Customers_rd.getSubdivisionsList(id: Long)
+POST          /customers                                          controllers.Customers_rd.updateCustomer()
+GET           /customers/add                                      controllers.Customers_rd.addCustomer()
+GET           /customers/add_rd                                   controllers.Customers_rd.addCustomer_rd()
+POST          /customers/save                                     controllers.Customers_rd.saveCustomer()
+POST          /customers/updatecustomermarket                     controllers.Customers_rd.updateCustomerMarket()
+
+
+POST          /customers/del                                      controllers.Customers_rd.deleteCustomer()
+GET           /customers/:id                                      controllers.Customers_rd.getCustomer(id: Long)
+GET           /customers/get/:id                                  controllers.Customers_rd.getCustomerbyID(id: Long)
+GET           /customers/markets/get/:id                          controllers.Customers_rd.getMarketByid(id: Long)
+
+#GET           /admin/customers/add                                controllers.Customers_rd.addCustomer_rd()
+#POST          /admin/customers/del                               controllers.Customers_rd.deleteCustomer()
+#POST          /admin/customers                                   controllers.Customers_rd.updateCustomer()
+GET           /admin/customers                                    controllers.Customers_rd.listCustomer()
+
+
+
+GET           /admin/accounttypes                                 controllers.Bills.listaccounttypes()
+GET           /admin/accounttypesactivate                         controllers.Bills.updateaccounttypeActive()
+GET           /admin/accounttypesupdate                           controllers.Bills.updateaccountType()
+GET           /admin/getbillnumber                                controllers.Bills.checkBillnum()
+
+GET           /admin/markets                                      controllers.Customers_rd.listMarket()
+
+GET           /customers                                          controllers.Customers_rd.index()
+
+POST          /vendors/items                                      controllers.Vendors_rd.updateItem()
+POST          /vendors/items/add                                  controllers.Vendors_rd.addItem()
+
+POST          /vendors/items/del                                  controllers.Vendors_rd.deleteItem()
+GET           /vendors/items/:id                                  controllers.Vendors_rd.getItem(id: Long)
+
+GET           /vendors/items/get/:id                              controllers.Vendors_rd.getItemByid(id: Long)
+
+
+
+POST          /vendors/vendor_items                               controllers.Vendors_rd.updateVendorItem()
+POST          /vendors/vendor_items/add                           controllers.Vendors_rd.addVendorItem()
+POST          /vendors/vendor_items/del                           controllers.Vendors_rd.deleteVendorItem()
+GET           /vendors/vendor_items/:id                           controllers.Vendors_rd.getVendorItem(id: Long)
+GET           /vendors/vendor_items/modal/:id                     controllers.Vendors_rd.getVendorItems(id: Long)
+
+GET           /vendors/vendor_items/actual/item                   controllers.Vendors_rd.getVendorActualItem()
+GET           /vendors/vendor_items/actualitems/:id               controllers.Vendors_rd.getVendorActualItems(id: Long)
+GET           /vendors/vendor_items/onlyitem/:id                  controllers.Vendors_rd.getonlyItem(id: Long)
+
+POST          /vendors/updatevendormarket                         controllers.Vendors_rd.updateVendorMarket()
+
+
+POST          /vendors                                            controllers.Vendors_rd.updateVendor()
+POST          /vendors/add                                        controllers.Vendors_rd.addVendor()
+POST          /vendors/del                                        controllers.Vendors_rd.deleteVendor()
+GET           /vendors/:id                                        controllers.Vendors_rd.getVendor(id: Long)
+GET           /vendors                                            controllers.Vendors_rd.index()
+GET           /vendors/front/:id                                  controllers.Vendors_rd.getVendorFront(id: Long)
+GET           /vendors/get/:id                                    controllers.Vendors_rd.getVendorbyID(id: Long)
+GET           /jobs/vendors/getactualvendors                      controllers.Vendors_rd.getactualVendors()
+GET           /jobs/vendors/getvendorsmarketcat                   controllers.Vendors_rd.getVendorsperMarketCat()
+
+
+GET           /jobs/vendors/getactualvendorsmin                   controllers.Vendors_rd.getactualVendorsMinimized()
+
+
+GET           /admin/vendors/add_rd                               controllers.Vendors_rd.addVendor_rd()
+#POST          /admin/vendors/del                                 controllers.Vendors_rd.deleteVendor()
+#POST          /admin/vendors                                     controllers.Vendors_rd.updateVendor()
+GET           /admin/vendors                                      controllers.Vendors_rd.listVendors()
+GET           /admin/vendors/items                                controllers.Vendors_rd.listItems()
+GET           /admin/vendors/items/add                            controllers.Vendors_rd.addItem_rd()
+
+
+
+
+
+POST           /bills/del                                      controllers.Bills.deletebill()
+POST           /bills/udpate                                   controllers.Bills.Updatebill()
+GET            /bills/list                                     controllers.Bills.billlist()
+
+GET            /quickbooks/bills                               controllers.Bills.getBillView()
+GET           /quickbooks/bills/:id                            controllers.Bills.editBillView(id: Long)
+POST           /bills/add                                      controllers.Bills.addBill()
+
+GET           /bills/getdata                                   controllers.Bills.selectBills()
+GET           /bills/getlistexpenses                           controllers.Bills.listBills()
+GET           /bills/getbillbyid/:id                           controllers.Bills.getBillbyID(id: Long)
+
+
+GET           /report/items                                       controllers.Reports_rd.getItemsReport()
+GET           /report/itemsredesigned                             controllers.Reports_rd.getItemsReportRedesigned()
+GET           /report/purchaseredesigned                          controllers.Reports_rd.getPurchaseReportRedesigned()
+GET           /report/purchaseactivityredesigned                  controllers.Reports_rd.getPurchaseReportActivityRedesigned()
+
+GET           /report/jobs                                        controllers.Reports_rd.getJobsReport()
+GET           /report/jobsredesign                                controllers.Reports_rd.getJobsReportRedesigned()
+GET           /report/profit                                      controllers.Reports_rd.getProfitReport()
+GET           /report/profitredesign                              controllers.Reports_rd.getProfitReportRedesigned()
+GET           /report                                             controllers.Reports_rd.index()
+GET           /report/front/profit                                controllers.Reports_rd.index_profit()
+GET           /report/front/job                                   controllers.Reports_rd.index_job()
+GET           /report/front/item                                  controllers.Reports_rd.index_item()
+GET           /report/front/job/excel                             controllers.Reports_rd.excelExport()
+
+GET           /report/front/vendors/excel                         controllers.Vendors_rd.vendorQBexcelExport()
+GET           /report/front/labors/excel                         controllers.Labors.laborQBexcelExport()
+
+GET           /report/front/items/excel                           controllers.Vendors_rd.itemQBexcelExport()
+
+GET           /report/front/customers/excel                       controllers.Customers_rd.customerQBexcelExport()
+GET           /report/front/bills/excel                           controllers.Bills.billQBexcelExport()
+
+GET           /report/front/new1front                             controllers.Reports_rd.new1front()
+GET           /report/front/new2front                             controllers.Reports_rd.new2front()
+GET           /report/front/new3front                             controllers.Reports_rd.new3front()
+GET           /report/front/new4front                             controllers.Reports_rd.new4front()
+GET           /report/front/new5front                             controllers.Reports_rd.new5front()
+GET           /report/front/new6front                             controllers.Reports_rd.new6front()
+GET           /report/front/newpurchase                           controllers.Reports_rd.purchase()
+
+GET           /report/front/newpurchase/print                     controllers.Reports_rd.printTotal()
+GET           /report/front/newpurchase/printperjob               controllers.Reports_rd.printPerJob()
+GET           /report/front/newpurchase/printtotals               controllers.Reports_rd.printTotalsMerge()
+
+GET           /report/front/calendar/print                        controllers.Reports_rd.printCalendarJobCrew()
+
+GET           /report/front/calendar/printjobcrew                 controllers.Reports_rd.printPDFCalendarJobCrew()
+GET           /report/front/calendar/calendarjobcrewfront         controllers.Reports_rd.calendarjobcrewfront()
+
+GET           /report/front/newpurchase/printtotalsorder          controllers.Reports_rd.printTotalsMergeOrder()
+GET           /report/front/newpurchase/printCalendarCrewJobNew   controllers.Reports_rd.printCalendarCrewJobNew()
+
+GET           /report/front/new1frontdata                         controllers.Reports_rd.getnew1frontdata()
+GET           /report/front/new2frontdata                         controllers.Reports_rd.getnew2frontdata()
+GET           /report/front/new2frontdataTotal                    controllers.Reports_rd.getnew2frontdataTotals()
+GET           /report/front/new5frontdataTotal                    controllers.Reports_rd.getnew5frontdataTotals()
+
+GET           /report/front/new3frontdata                         controllers.Reports_rd.getnew3frontdata()
+GET           /report/front/new4frontdata                         controllers.Reports_rd.getnew4frontdata()
+GET           /report/front/new5frontdata                         controllers.Reports_rd.getnew5frontdata()
+GET           /report/front/new6frontdata                         controllers.Reports_rd.getnew6frontdata()
+
+
+GET           /admin/users/add                                    controllers.Users_rd.addUser()
+POST          /admin/users/save                                   controllers.Users_rd.saveUser()
+POST          /admin/users/del                                    controllers.Users_rd.deleteUser()
+POST          /admin/users                                        controllers.Users_rd.updateUser()
+GET           /admin/users                                        controllers.Users_rd.index()
+GET           /admin/users/activate                               controllers.Users_rd.updateActive()
+GET           /employees                                          controllers.Employees.index()
+GET           /todos                                              controllers.Todos.index()
+# Javascript routing
+# GET           /assets/javascripts/routes             controllers.Application_rd.javascriptRoutes()
+

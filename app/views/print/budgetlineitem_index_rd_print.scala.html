@@ -1,0 +1,49 @@
+@(user: User, lineitems: List[Lineitem], actuallineitems: List[Lineitem], jobassigns: List[Assigns], users: List[User])@* *@
+
+
+
+<table id="jobbudgetlists" class="display">
+    <button id="buttonaddign">Assign</button>
+    <input type="checkbox" id="groupcheck" checked>  group selection by planned dates<br>
+    <thead>
+    <tr>
+  @*      <th style="width:24px;">Position</th>*@
+        <th style="width:24px;">@if(user.authority >= Secured.MANAGER){<a id="addBudgetLineitem">add</a>}</th>
+        <th style="width:200px;">Vendor</th>
+        <th style="width:200px;">Item</th>
+        <th style="width:50px;">Qty</th>
+        @if(user.authority >= Secured.MANAGER){<th style="width:50px;">Rate</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:40px;">Cost</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:40px;">Sale</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:95px;">Planned</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">AssignTo</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Status</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:9px;">ActDate</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Act Total</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Difference</th>}
+    </tr>
+    </thead>
+    <tbody id="budgetitems">
+    @lineitems.map { li =>
+            @views.html.print.budgetlineitem_rd_print(user,li , actuallineitems, jobassigns, users)
+    }
+
+    </tbody>
+</table>
+<table style="border-top:1px solid #333;">
+    <tbody>
+    <tr>
+        <td style="width:37px;"></td>
+        @if(user.authority >= Secured.MANAGER){<td style="width:132px;">TOTALS</td>}
+        <td style="width:127px;"></td>
+        <td style="width:50px;"></td>
+        <td style="width:50px;"></td>
+        @if(user.authority >= Secured.MANAGER){<td style="width:55px;" id="totalcost"></td>}
+       @* @if(user.authority >= Secured.MANAGER){<td style="width:60px;"></td>}*@
+        @if(user.authority >= Secured.MANAGER){<td style="width:55px;"  id="totalsale"></td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:265px;"></td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:60px;"  id="totalact"></td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:65px;"  id="totaldiff"></td>}
+    </tr>
+    </tbody>
+</table>

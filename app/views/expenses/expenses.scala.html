@@ -1,0 +1,154 @@
+@(user: User, markets: List[Market],  acctypes: List[AccountType] , vendors: List[Vendor])
+
+<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/jqueryui/dataTables.jqueryui.css">-->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+
+@scripts = @{Seq(
+    "jquery.validate.js",
+    "jquery.dataTables.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "expenses.js"
+)}
+
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="box-body">
+                    <div class="title">Add Expense</div>
+                    <br>
+
+                        <table cellspacing="0">
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <label> <span>Bill Number</span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="billnumber"></p>
+                                    <br>
+                                </td>
+                                <td>
+                                    <label> <span>Quickbooks date </span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="qbdatepicker">
+                                    <br>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label> <span>Select vendor </span> </label>
+                                    <br>
+                                    <select id="vendorSelect" class="userAuthority">
+                                        @vendors.toSeq.sortBy(_.id).map { m =>
+                                        <option value="@m.id">@m.name</option>
+                                        }
+                                    </select>
+                                    <br>
+                                </td>
+                                <td>
+                                    <label> <span>vendor info</span> </label>
+                                    <br>
+                                    <input type="text" readonly class ="form-control" id="vendorinfo"></p>
+                                    <br>
+                                </td>
+                            </tr>
+                                <tr>
+                                    <td>
+                                        <label> <span>Select market </span> </label>
+                                        <br>
+                                        <select id="marketSelect" class="userAuthority">
+                                            @markets.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id">@m.city, @m.state</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>
+                                    <td>
+                                        <label> <span>Select account type </span> </label>
+                                        <br>
+                                        <select id="accounttypeSelect" class="userAuthority">
+                                            @acctypes.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id">@m.account, @m.tpe</option>
+                                            }
+                                        </select>
+
+                                        <br>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <label> <span>Amount </span> </label>
+                                        <br>
+                                        <input type="text" class ="form-control" id="amount"></p>
+                                        <br>
+                                    </td>
+                                    <td>
+                                        <label> <span>discount date </span> </label>
+                                        <br>
+                                        <input type="text" class ="form-control" id="startdisdatepicker">
+                                        <br>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 5px; border: 1px solid #ccc; ">
+                                        <label> <span>Note</span> </label>
+                                        <br>
+                                        <textarea rows="2" cols="20" id ="note" class="note"></textarea>
+                                    </td>
+                                    <td>
+                                        <label> <span>FFI date </span> </label>
+                                        <br>
+                                        <input type="text" class ="form-control" id="startdatepicker">
+                                        <br>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    <div>
+                        <p>
+                            <button type="submit" class="btn btn-success">Save</button>
+                        </p>
+                    </div>
+                    <hr>
+                    <div id="reportot" style="margin-right:50px;margin-top:70px;float:left; width: 100%;">
+
+                        <table id="reporttable" class="display dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="overall profit report" style="width: 100%;">
+                            <thead>
+                            <tr>
+                                <th>id#</th>
+                                <th>Vendor</th>
+                                <th>Market</th>
+                                <th>Amount</th>
+                                <th>FFI date</th>
+                                <th>Discount date</th>
+                                <th>Quickbooks date</th>
+                                <th>Account Type</th>
+                                <th>Note</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}

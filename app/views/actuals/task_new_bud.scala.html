@@ -1,0 +1,9 @@
+@(task: Task)
+@formatDate(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+<div class="calTask" data-task-id="@task.id" data-task-type-id="@task.taskType.id" data-date="@formatDate(task)"
+    data-crew="@task.crew" data-card-order="@task.cardOrder" data-notes="@task.notes"
+    data-manager-id="@(if (!task.managers.isEmpty&&task.managers.head.user!=null) task.managers.head.user.id)">
+    <a class="editTask"><img src="@routes.Assets.at("images/calendar.gif")"/></a>@formatDate(task)
+    <a class="deleteTask">x</a>
+    @(if (!task.managers.isEmpty && task.managers.head.user!=null) task.managers.head.user.username)
+</div>

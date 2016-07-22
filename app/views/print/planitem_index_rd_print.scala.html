@@ -1,0 +1,53 @@
+@(user: User, planItems: List[PlanItem], dimensions: List[Dimension])
+<div id="planitems">
+    <table style="width:960px;">
+        <thead>
+        <tr>
+            <th style="width:116px;text-align:left;">
+                @if(user.authority >= Secured.MANAGER){<dl class="options">
+                    <dt>add plan item</dt>
+                    <dd>
+                      @*  @planItems.map { pi =>
+                            @if(!dimensions.groupBy(_.planItem).keys.toList.contains(pi)) {
+                                @views.html.plans.button_rd(pi)
+                            }
+                        }*@
+                    </dd>
+                </dl>}
+            </th>
+            <th style="width:76px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+        </tr>
+        </thead>
+    </table>
+    @dimensions.groupBy(_.planItem).toSeq.sortBy(_._1.id).map {
+    case (planItem, dimensions) => {
+    @views.html.print.planitem_rd_print(user, planItem, dimensions)
+    }
+    }
+</div>
+<div>
+    <table style="border-top:3px double #333;">
+        <tbody>
+        <tr>
+            <td style="width:116px;"></td>
+            <td style="width:76px;"></td>
+            <td style="width:96px;">Footings</td>
+            <td id="totallnft" style="width:96px;"/></td>
+            <td style="width:96px;"></td>
+            <td style="width:96px;">Total Sqft</td>
+            <td id="totalsqft" style="width:96px;"/></td>
+            <td style="width:96px;"></td>
+            <td style="width:96px;">Total Yds</td>
+            <td id="totalcuyds" style="width:96px;"/></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

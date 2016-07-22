@@ -1,0 +1,885 @@
+@(user: User, lineitems: List[Lineitem], vendors: List[Vendor], customers: List[Customer], pos: List[Lineitempos],  inrange: Map[Long, Integer], orderedlabor: Map[Long, Integer])
+
+
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+    @getposflag(li: Lineitem) = @{
+        if (getposss(li)!= null){
+            getposss(li).historyflag
+        }
+        else
+            1
+    }
+
+
+    @getimagelabor(l:Lineitem) = @{
+    orderedlabor.get(l.id)intValue()
+    }
+
+
+    @getinRange(l:Lineitem) = @{
+    inrange.get(l.id)intValue()
+    }
+
+
+    @getposdrop(li: Lineitem) = @{
+        if (getposss(li)!= null){
+            getposss(li).fromwhere
+        }
+        else
+            1
+    }
+
+    @getposss(li: Lineitem) = @{
+        if (li!= null){
+            pos.find(_.lineitemid == li.id).getOrElse(null)
+            }
+        else
+            null
+    }
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        "purchase_rd_jobs.js"
+    )}
+
+@frame_rd("Purchasing Jobs View Report",user,"purchase",stylesheets,scripts) {
+
+    <style>
+    .ui-accordion-content{
+
+    height: auto !important;
+    }
+
+    table td{
+    border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+    }
+
+    table{
+    font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+    }
+
+
+    .btn-excel {
+    background-image: linear-gradient(to bottom, #5cb85c 0px, #419641 100%);
+    background-repeat: repeat-x;
+    border-color: #3e8f3e;
+    }
+
+
+
+        #assigntask, #updateTask, #modalemailjobCard, #modalprintjobCard {
+        position: fixed;
+        bottom: auto;
+        top: 20%;
+        left: 50%;
+        margin-left: -100px;
+        margin-top: -100px;
+        }
+
+        .btn{
+        background: gray;
+        color: white;
+        }
+        .modal-header{
+        border-bottom: none !important;
+        }
+
+        #lineitemlist {
+        position: fixed;
+        width: 930px;
+        height: 700px;
+        bottom: auto;
+        top: 20%;
+        left: 50%;
+        /*margin-left: -5 0px;*/
+        margin-top: -100px;
+        margin-right: 200px
+        }
+
+
+        #modallineitemnote {
+        position: fixed;
+        width: 400px;
+        height: 360px;
+        top: 20%;
+        bottom: auto;
+        left: 50%;
+        /*margin-left: -5 0px;*/
+        margin-top: -150px;
+        margin-right: 500px
+        }
+
+        textarea.name{
+
+
+        }
+
+
+        body.modal-open {
+        overflow: hidden;
+        }
+
+
+        .plan_name{
+        font-size: 24px;
+        font-weight: bold;
+        }
+
+        #duplicatePlan{
+        float: right;
+        margin-bottom: 50px;
+        position: relative;
+        display: block;
+        }
+
+        #saleprice{
+        font-size: 20px;
+        color: #666;
+        font-weight:bold;
+
+        border: 0;
+        }
+
+        .info_profit td{
+        width: 50%;
+        font-size: 16px;
+        padding: 0;
+        margin-left: 10px;
+        background: #fff;
+        }
+        .info_profit label{
+        padding: 10px;
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background: #6eba6e;
+        display: block;
+        }
+
+        .info_profit #grossprofit, .info_profit #pctprofit, .info_profit #ppsqft, .info_profit #managerprofit, .info_profit #ffiprofit{
+        padding-left: 20px;
+
+        }
+
+        #addSaleitem, #planitems dt, #attachment-button{
+        border: 1px solid #999;
+        color: #fff;
+        font-weight: normal;
+        padding: 10px;
+        background: #666;
+        height: 40px;
+        clear: both;
+        }
+
+        #attachment-button{
+        line-height: 10px !important;
+        }
+
+        #saleitems th, #saleitems td, .planitemheader th, #budget table th{
+        font-size: 14px;
+        font-weight: normal;
+        border: 1px solid #efefef;
+        padding: 5px;
+        background: #fff;
+        height: 50px;
+        }
+
+        .planitem td, #budget table td{
+        background: #ddd !important;
+
+        }
+
+        #saleitems input, #saleitems textarea{
+        width: 100%;
+        border: 1px solid #ccc !important;
+        font-size: 12px;
+        }
+        .planitem input, .planitem textarea, #budget input, #budget textarea{
+        border: 1px solid #ccc !important;
+        font-size: 12px;
+        }
+
+        #saleitems tbody{
+        border-top: 1px solid #333;
+        padding-top: 10px;
+        }
+
+        .planitemtotals {
+        color: #888;
+        margin-top: 5px;
+        font-weight: bold;
+        font-size: 12px;
+        }
+
+        .planitemheader{
+        padding: 5px;
+        margin-top: 30px;
+        margin-bottom: 10px;
+        border-top: 3px solid #6eba6e;
+
+        }
+
+        .planitemheader [style='text-align:left;width:116px;']{
+        background: #6eba6e;
+        color: #fff;
+        font-weight: bold;
+        }
+
+        .planitemheader [style='text-align:left;width:116px;'] a{
+        color: #fff !important;
+        }
+
+        .planitemheader th, .planitem th{
+        height: 30px;
+        }
+
+        .planitem th{
+        padding: 0;
+        }
+
+        #plan table[style="border-top:3px double #333;"]{
+        margin-top: 50px !important;
+        border-top: 0 !important;
+        margin-bottom: 10px;
+        }
+
+        #plan table[style="border-top:3px double #333;"] td{
+        height: 35px;
+        background: #6eba6e;
+        color: #fff;
+        font-weight: bold;
+        }
+
+
+        #budget table[style="border-top:1px solid #333;"]{
+        border: none !important;
+
+        }
+
+        #budget table[style="border-top:1px solid #333;"] td{
+        background: #f1f1f1 !important;
+        color: #888;
+        margin-top: 5px;
+        font-weight: bold;
+        font-size: 12px;
+        }
+        #budget table th{
+        height: 30px;
+
+        }
+        h1{
+        font-size: 24px !important;
+        }
+
+        .jobMarket{
+        display: block;
+        border-bottom: 5px solid #6eba6e;
+        padding-bottom: 3px;
+        padding-top: 10px;
+        color: green;
+        padding-left: 5px;
+
+        background: #fff;
+        margin-bottom: 0;
+        }
+        .jobCustomer{
+        background: #fff;
+        color: green;
+        padding-top: 3px;
+        padding-bottom: 10px;
+
+        padding-left: 5px;
+        margin-top: 0;
+
+        font-size: 18px !important;
+        font-weight: normal;
+        }
+
+        .buttons-right{
+        float: right;
+        text-align: right;
+
+        }
+
+        #jobNotes{
+        margin-right: 30px;
+        }
+
+        #actual{
+
+        background: #fff;
+        }
+
+        .ui-accordion-content{
+
+        height: auto !important;
+        }
+
+        table td{
+        border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+        }
+
+        table{
+        font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+        }
+
+
+        .btn-excel {
+        background-image: linear-gradient(to bottom, #5cb85c 0px, #419641 100%);
+        background-repeat: repeat-x;
+        border-color: #3e8f3e;
+        }
+
+        /*DODADENO*/
+
+        .form-control{
+        display: block;
+        width: 100%;
+        height: 25px;
+        padding: 2px;
+        font-size: 13px !important;
+        line-height: 25px;
+        margin: 0;
+
+        }
+
+        .table>tbody>tr>td{
+        padding: 1px;
+        vertical-align: middle;
+        }
+
+        .btn{
+        padding: 5;
+        font-size: 12px !important;
+        }
+
+        #tabs .pagination{
+        margin: 0;
+        }
+
+        .btn-success{
+        margin-top: 5px;
+        }
+
+        .pagination>li>a{
+        padding: 2px 10px;
+        }
+
+        h1{
+        display: block;
+        border-bottom: 5px solid #6eba6e;
+        padding-bottom: 3px;
+        padding-top: 10px;
+
+        padding-left: 5px;
+
+        background: #fff;
+        margin-bottom: 0;
+        font-size: 22px;
+        margin-bottom: 10px;
+        }
+
+        hr{
+        border-top: 0;
+        }
+
+
+
+
+        #calHead a, #calendar a{
+        color: #6eba6e !important;
+        cursor: pointer;
+        }
+
+        #calendar th{
+        background: #fff;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 10px;
+        border-right: 3px solid #efefef;
+
+        border-bottom: 6px solid #efefef;
+        }
+
+        #calendar{
+        width: auto !important;
+        }
+
+
+        #calendar td{
+        background: #fff;
+        font-size: 12px;
+        font-weight: normal;
+        padding: 6px;
+        border-right: 3px solid #efefef;
+        border-bottom: 3px solid #efefef;
+        border-bottom: 5px dashed #666;
+
+        margin-bottom: 3px;
+        }
+
+        #calendar ol{
+        padding: 0;
+        }
+
+        #calendar li{
+        margin: 0;
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 6px;
+        padding-bottom: 6px;
+        }
+
+        #calendar  .notes{
+
+        padding: 5px;
+        font-size: 11px;
+        background: #efefef;
+        display: block;
+        }
+
+        #calendar .openTask{
+        color: #666  !important;
+        display: block;
+        font-size: 13px;
+        border-bottom: 2px solid #6eba6e;
+        padding-bottom: 1px;
+        margin-bottom: 0;
+        }
+
+        #calendar strong{
+        background: #666 !important;
+        color: #fff !important;
+
+        padding: 3px;
+        font-size: 10px;
+        }
+
+
+
+
+    </style>
+
+
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+                    <a id="open" style="text-align: right; padding-right: 10px;">expand all</a>
+                    <tr>
+                        <button id="printtotals"  class="btn-excel">print to pdf</button>
+                    </tr>
+
+                    <div id="accordion" >
+
+
+                                @lineitems.map { =>
+
+                                        <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">
+                                           CREW: @(if (l.task.crew != null) l.task.crew else "NaN")  JOB: @(if (l.job != null) l.job.id + " " + l.job.subdivision.customer.name + " " + l.job.subdivision.name + " " + l.job.lot + " " + (if (l.job.item!=null) l.job.item.name else "SALEITEM") + " " + (if (l.job.plan!=null) " ("+l.job.plan.name+" plan)") else "NaN"))
+                                        </h3>
+
+
+                                        <tr style="display: none;">
+                                            <td style="padding: 10px;">
+                                                <table class ="eachvendor" id ="@(if (l.job != null) l.job.id else "MISC")" style="width: 100%; height: auto; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+                                                    <tbody>
+                                                        <tr>
+
+                                                            <td style="width: 0px;"></td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Lot/ID</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Vendor</td>
+
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Item</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Quantity</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Rate</td>
+                                                            <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$Saleprice</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Note</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">From</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">verify PO</td>
+                                                        </tr>
+
+                                                            <tr style="@(if(getinRange(l)==1) "border: 2px solid green;")">
+
+                                                                <td style="width:0px;" data-item-type="@(if(l.itemType!=null) l.itemType.id)" data-href="@l.id" data-task-id="@l.task.id"  data-job-id="@l.job.id"></td>
+                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@{l.job.lot}  <a href="#" class="clicka">@{l.job.id}</a>  <br>    @{getYearMonthDay(l.task)}  <br>box: @l.task.cardOrder</td>
+
+                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                                    @*stavi dropdown so vendorite i selektiraj go nasiot*@
+                                                                    <select id="vendorSelect-@l.id" class="userAuthority, vendorSelect">
+                                                                        @vendors.toSeq.sortBy(_.id).map { m =>
+                                                                                <option value="@m.id" @(if(l.vendor!=null && l.vendor.id == m.id) "selected=\"selected\"")>@m.name</option>
+                                                                        }
+                                                                    </select>
+                                                                </td>
+
+                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                                    @*stavi dropdown so vendorite i selektiraj go nasiot*@
+                                                                    <select id="itemSelect-@l.id" class="userAuthority, itemSelect">
+                                                                       <option value="@(if(l.item!=null) l.item.id)"  data-units="@(if(l.units!=null) l.units)">@(if(l.item!=null) l.item.name)</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "quantity-@l.id" type="text" placeholder= "0.0" name="" value="@l.quantity" class="form-control, quantity" style="width: 45px; float: left; margin-right: 5px;"/>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "price-@l.id"   type="text" name="" value="@l.rate" class="form-control, price"  style="width: 45px; float: left; margin-right: 5px;"/>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "total-@l.id" readonly type="text" name="" value="@("%,.2f".format(l.saleprice))" class="form-control, total" style="width: 50px; float: left; margin-right: 5px;"/>
+                                                                </td>
+
+                                                                <td>
+                                                                    <textarea rows="2" cols="20" id ="@l.id" class="noteupdates">@(if (l.task != null && l.task.notes!= null) l.task.notes else "")</textarea>
+                                                                </td>
+
+                                                                <td>
+                                                                    @if(l.itemType !=null && l.itemType.id !=1){
+
+                                                                    <select id="itemNoteselect-@l.id" class ="fromdropdown">
+                                                                        <option value="0"  @(if (l == null || getposss(l)== null ) "selected=\"selected\"" else "" )else "")></option>
+                                                                        <option value="1"  @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 1) "selected=\"selected\"" else "" )else "")>From the yard</option>
+                                                                        <option value="2" @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 2) "selected=\"selected\"" else "" )else "")>Drop shipped</option>
+                                                                        <option value="3" @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 3) "selected=\"selected\"" else "" )else "")>Builder material</option>
+                                                                        <option value="4" @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 4) "selected=\"selected\"" else "" )else "")>Check notes</option>
+                                                                    </select>
+                                                                    }else{
+                                                                    <a href="#" class="clickaddlabor" data-job="@{l.job.id}"
+                                                                       data-line-type-id="@(if(l.itemType != null) l.itemType.id)" data-line-type="@(if(l.itemType != null) l.itemType.name)"
+                                                                       data-line-note="@(if(l.task != null) l.task.notes)" data-job-id="@(if(l.job != null) l.job.id)"
+                                                                       data-task-id="@(if(l.task != null) l.task.id)" data-market-id="@(if(l.job != null && l.job.market!=null) l.job.market.id)"
+                                                                       data-line-id="@l.id" data-checkverif="@(if(l.verify ==0) true)" data-date="@(if(l.task!=null) getYearMonthDay(l.task))" >@(if(l.task!=null) "insert labor" else "no task")</a>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    @if(l.itemType !=null && l.itemType.id !=1){
+                                                                        <input id = "addPo-@l.id" type="checkbox" value="@l.id" class="addtopo" @(if (l != null && l.task != null) (if(getposss(l)!= null && getposflag(l) == 0) "checked" else "" )else "")/>
+                                                                    } else {
+                                                                        <span style="@(if(getimagelabor(l)==1)  "display: inline;" else "display: none;")">
+                                                                        <img src="@routes.Assets.at("images/labor.png")"/>
+                                                                        </span>
+
+                                                                    }
+
+                                                                </td>
+
+                                                            </tr>
+
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    }
+
+                    </div>
+
+                    <button type="submit" id = "exall">Export all tables to Excel</button>
+
+
+                    <div class="modal" id="lineitemlist" style="">
+                        <div class="modal-header">
+                            <button type="button" class="closeeB" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <h1 id="typeoditem"></h1>
+                            <table class="table table-striped"  id ="historytable">
+                                <tbody>
+                                <tr></tr>
+                                </tbody>
+                            </table>
+
+
+                            <div id= "laborinfo">
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" id="labdatepicker" readonly style="width: 120px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="labvendorselect" class = "labvendors"  style="width: 280px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="labitemselect" class = "labitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "labquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 45px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "labprice"   type="text" name="" value="" class="form-control"  style="width: 45px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "labtotal" readonly type="text" name="" value="" class="form-control" style="width: 50px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addlabbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <br  style="clear: both; margin-bottom:5px"/>
+
+                                <table class="table table-striped"  id ="labor">
+                                    <thead>
+                                    <tr>
+
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id= "matinfo">
+                                <table class="table table-striped"  id ="matproposal">
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input disabled type="text"  class ="form-control" id="matdatepicker"  style="width: 120px;"></p>
+                                        </td>
+                                        <td>
+                                            <select disabled id="matvendorselect"  class = "matvendors"  style="width: 280px;"/>
+                                        </td>
+                                        <td>
+                                            <select disabled id="matitemselect" readonly class = "matitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "matquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "matprice"  type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "mattotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addmatbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <br  style="clear: both; margin-bottom:5px"/>
+
+
+                                <table class="table table-striped"  id ="materials">
+                                    <thead>
+                                    <tr>
+
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+
+                            <div id ="coninfo">
+                                <table class="table table-striped"  id ="conproposal">
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" readonly class ="form-control" id="condatepicker"  style="width: 120px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="convendorselect"readonly  class = "convendors"  style="width: 280px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="conitemselect" readonly class = "conitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "conquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "conprice"   type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "contotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addconbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <br  style="clear: both; margin-bottom:5px"/>
+
+
+                                <table class="table table-striped"  id ="concrete">
+                                    <thead>
+                                    <tr>
+
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+
+                            <div id="landinfo">
+                                <table class="table table-striped"  id ="landproposal">
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" readonly class ="form-control" id="landdatepicker"  style="width: 120px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="landvendorselect" readonly class = "landvendors"  style="width: 280px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="landitemselect"  readonly class = "landitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "landquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "landprice"   type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "landtotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addlandbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <br  style="clear: both; margin-bottom:5px"/>
+
+
+
+                                <table class="table table-striped" id ="landscape">
+                                    <thead>
+                                    <tr>
+
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div id = "misinfo">
+                                <table class="table table-striped"  id ="misproposal">
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" id="misdatepicker"  style="width: 120px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="misvendorselect" readonly class = "misvendors"  style="width: 280px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="misitemselect" readonly class = "misitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "misquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "misprice"  type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "mistotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addmisbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <br  style="clear: both; margin-bottom:5px"/>
+
+
+
+                                <table class="table table-striped" id="miscellaneous">
+                                    <thead>
+                                    <tr>
+
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+
+
+
+                        </div>
+                        <div class="modal-footer">
+                            <a class="btn" id="closeeB">Close</a>
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+}

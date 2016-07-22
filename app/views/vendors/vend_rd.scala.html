@@ -1,0 +1,55 @@
+@(c: Vendor)
+@itemdiv = @{VendorItem.find.where().eq("vendor_id", c.id).findList()}
+<tr data-user-id="@c.id">
+       <td><a class="deleteVendor"><i class="fa fa-trash-o"></i></a></td>
+   @*  <td><a href="/rd/vendors/@c.id">@c.name</a></td>*@
+   <td>@c.id</td>
+  <td><a href="#" class="clicka">@c.name</a></td>
+    @if(c.market != null){
+    @if(Market.find.byId(c.market.id) != null){
+        <td>@Market.find.byId(c.market.id).city</td>}else{<td></td>}
+    }else{<td></td>}
+    <td>
+        <select id="subdivisionSelect" class="userAuthority">
+            <option value=""></option>
+            @itemdiv.toSeq.sortBy(_.id).map { m =>
+                    @if(m.item != null){
+                        @if(m.item.id != null){
+                <option value="@m.id">@m.item.name</option>}}
+            }
+        </select>
+    </td>
+    <td>
+        @if(c.employee==null || c.employee == 0 ){
+        <input type="checkbox" class="employeeinact" value="@c.id"> <br>
+        }
+        @if(c.employee!=null  && c.employee != 0){
+        <input type="checkbox" checked class="employeeinact" value="@c.id"> <br>
+        }
+    </td>
+    <td>
+        @if(c.type_1099==null || c.type_1099 == 0 ){
+        <input type="checkbox" class="type1099inact" value="@c.id"> <br>
+        }
+        @if(c.type_1099!=null  && c.type_1099 != 0){
+        <input type="checkbox" checked class="type1099inact" value="@c.id"> <br>
+        }
+    </td>
+    <td>
+        @if(c.invoice==null || c.invoice == 0 ){
+        <input type="checkbox" class="invoiceinact" value="@c.id"> <br>
+        }
+        @if(c.invoice!=null  && c.invoice != 0){
+        <input type="checkbox" checked class="invoiceinact" value="@c.id"> <br>
+        }
+    </td>
+    <td>
+        @if(c.active==null || c.active == 0 ){
+            <input type="checkbox" class="actinact" value="@c.id"> <br>
+        }
+        @if(c.active!=null  && c.active != 0){
+            <input type="checkbox" checked class="actinact" value="@c.id"> <br>
+            }
+    </td>
+</tr>
+

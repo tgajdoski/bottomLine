@@ -1,0 +1,16 @@
+@(c: AccountType)
+
+<tr data-user-id="@c.id">
+    <td><a class="deleteUser"><i class="fa fa-trash-o"></i></a></td>
+    <td><a href="#" class="clicka">@c.account</a></td>
+    <td>@c.tpe</td>
+    <td>
+        @if(c.active==null || c.active == 0 ){
+                <input type="checkbox" class="actinact" value="0"> <br>
+            }
+        @if(c.active!=null  && c.active != 0){
+                <input type="checkbox" checked class="actinact" value="@c.id"> <br>
+        }
+    </td>
+</tr>
+

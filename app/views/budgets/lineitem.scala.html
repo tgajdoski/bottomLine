@@ -1,0 +1,17 @@
+@(user: User, lineitem: Lineitem)
+<tr data-lineitem-id="@lineitem.id" class="budgetLineitem" data-units="@lineitem.units"
+    data-multiplier="@lineitem.multiplier" data-markup="@lineitem.markup" data-rate="@lineitem.rate"
+    data-plan-item-id="@(if (lineitem.planItem != null) lineitem.planItem.id)"
+    data-task1-percentage="@(if (!lineitem.percentages.filter(_.taskType.id==1).isEmpty) lineitem.percentages.filter(_.taskType.id==1).head.percentage else '0')"
+    data-task2-percentage="@(if (!lineitem.percentages.filter(_.taskType.id==2).isEmpty) lineitem.percentages.filter(_.taskType.id==2).head.percentage else '0')"
+    data-task3-percentage="@(if (!lineitem.percentages.filter(_.taskType.id==3).isEmpty) lineitem.percentages.filter(_.taskType.id==3).head.percentage else '0')">
+    <td style="width:24px;">@if(user.authority >= Secured.MANAGER){<a class="deleteLineitem">x</a>}</td>
+    <td style="width:200px;" data-vendor-id="@(if (lineitem.vendor != null) lineitem.vendor.id)" class="vendor"><input style="text-align:left;" value="@(if (lineitem.vendor != null) lineitem.vendor.name)"/></td>
+    <td style="width:200px;" data-item-id="@(if (lineitem.item != null) lineitem.item.id)"
+        data-item-type-id="@(if (lineitem.itemType != null) lineitem.itemType.id)"
+        class="item"><input style="text-align:left;" value="@(if (lineitem.item != null) lineitem.item.name)"/></td>
+    <td style="width:60px;"><input class="quantity" value="@("%.1f".format(lineitem.quantity))"/></td>
+    @if(user.authority >= Secured.MANAGER){<td style="width:60px;"><input class="rate" value="@("%,.2f".format(lineitem.rate))"/></td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:60px;" class="total"/></td>}
+    @if(user.authority >= Secured.MANAGER){<td style="text-align:right;width:60px;" class="saleprice">@("%,.2f".format(lineitem.saleprice))</td>}
+</tr>

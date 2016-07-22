@@ -1,0 +1,169 @@
+@(user: User, lineitems: List[Lineitem], vendors: List[Vendor],  pos: List[Lineitempos],  inrange: Map[Long, Integer], orderedlabor: Map[Long, Integer])
+
+
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+@showMonthDayYear(t: Task) = @{val f = new java.text.SimpleDateFormat("MM-dd-yyyy");f.format(t.date)}
+
+@getposflag(li: Lineitem) = @{
+if (getposss(li)!= null){
+getposss(li).historyflag
+}
+else
+1
+}
+
+
+@getimagelabor(l:Lineitem) = @{
+orderedlabor.get(l.id)intValue()
+}
+
+
+@getinRange(l:Lineitem) = @{
+inrange.get(l.id)intValue()
+}
+
+
+
+@getposdrop(li: Lineitem) = @{
+if (getposss(li)!= null){
+getposss(li).fromwhere
+}
+else
+1
+}
+
+@getposss(li: Lineitem) = @{
+if (li!= null){
+pos.find(_.lineitemid == li.id).getOrElse(null)
+}
+else
+null
+}
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js"
+    )}
+
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+
+    <head>
+        <meta charset="utf-8"/>
+        <title>PO CREW JOB CALENDAR view</title>
+    </head>
+
+    <body>
+    @lineitems.groupBy(p => (p.task.crew, p.task.cardOrder)).toSeq.sortBy(_._1).map {
+    case ((j, tco), lineitems) => {
+    @lineitems.groupBy(p => (p.job)).map {
+    case (jo, lineitems) => {
+
+    <tr style="page-break-before:always">
+        <td style="padding: 10px;">
+
+            <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">
+                CREW: @(if (j != null) j else "NaN") DATE: @showMonthDayYear(lineitems.get(0).task) JOB: @(if (jo != null) jo.id + " " + jo.subdivision.customer.name + " " + jo.subdivision.name + " " + jo.lot + " " + (if (jo.item!=null) jo.item.name else "SALEITEM") + " " + (if (jo.plan!=null) " ("+jo.plan.name+" plan)") else "NaN"))
+            </h3>
+
+            <table class ="eachvendor" id ="@(if (j != null) j else "MISC")" style="width: 100%; height: auto; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+            <tbody>
+    <tr>
+
+        <td style="width: 0px;"></td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Lot/ID</td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Vendor</td>
+
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Item</td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Quantity</td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Rate</td>
+        <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$Saleprice</td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Note</td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">From</td>
+        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">verify PO</td>
+    </tr>
+    @lineitems.groupBy(p => ( p.task.crew, p.task.cardOrder)).toSeq.sortBy(_._1).map {
+    case ( (j,co) , lineitems) => {
+    @lineitems.map { l =>
+    <tr style="@(if(getinRange(l)==1) "border: 2px solid green;")">
+
+    <td style="width:0px;" data-item-type="@(if(l.itemType!=null) l.itemType.id)" data-href="@l.id" data-task-id="@l.task.id"  data-job-id="@l.job.id"></td>
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@{l.job.lot}  <a href="#" class="clicka">@{l.job.id}</a>  <br>    @{getYearMonthDay(l.task)}  <br>box: @l.task.cardOrder</td>
+
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        <input id="vendorSelect-@l.id" class="userAuthority, vendorSelect">
+        @(if(l.vendor!=null && l.vendor.name ) l.vendor.name)
+        </input>
+    </td>
+
+
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        @*stavi dropdown so vendorite i selektiraj go nasiot*@
+        <select id="itemSelect-@l.id" class="userAuthority, itemSelect">
+            <option value="@(if(l.item!=null) l.item.id)"  data-units="@(if(l.units!=null) l.units)">@(if(l.item!=null) l.item.name)</option>
+        </select>
+    </td>
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        <textarea   class="userAuthority, vendorSelect">@l.quantity</textarea >
+    </td>
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        <textarea  class="userAuthority, vendorSelect">@l.rate</textarea >
+    </td>
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        <textarea   class="userAuthority, vendorSelect" >@("%,.2f".format(l.saleprice))</textarea >
+    </td>
+
+
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        <textarea rows="2" cols="20" id ="@l.id" class="noteupdates">@(if (l.task != null && l.task.notes!= null) l.task.notes else "")</textarea>
+    </td>
+
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        @if(l.itemType !=null && l.itemType.id !=1){
+
+
+        <textarea style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 1) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 1) "From the yard" else "" )else "")</textarea >
+        <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 2) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 2) "Drop shipped" else "" )else "")</textarea >
+        <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 3) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 3) "Builder material" else "" )else "")</textarea >
+        <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 4) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 4) "Check notes" else "" )else "")</textarea >
+
+        }else{
+        <a href="#">labor</a>
+        }
+    </td>
+    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+        @if(l.itemType !=null && l.itemType.id !=1){
+        <input id = "addPo-@l.id" type="checkbox" value="@l.id" class="addtopo" @(if (l != null && l.task != null) (if(getposss(l)!= null && getposflag(l) == 0) "checked" else "" )else "")/>
+        } else {
+        <span style="@(if(getimagelabor(l)==1)  "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/labor.png")"/>
+        </span>
+        }
+    </td>
+
+    </tr>
+    }
+    }
+    }
+    </tbody>
+    </table>
+    </td>
+    <td></td>
+    </tr>
+    }
+    }
+    }
+    }
+
+    </body>
+</html>
+

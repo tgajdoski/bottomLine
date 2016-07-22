@@ -1,0 +1,18 @@
+@(user: User, saleitem: Saleitem)
+
+<tr class="saleitem" data-saleitem-id="@saleitem.id">
+    <td style="width: 20px;">@if(user.authority >= Secured.MANAGER){<a class="deleteSaleitem" style="cursor: pointer;">x</a>}</td>
+    <td style="width: 240px;"><textarea style="padding: 3px; margin: 0; white-space:pre-wrap; border: none; height: 1.2em; width: 100%;" class="name">@saleitem.name</textarea></td>
+    <td style="width: 60px;"><input class="quantity" value="@saleitem.quantity"/></td>
+    <td style="width: 48px;"><input class="units" value="@saleitem.units"/></td>
+    @if(user.authority >= Secured.MANAGER){<td style="width: 60px;"><input class="rate" value="@saleitem.rate"/></td>}
+    @if(user.authority >= Secured.MANAGER){<td style="width: 96px;"><input class="saleprice" value="@saleitem.saleprice"/></td>}
+    @if(user.authority >= Secured.MANAGER && saleitem.job != null){<td style="width: 52px;text-align:center;">
+        @if(saleitem.qb_refnumber!=null && saleitem.qb_refnumber!="" && saleitem.qb_refnumber!="ERR"){
+            <span class="salesorder">@Html(saleitem.qb_refnumber)</span>
+        }else{
+            <button class="invoice">INV</button>
+        }
+        @*class="form-control hasDatepicker"*@
+    </td>}
+</tr>

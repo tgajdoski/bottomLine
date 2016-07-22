@@ -1,0 +1,64 @@
+@(user: User, customer: Customer , subdivlist: List[Subdivision])
+   @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+
+    @scripts = @{Seq(
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery.validate.js",
+        "jquery.js",
+        "frontCustomer.js"
+    )}
+
+
+@frame_rd("Customer",user,"customers",stylesheets,scripts){
+  @*  @subdivs: List[Subdivision] = { models.Subdivision.findSubbyCustID(customer.id)}*@
+
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyX">
+            <fieldset class="custinfo">
+                <div class="title">Customer   <label class="custdivselected">@customer.name</label> </div>
+            </fieldset>
+            <table cellspacing="0">
+                <tr>
+
+                        <div class="alert alert-success">
+                        <a class="alert-link" href="/rd/customers/@customer.id"> Update customer infomation</a>
+                            </div>
+                    </tr>
+                     <tr>
+                         <fieldset class="subdiv" >
+                             <div class="title">Add a subdivision</div>
+                             <table cellspacing="0">
+                             <tr>
+                                 <td>
+                                <input type="text" id ="newSubdivision" class="form-control">
+                                 </td>
+                                 <td>
+                                 <input value="Add" type ="submit" class="buttonaddsubdivision">
+                                 </td>
+
+                             <td>
+                            <select id="subdivisionSelect" class="subdivisionSelector">
+                                <option value=""></option>
+                                @subdivlist.toSeq.sortBy(_.id).map { m =>
+                                    <option value="@m.id" data-url="@m.url">@m.name</option>
+                                }
+                            </select>
+                            @*        @helper.inputText(formCustomer("subdivision"), '_label -> "subdivision")*@
+
+                            @*tuka treba customer object da se ima za da se praka na subdivision*@
+                             </td>
+                             </tr>
+                             </table>
+                         </fieldset>
+
+                 </tr>
+             </table>
+         </div>
+    </div>
+}

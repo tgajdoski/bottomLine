@@ -1,0 +1,64 @@
+@(user: User)
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/jqueryui/dataTables.jqueryui.css">
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "../play-jquery-tabletools/css/TableTools.css",
+        "../play-jquery-tabletools/css/TableTools_JUI.css",
+        "jquery.dataTables.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        /*    "jquery.js",*/
+        "jquery.dataTables.js",
+        "../play-jquery-tabletools/js/TableTools.min.js",
+        "main_calendar_rd_jobcrew.js"
+    )}
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+
+
+
+
+            <div class="container theme-showcase" role="main">
+                <div class="row">
+                    <div class="col-sm-11">
+                        <div class="box-body">
+                            <div class="title"> Calendar Crew Report </div>
+                            <br>
+                                @* <table id="reporttable" class="dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="example_info" style="width: 100%;">*@
+                            <tr>
+                                <button id="printperjobs"  class="btn-excel">print PO job cards</button>
+                            </tr>
+                                <table id="reporttable" class="display dataTable" cellspacing="0" role="grid" aria-describedby=" profit report" style="width: 800px; table-layout:fixed; width: 100%;    ">
+                                    <thead>
+                                        <tr>
+                                            <th>Job#</th>
+                                            <th>Subdivision</th>
+                                            <th>Date</th>
+                                            <th>Crew</th>
+                                            <th>Item</th>
+                                            <th>QTY</th>
+                                            <th>Rate</th>
+                                            <th>Saleprice</th>
+                                            <th>Notes</th>
+                                            <th>From where</th>
+                                            <!--<th>Verify</th>-->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+}

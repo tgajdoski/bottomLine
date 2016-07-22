@@ -1,0 +1,32 @@
+@(u: User)
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("M/dd/yyyy h:mm:ss aaa");f.format(d)}
+
+<tr data-user-id="@u.id">
+
+   @* <td><a class="deleteUser"><img src="@routes.Assets.at("images/delete.png")" alt="delete user"/></a></td>*@
+    <td>@*<a class="deleteUser"><i class="fa fa-trash-o"></i></a>*@</td>
+    <td>@u.username</td>
+    <td>@(if(!u.logins.isEmpty) formatDate(u.logins.sortBy(_.updateTimestamp).last.updateTimestamp))</td>
+    <td>
+        <select class="userAuthority">
+            <option value="0"@(if(u.authority.toString=="0") " selected")>Inactive</option>
+            <option value="1"@(if(u.authority.toString=="1") " selected")>Crew Leaders</option>
+            <option value="2"@(if(u.authority.toString=="2") " selected")>Data Processor</option>
+            <option value="3"@(if(u.authority.toString=="3") " selected")>Field Manager</option>
+            <option value="4"@(if(u.authority.toString=="4") " selected")>Production Manager</option>
+            <option value="5"@(if(u.authority.toString=="5") " selected")>Accounting Manager</option>
+            <option value="6"@(if(u.authority.toString=="6") " selected")>Operations Manager</option>
+            <option value="7"@(if(u.authority.toString=="7") " selected")>Company Manager</option>
+        </select>
+    </td>
+    <td><a class="resetPassword">reset</a></td>
+    <td>
+        @if( !u.active ){
+            <input type="checkbox" class="actinact" value="0"> <br>
+        }
+        @if( u.active){
+            <input type="checkbox" checked class="actinact" value="@u.id"> <br>
+            }
+    </td>
+</tr>
+

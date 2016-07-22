@@ -1,0 +1,96 @@
+@(user: User, tasks: List[Task], itemType: ItemType, manager: User)
+@applyFilters(l: Lineitem) = @{
+    if (itemType!=null&&l.itemType!=itemType) false
+  /*  else if (manager!=null&&l.user!=manager) false*/
+    else if (l.taskType==null) false
+    else true
+}
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        "frontItemRedesigned.js"
+    )}
+
+@frame_rd("Item Report",user,"vendors",stylesheets,scripts) {
+
+    <style>
+    .ui-accordion-content{
+
+    height: auto !important;
+    }
+
+    table td{
+    border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+    }
+
+    table{
+    font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+    }
+
+
+    .btn-excel {
+    background-image: linear-gradient(to bottom, #5cb85c 0px, #419641 100%);
+    background-repeat: repeat-x;
+    border-color: #3e8f3e;
+    }
+    </style>
+
+
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+                    <a id="open" style="text-align: right; padding-right: 10px;">expand all</a>
+
+                    <div id="accordion" >
+                                @tasks.flatMap(_.lineitems).filter(applyFilters(_)).groupBy(_.vendor).map {
+                                    case (v, lineitems) => {
+                                        <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">@(if (v != null) v.name else "MISC")  @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice))) </h3>
+
+                                            <tr style="display: none;">
+                                            <td style="padding: 10px;">
+                                                <table class ="eachvendor" id ="@(if (v != null) v.id else "MISC")" style="width: 100%; height: auto; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+                                                    <tbody>
+                                                        <tr> <td>
+                                                            @(if (v != null) v.name else "MISC")  @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))
+                                                        </td></tr>
+                                                    @lineitems.map { l =>
+                                                    <tr>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@getYearMonthDay(l.task)</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@(if (l.item!=null) l.item.name)</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.job.subdivision.customer.name @l.job.subdivision.name @l.job.lot @l.job.id</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.quantity</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$@l.rate</td>
+                                                        <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$@("%,.2f".format(l.saleprice))</td>
+                                                    </tr>
+                                                    }
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
+                    </div>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 5px;">TOTAL:</td>
+                                <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.flatMap(_.lineitems).filter(applyFilters(_)).foldLeft(0.0d)(_ + _.saleprice)))</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit" id = "exall">Export all tables to Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

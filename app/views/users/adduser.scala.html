@@ -1,0 +1,42 @@
+@(user: User, formUser: Form[models.User])
+@import views.html.helper.FieldConstructor
+
+
+    @stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+    )}
+
+@scripts = @{Seq(
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery.validate.js",
+        "jquery.js",
+        "addusers.js"
+    )}
+
+    @implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+    <div class="row">
+                <div class="col-sm-6">
+    
+        <div class="box-body">
+            <div class="title">Add a user</div>
+                @helper.form(action = routes.Users_rd.saveUser(), 'id -> "signupForm") {
+                <fieldset>
+                    <br>
+                        @helper.inputText(formUser("username"), '_label -> "Username", 'class -> "form-control")
+                      @*  @helper.inputText(formUser("name"),  'class -> "form-control")*@
+                        @helper.inputText(formUser("email"),  'class -> "form-control")
+                        @helper.inputPassword(formUser("password"),  'class -> "form-control")
+                        @helper.inputPassword(formUser("repeatpassword"), '_label -> "Repeat Password",  'class -> "form-control")
+                </fieldset>
+                <input type="submit" class="btn btn-success" value="Save">
+                }
+            </div>
+    </div></div></div>
+}

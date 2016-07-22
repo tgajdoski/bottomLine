@@ -1,0 +1,7 @@
+@(customers: List[Customer])
+<select id="customerSelect">
+    <option></option>
+    @customers.toSeq.sortBy(_.name).map { customer =>
+    <option value="@customer.id" data-market-id="@(if (customer.market != null) customer.market.id)">@customer.name</option>
+    }
+</select>

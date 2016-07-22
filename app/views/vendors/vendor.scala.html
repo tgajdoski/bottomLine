@@ -1,0 +1,53 @@
+@(user: User,  formVendor: Form[Vendor], vend: Vendor)
+@import views.html.helper.FieldConstructor
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+    )}
+@scripts = @{Seq(
+        "jquery-1.7.1,js",
+        "jquery-1.9.0.min.js",
+        "jquery-play-1.7.1.js"
+    )}
+
+
+@implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+@frame_rd("vendor",user,"new vendor",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+    <div class="box-bodyX">
+        <table cellspacing="0">
+                <tr>
+                @helper.form(action = routes.Vendors_rd.updateVendor()) {
+                    <fieldset class="step2">
+                        <div class="title">Vendor  <label class="custdivselected">@vend.name<label> </div>
+
+                        <br>
+                        @helper.inputText(formVendor("name"), '_label -> "name", 'class -> "form-control-invisible")
+                        @helper.inputText(formVendor("address1"), '_label -> "address1", 'class -> "form-control")
+                        @helper.inputText(formVendor("address2"), '_label -> "address2", 'class -> "form-control")
+                        @helper.inputText(formVendor("city"),'_label -> "city", 'class -> "form-control")
+                        @helper.inputText(formVendor("state"),'_label -> "state", 'class -> "form-control")
+                        @helper.inputText(formVendor("zip"),'_label -> "zip", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_name"),'_label -> "contact name", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_number1"),'_label -> "contact number1", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_number2"),'_label -> "contact number2", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_fax"),'_label -> "contact fax", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_email1"),'_label -> "contact email1", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_email2"),'_label -> "contact email2", 'class -> "form-control")
+                        @helper.inputText(formVendor("contact_email3"),'_label -> "contact email3", 'class -> "form-control")
+
+                        <input type="hidden" name="id"  value="@vend.id">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </fieldset>
+                    }
+                </tr>
+
+        </table>
+    </div>
+    </div>
+}

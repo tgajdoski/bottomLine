@@ -1,0 +1,6 @@
+@(task: Task)
+
+
+    <span class="openTaskMask"  data-job-id= "@task.job.id" data-task-id="@task.id" style="font-weight: bold; float: right;"> <img src="@routes.Assets.at("images/adds.png")"/></span>
+   <input type="checkbox" class="checkreschedule"   data-job-id= "@task.job.id" data-task-id="@task.id" name="reschedule" value="@task.job.id" style="font-weight: bold; ">
+<br>

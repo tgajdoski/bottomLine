@@ -1,0 +1,136 @@
+@(user: User, lineitems: List[Lineitem], vendors: List[Vendor], customers: List[Customer], pos: List[Lineitempos])
+
+
+    @getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+    @getposflag(li: Lineitem) = @{
+        if (getposss(li)!= null){
+            getposss(li).historyflag
+        }
+        else
+            1
+    }
+
+
+    @getposdrop(li: Lineitem) = @{
+        if (getposss(li)!= null){
+            getposss(li).fromwhere
+        }
+        else
+            1
+    }
+
+    @getposss(li: Lineitem) = @{
+        if (li!= null){
+            pos.find(_.lineitemid == li.id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        "purchase_rd_cust.js"
+    )}
+
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+
+    <head>
+        <meta charset="utf-8"/>
+        <title>PO total vendor view</title>
+    </head>
+    <body>
+    @lineitems.groupBy(p => (p.job)).map {
+        case ((j), lineitems) => {
+                    <tr style="page-break-before:always">
+                        <td style="padding: 10px;">
+
+                            <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">
+                                JOB:
+                                @(if (j != null) j.id + " LOT: " + j.lot else "NaN")
+                                TOTAL:
+                                @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))
+                            </h3>
+
+
+                            <table class ="eachvendor" style="width: 100%; height: auto; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+                                <tbody>
+                                    <tr>
+                                        @*  <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Market</td>
+                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Customer </td>
+                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Subdivision</td>*@
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Date</td>
+                                    <td style="display: none;"></td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;  border-bottom: 1px solid #ccc; ">Crew</td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;  border-bottom: 1px solid #ccc; ">Item</td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">Quantity</td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">Rate</td>
+                                    <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">$Saleprice</td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;  border-bottom: 1px solid #ccc;">Note</td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;  border-bottom: 1px solid #ccc;">From</td>
+                                    <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;  border-bottom: 1px solid #ccc;">ver</td>
+                                    </tr>
+
+                                    @lineitems.map { l =>
+                                        <tr>
+                                            @* <td>
+                                            MARKET:
+                                            @(if (l.job != null && l.job.market != null) l.job.market.city + " " + l.job.market.state else "NaN")
+                                            </td>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.job.subdivision.customer.name </td>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.job.subdivision.name</td>*@
+                                        @*    <td style="width:0px;" data-href="@l.id" data-task-id="@l.task.id" data-job-id="@l.job.id"></td>*@
+
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@{getYearMonthDay(l.task)}</td>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.task.crew</td>
+                                            <td style="display: none;">
+                                                @*stavi dropdown so vendorite i selektiraj go nasiot*@
+                                                <select  id="vendorSelect-@l.id" class="userAuthority, vendorSelect">
+                                                @vendors.toSeq.sortBy(_.id).map { m =>
+                                                    <option value="@m.id" @(if(l.vendor!=null && l.vendor.id == m.id) "selected=\"selected\"")>@m.name</option>
+                                                }
+                                                </select>
+                                            </td>
+                                            <td id="itemSelect-@l.id"  class="userAuthority, itemSelect" style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@(if (l.item!=null && l.item.name!=null) l.item.name)</td>
+                                            <td id = "quantity-@l.id"  class="form-control, quantity" style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.quantity</td>
+                                            <td id = "price-@l.id"  class="form-control, price" style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.rate</td>
+                                            <td id = "total-@l.id"  class="form-control, total" style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@("%,.2f".format(l.saleprice))</td>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                <textarea rows="2" cols="20" id ="@l.id" class="noteupdates">@(if (l.task != null && l.task.notes!= null) l.task.notes else "")</textarea>
+                                            </td>
+
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 1) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 1) "From the yard" else "" )else "")</textarea >
+                                                <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 2) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 2) "Drop shipped" else "" )else "")</textarea >
+                                                <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 3) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 3) "Builder material" else "" )else "")</textarea >
+                                                <textarea  style="@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 4) "display:inline" else "display:none" )else "display:none")">@(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 4) "Check notes" else "" )else "")</textarea >
+                                            </td>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                <textarea  class="userAuthority, vendorSelect">
+                                                @(if (l != null && l.task != null) (if(getposss(l)!= null && getposflag(l) == 0) "y" else "n" )else "n")
+                                                </textarea >
+                                            </td>
+                                        </td>
+
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+
+                    </tr>
+        }
+    }
+
+    </body>
+</html>

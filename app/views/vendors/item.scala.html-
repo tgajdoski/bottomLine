@@ -1,0 +1,18 @@
+@(myForm: Form[Item])
+
+@helper.form(action = routes.Vendors.updateItem()) {
+<input type="hidden" name="id" value="@myForm("id").value"/>
+@helper.select(
+    myForm("itemType.id"),
+    options = helper.options(ItemType.options()),
+    '_label -> "item type",
+    '_showConstraints -> false
+)
+@helper.inputText(myForm("name"), '_showConstraints -> false)
+<input type="submit">
+}
+<br/>
+@helper.form(action = routes.Vendors.deleteItem()) {
+<input type="hidden" name="id" value="@myForm("id").value"/>
+<input type="submit" value="Delete">
+}

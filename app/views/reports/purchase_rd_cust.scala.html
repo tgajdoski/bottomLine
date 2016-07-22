@@ -1,0 +1,207 @@
+@(user: User, lineitems: List[Lineitem], vendors: List[Vendor], customers: List[Customer], pos: List[Lineitempos])
+
+
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+    @getposflag(li: Lineitem) = @{
+        if (getposss(li)!= null){
+            getposss(li).historyflag
+        }
+        else
+            1
+    }
+
+
+
+
+    @getposdrop(li: Lineitem) = @{
+        if (getposss(li)!= null){
+            getposss(li).fromwhere
+        }
+        else
+            1
+    }
+
+    @getposss(li: Lineitem) = @{
+        if (li!= null){
+            pos.find(_.lineitemid == li.id).getOrElse(null)
+            }
+        else
+            null
+    }
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        "purchase_rd_cust.js"
+    )}
+
+@frame_rd("Purchasing Customer View Report",user,"purchase",stylesheets,scripts) {
+
+    <style>
+    .ui-accordion-content{
+
+    height: auto !important;
+    }
+
+    table td{
+    border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+    }
+
+    table{
+    font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+    }
+
+
+    .btn-excel {
+    background-image: linear-gradient(to bottom, #5cb85c 0px, #419641 100%);
+    background-repeat: repeat-x;
+    border-color: #3e8f3e;
+    }
+    </style>
+
+
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+                    <a id="open" style="text-align: right; padding-right: 10px;">expand all</a>
+                    <tr>
+                        <button id="printtotals"  class="btn-excel">print to pdf</button>
+                    </tr>
+                  @*  <tr>
+                        <button id="printtot"  class="btn-excel">print totals</button>
+                    </tr>*@
+                    <tr>
+                        <button id="printtotorder"  class="btn-excel">print totals</button>
+                    </tr>
+                    <tr>
+                        <button id="printperjobs"  class="btn-excel">print PO job cards</button>
+                    </tr>
+                    <div id="accordion" >
+                                @lineitems.groupBy(p => (p.job.subdivision.customer,  p.job.subdivision)).map {
+                                    case ((c, s), lineitems) => {
+                                        <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">
+                                       @*     MARKET:
+                                            @(if (m != null ) m.city + " " + m.state else "NaN")
+                                            VENDOR:
+                                            @(if (v != null) v.name else "MISC")  @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))
+                                          *@  @* @(if (v != null) v.name else "MISC")  @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))*@
+                                            CUSTOMER:
+                                            @(if (c != null ) c.name else "NaN")
+                                            SUBDIVISION:
+                                            @(if (s != null ) s.name else "NaN")
+                                            TOTAL:
+                                            @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))
+                                        </h3>
+
+
+
+                                        <tr style="display: none;">
+                                            <td style="padding: 10px;">
+                                                <table class ="eachvendor" id ="@(if (c != null) c.name else "MISC")" style="width: 100%; height: auto; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+                                                    <tbody>
+                                                        <tr>
+                                                          @*  <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Market</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Customer </td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Subdivision</td>*@
+                                                            <td style="width: 0px;"></td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Lot/ID</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Vendor</td>
+
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Item</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Quantity</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Rate</td>
+                                                            <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$Saleprice</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">Note</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">From</td>
+                                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">verify PO</td>
+                                                        </tr>
+
+                                                        @lineitems.map { l =>
+                                                            <tr>
+
+                                                                <td style="width:0px;" data-item-type="@(if(l.itemType!=null) l.itemType.id)" data-href="@l.id" data-task-id="@l.task.id"  data-job-id="@l.job.id"></td>
+                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@{l.job.lot}  <a href="#" class="clicka">@{l.job.id}</a>  <br>    @{getYearMonthDay(l.task)}</td>
+
+                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                                    @*stavi dropdown so vendorite i selektiraj go nasiot*@
+                                                                    <select id="vendorSelect-@l.id" class="userAuthority, vendorSelect">
+                                                                        @vendors.toSeq.sortBy(_.id).map { m =>
+                                                                                <option value="@m.id" @(if(l.vendor!=null && l.vendor.id == m.id) "selected=\"selected\"")>@m.name</option>
+                                                                        }
+                                                                    </select>
+                                                                </td>
+
+@*                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@(if (l.item!=null) l.item.name)</td>*@
+                                                                <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                                    @*stavi dropdown so vendorite i selektiraj go nasiot*@
+                                                                    <select id="itemSelect-@l.id" class="userAuthority, itemSelect">
+                                                                       <option value="@(if(l.item!=null) l.item.id)"  data-units="@(if(l.units!=null) l.units)">@(if(l.item!=null) l.item.name)</option>
+                                                                    </select>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "quantity-@l.id" type="text" placeholder= "0.0" name="" value="@l.quantity" class="form-control, quantity" style="width: 45px; float: left; margin-right: 5px;"/>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "price-@l.id"   type="text" name="" value="@l.rate" class="form-control, price"  style="width: 45px; float: left; margin-right: 5px;"/>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "total-@l.id" readonly type="text" name="" value="@("%,.2f".format(l.saleprice))" class="form-control, total" style="width: 50px; float: left; margin-right: 5px;"/>
+                                                                </td>
+
+                                                                <td>
+                                                                    <textarea rows="2" cols="20" id ="@l.id" class="noteupdates">@(if (l.task != null && l.task.notes!= null) l.task.notes else "")</textarea>
+                                                                </td>
+
+                                                                <td>
+                                                                    <select id="itemNoteselect-@l.id" class ="fromdropdown">
+                                                                        <option value="0"  @(if (l == null || getposss(l)== null ) "selected=\"selected\"" else "" )else "")></option>
+                                                                        <option value="1"  @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 1) "selected=\"selected\"" else "" )else "")>From the yard</option>
+                                                                        <option value="2" @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 2) "selected=\"selected\"" else "" )else "")>Drop shipped</option>
+                                                                        <option value="3" @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 3) "selected=\"selected\"" else "" )else "")>Builder material</option>
+                                                                        <option value="4" @(if (l != null) (if(getposss(l)!= null && getposdrop(l) == 4) "selected=\"selected\"" else "" )else "")>Check notes</option>
+                                                                   </select>
+                                                                </td>
+                                                                <td>
+                                                                    <input id = "addPo-@l.id" type="checkbox" value="@l.id" class="addtopo" @(if (l != null && l.task != null) (if(getposss(l)!= null && getposflag(l) == 0) "checked" else "" )else "")/>
+                                                                </td>
+                                                               @* @if(user.authority >= Secured.MANAGER && l.job != null){<td style="width: 52px;text-align:center;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                                    @if(l.qb_refnumber!=null && l.qb_refnumber!="" && l.qb_refnumber!="ERR" && l.itemType!= null){
+                                                                        @Html(l.qb_refnumber)
+                                                                    }
+                                                                    @if(l.qb_refnumber==null||l.qb_refnumber==""||l.qb_refnumber=="ERR"){
+                                                                        <label class="invoice">NO INV</label>
+                                                                    }
+                                                                </td>}*@
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
+
+                    </div>
+                   @* <table>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 5px;">TOTAL:</td>
+                                <td style="padding: 5px;text-align: right;">$@("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))</td>
+                            </tr>
+                        </tbody>
+                    </table>*@
+                    <button type="submit" id = "exall">Export all tables to Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

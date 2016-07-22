@@ -1,0 +1,115 @@
+@(user: User, markets: List[Market],  vendors: List[Vendor])
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/jqueryui/dataTables.jqueryui.css">
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+@scripts = @{Seq(
+    "jquery-1.10.2.js",
+    "jquery-ui.js",
+/*    "jquery.js",*/
+    "jquery.dataTables.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "listlabor.js"
+
+)}
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="box-body">
+                    <div class="title"> Labor report </div>
+                    <br>
+                       <table cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <p style="padding-left: 20px;">
+                                        <label> <span>Select market </span> </label>
+                                        <br>
+
+                                        <select  id="marketSelect" class="userAuthority">
+                                            <option value="0">All Markets</option>
+                                            @markets.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                                            }
+                                        </select>
+                                        <br>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p style="padding-left: 20px;">
+                                        <label> <span>Select vendor </span> </label>
+                                        <br>
+                                        <select id="vendorSelect" class="userAuthority">
+                                            <option value="">All Vendors</option>
+                                            @vendors.toSeq.sortBy(_.name).map { m =>
+                                            <option value="@m.id">@m.name</option>
+                                            }
+                                        </select>
+                                        <br>
+                                        </p>
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+
+                                            <td>
+                                                <p style="padding-left: 20px;">
+                                                 <label> <span>Select start date </span> </label>
+                                                    <input type="text" class ="form-control" id="startdatepicker"></p>
+                                            </td>
+                                            <td>
+                                                <p style="padding-left: 20px;">
+                                                    <label> <span>Select end date</span> </label>
+                                                    <input type="text" class ="form-control" id="enddatepicker" ></p>
+                                            </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                        <div>
+                        <p>
+                            <button type="submit" class="btn btn-success">Run report</button>
+                        </p>
+                    </div>
+
+                    <div id="reportot" style="margin-right:50px;margin-top:70px;float:left; width: 100%;">
+
+                        <table id="reporttable" class="display dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="overall profit report" style="width: 100%;">
+                            <thead>
+                            <tr>
+                                <th>id#</th>
+                                <th>Labor date</th>
+                                <th>Market</th>
+                                <th>Vendor</th>
+                                <th>Vend id</th>
+                                <th>Hours</th>
+                                <th>Total $ amount</th>
+                                <th>bill date</th>
+                                <th>Note</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                        <tr>
+                            <td>
+                                <button id="qbexport"  class="btn-excel">export to QB format</button>
+                            </td>
+                        </tr>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}

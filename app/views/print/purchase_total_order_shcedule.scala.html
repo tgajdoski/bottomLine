@@ -1,0 +1,73 @@
+@(user: User,  vendors: List[Vendor], lineitems: List[LineitemTotals])
+
+    @getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+    @getFormatedDate(d: Date) = @{val f = new java.text.SimpleDateFormat("MM-dd-yyyy");f.format(d)}
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        "purchase_rd_total.js"
+    )}
+
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+
+    <head>
+        <meta charset="utf-8"/>
+        <title>PO total vendor view</title>
+    </head>
+    <body>
+    @lineitems.groupBy(p => (p.crew)).map {
+        case ((c), lineitems) => {
+            <tr style="page-break-before:always">
+                        <td style="padding: 10px;">
+
+                                <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">
+                                  @*  @(if (d != null ) getFormatedDate(d) else "NaN")*@
+                                    CREW:
+                                       @(if (c != null ) c else "NaN")
+                                    @* MARKET:
+                                    @(if (m != null )m else "NaN")
+                                    VENDOR:
+                                    @(if (v != null) v else "MISC")
+                                    SUBDIVISION:
+                                    @(if (s != null ) s else "NaN")
+                                    TOTAL:
+                                    @("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))*@
+                                </h3>
+
+
+                            <table style="width: 100%; height: auto; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">Item</td>
+                                            <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">Quantity</td>
+                                            <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc;">Date</td>
+                                        </tr>
+
+
+                                          @lineitems.map { l =>
+                                        <tr >
+                                            <td  style=" border-left:1px solid #ccc;">@l.item</td>
+                                            <td>@l.quantity</td>
+                                            <td>@getFormatedDate(l.taskDate)</td>
+                                         </tr>
+                                        }
+
+
+                                    </tbody>
+                                </table>
+                        </td>
+                    </tr>
+                }
+            }
+    </body>
+</html>

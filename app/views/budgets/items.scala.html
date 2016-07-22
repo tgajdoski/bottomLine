@@ -1,0 +1,11 @@
+@(vendorItems: List[VendorItem], itemType: Long)
+<select id="itemSelect">
+    <option data-item-type-id="" data-vendor-item-id="" data-default-rate="0"></option>
+    @vendorItems.filter(_.item!=null).filter(_.item.itemType.name!="sale").groupBy(_.item).toSeq.sortBy(_._1.name).map {
+    case (item, vendorItems) => {
+    @if(itemType==null||item.itemType.id==itemType){
+    <option value="@item.id" data-item-type-id="@item.itemType.id" data-vendor-item-id="@vendorItems.head.id" data-default-rate="@vendorItems.head.default_rate" data-default-units="@vendorItems.head.default_units">@item.name</option>
+    }
+    }
+    }
+</select>

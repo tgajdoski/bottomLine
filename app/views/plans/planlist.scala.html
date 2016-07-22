@@ -1,0 +1,114 @@
+@(user: User, plans: List[Plan], customers: List[Customer], formPlan: Form[models.Plan])
+
+@*<link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">*@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    /*   "datatables.responsive.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",*/
+    "jquery.dataTables.css",
+    "theme.css"
+
+)}
+@scripts = @{Seq(
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "jquery.validate.js",
+   /* "jquery.js",*/
+    "jquery.dataTables.js",
+   /* "dataTables.tableTools.js",*/
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "manageplan.js"
+)}
+
+
+<div class="col-sm-user">
+    @frame_rd("Plan Administration",user,"plan",stylesheets,scripts){
+        <div class="box-body">
+            <table id="plans" class="display">
+                <thead>
+                <tr aaa="">
+                    <th><a href="#" id ="linkaddnewvendor">ADD NEW</a></th>
+                    <th><div class="title">Plan</div></th>
+                    <th><div class="title">Customer</div></th>
+                    <th><div class="title">Ac</div></th>
+                </tr>
+                </thead>
+               @*     @plans.filter(!_.name.isEmpty).sortBy(_.name).map { c =>
+                        @views.html.plans.plan_rd(c)
+                    }
+                    @plans.filter(_.name.isEmpty).map { c =>
+                        @views.html.plans.plan_rd(c)
+                    }*@
+                <tbody>
+                    <tr aaa="">
+                       @* <th></th>
+                        <th>row 1 data</th>
+                        <th>row 2 data</th>*@
+                    </tr>
+                </tbody>
+            </table>
+         </div>
+    }
+</div>
+
+
+
+
+
+<div class="modal" id="planmodam" style="">
+    <div class="box-bodyX">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+            <div class="title">
+                <label id="vendivselectedtext">Add new Plan</label>
+            </div>
+
+        </div>
+        <div class="modal-body">
+            <table cellspacing="0">
+                <tr>
+                    <td>
+                        <fieldset class="newCustomerview">
+                            <label class="mylabel">select customer</label>
+                            <select id="newCustomerMarket" class="userAuthority">
+                                <option value=""></option>
+                                @customers.toSeq.sortBy(_.id).map { m =>
+                                    <option value="@m.id">@m.name</option>
+                                }
+                            </select>
+                            <div id="selecttemplate">
+                                <label class="mylabel">select template</label>
+                                <select id="newtemplate" class="userAuthority">
+                                    @*   <option value=""></option>
+                                   @plans.filter( x=> ( x.customer == null || x.customer.id == 123)).toSeq.sortBy(_.name).map { t =>
+                                        <option value="@t.id">@t.name</option>
+                                    }*@
+                                </select>
+                            </div>
+                            <div class="newcust">
+                                <label>Plan name</label>
+                                <input type="text" id ="newplanname"  class="form-control">
+                                <input value="Add Plan" type = "submit" id="buttonaddplan" class="btn btn-success">
+                            </div>
+
+                        </fieldset>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" id="close">Close</a>
+            @*    <input type="submit" class="btn btn-success" value="Save">*@
+        </div>
+
+    </div>
+</div>
+

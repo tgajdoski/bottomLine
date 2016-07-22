@@ -1,0 +1,7 @@
+@(users: List[User])
+<select id="userSelect">
+    <option></option>
+    @users.toSeq.sortBy(_.username).map { user =>
+    <option value="@user.id">@user.username</option>
+    }
+</select>

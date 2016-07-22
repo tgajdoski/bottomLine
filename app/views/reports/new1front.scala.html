@@ -1,0 +1,209 @@
+@(user: User, markets: List[Market], managers: List[User], customers: List[Customer], jobCategories: List[JobCategory])
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/jqueryui/dataTables.jqueryui.css">
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+@scripts = @{Seq(
+    "jquery-1.10.2.js",
+    "jquery-ui.js",
+/*    "jquery.js",*/
+    "jquery.dataTables.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "new1front.js"
+)}
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="box-body">
+                    <div class="title"> verified job profit report </div>
+                    <br>
+
+                        <table cellspacing="0">
+                            <tbody>
+
+                                <tr>
+                                    <td>
+                                        <label> <span>insert job number</span> </label>
+                                        <br>
+                                        <p><input type="text" class ="form-control" id="jobidto" ></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @*  <label> <span> OR </span> </label>*@
+                                        <br>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label> <span> OR </span> </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <br>
+                                       @* <label> <span>  </span> </label>*@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label> <span>Select market </span> </label>
+                                        <br>
+
+                                        <select multiple id="marketSelect" class="userAuthority"  style="height:125px;">
+                                            <option value="">All Markets</option>
+                                            @markets.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>
+                                    <td>
+                                        <label> <span>Select job category </span> </label>
+                                        <br>
+
+                                        <select multiple id="reportJobCategory" class="userAuthority" style="height:125px;">
+                                            <option value="">All Job Categories</option>
+                                            @jobCategories.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id">@m.name</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>
+                                </tr>
+                                <tr>
+                                   @* <td>
+                                        <label> <span>Select manager </span> </label>
+                                        <br>
+
+                                        <select id="managerSelect" class="userAuthority">
+                                            <option value="">All Managers</option>
+                                            @managers.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id">@m.name</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>
+*@
+
+                                    <td>
+                                        <label> <span>Select Customer </span> </label>
+                                        <br>
+
+                                        <select id="customerSelect" class="userAuthority">
+                                            <option value="">All Customers</option>
+                                            @customers.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id">@m.name</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>
+                                    <td>
+                                        <label> <span>Select Subdivision </span> </label>
+                                        <br>
+                                        <select id="subdivisionSelect" class="userAuthority">
+                                        </select>
+                                        <br>
+                                    </td>
+                                  @*  <td>
+                                        <label> <span>Select Crew Leader </span> </label>
+                                        <br>
+
+                                        <select id="crewLeaderselect" class="userAuthority">
+                                            <option value="">All Managers</option>
+                                            @managers.filter(_.authority==1).toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id">@m.name</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>*@
+
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <p> <label> <span>Select start date </span> </label>
+                                            <input type="text" class ="form-control" id="startdatepicker"></p>
+                                    </td>
+                                    <td>
+                                        <p style="padding-left: 20px;"><label> <span>Select end date </span> </label>
+                                            <input type="text" class ="form-control" id="enddatepicker" ></p>
+                                    </td>
+                                </tr>
+                                <tr>
+
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+
+                    <div>
+                        <p>
+                            <button type="submit" class="btn btn-success">Report</button>
+                        </p>
+                    </div>
+
+
+                    <div id="reportot" style="margin-right:50px;margin-top:70px;float:left; width: 100%;">
+
+                       @* <table id="reporttable" class="dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="example_info" style="width: 100%;">*@
+                        <table id="reporttable" class="display dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="overall profit report" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Job#</th>
+                                    <th>Job Description</th>
+                                    <th>Sale</th>
+                                    <th>Actual Cost</th>
+                                    <th>Budgeted Cost</th>
+                                    <th>Profit</th>
+                                    <th>Profit Margin</th>
+                                    <th>Over Budget</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+
+                        <br>
+                        <br>
+                        <hr>
+                        <table class="display" style="margin-left:40px;width:960px;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 5px;text-align: right;"></th>
+                                    <th style="padding: 5px;text-align: right;">Sale</th>
+                                    <th style="padding: 5px;text-align: right;">Actual Sale</th>
+                                    <th style="padding: 5px;text-align: right;">Budgeted  Cost</th>
+                                    <th style="padding: 5px;text-align: right;">Profit</th>
+                                    <th style="padding: 5px;text-align: right;">Profit Margin</th>
+                                    <th style="padding: 5px;text-align: right;">Over Budget</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 5px;text-align: right;">TOTAL:</td>
+                                    <td id = "totalsale" style="padding: 5px;text-align: right;"></td>
+                                    <td id = "totalctualcost" style="padding: 5px;text-align: right;"></td>
+                                    <td id = "totalbudcost" style="padding: 5px;text-align: right;"></td>
+                                    <td id = "totalprofit" style="padding: 5px;text-align: right;"></td>
+                                    <td id = "totalprofitmargin" style="padding: 5px;text-align: right;"></td>
+                                    <td id = "totaloverbudget" style="padding: 5px;text-align: right;"></td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

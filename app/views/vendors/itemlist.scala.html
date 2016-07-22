@@ -1,0 +1,90 @@
+@(user: User, items: List[Item], itemstps: List[ItemType])
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+@scripts = @{Seq(
+    "jquery.validate.js",
+    "jquery.dataTables.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "manageitems.js"
+)}
+
+<div class="col-sm-user">
+    @frame_rd("Item Administration",user,"items",stylesheets,scripts){
+        <div class="box-body">
+            <table id="items" class="display">
+                <thead>
+                <tr>
+                    <th><a href="#" id ="linkaddnewvendor">ADD NEW</a></th>
+                    <th><div class="title">Name</div></th>
+                    <th><div class="title">Type</div></th>
+                    <th><div class="title">Active</div></th>
+                </tr>
+                </thead>
+                    @items.filter(!_.name.isEmpty).sortBy(_.name).map { c =>
+                        @views.html.vendors.itm_rd(c)
+                    }
+                    @items.filter(_.name.isEmpty).map { c =>
+                        @views.html.vendors.itm_rd(c)
+                    }
+
+            </table>
+         </div>
+    <tr>
+        <td>
+            <button id="qbexport"  class="btn-excel">export to QB format</button>
+        </td>
+    </tr>
+    }
+</div>
+
+<div class="modal" id="itemmodal" style="">
+    <div class="box-bodyX">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <div class="title">
+                <label id="itemdivselectedtext"></label>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <table cellspacing="0">
+                <tr>
+
+                    <label class="mylabel">Select Item type</label>
+                    <select id="newItemtype" class="itemtypeSelect">
+                        <option value=""></option>
+                        @itemstps.toSeq.sortBy(_.id).map { m =>
+                            <option value="@m.id">@m.name</option>
+                        }
+                    </select>
+                    <div class="newitem">
+                        <label>Item name</label>
+                        <input type="text" id ="newItemName"  class="form-control">
+                        <input value="Add Item" type = "submit" id="buttonadditem">
+                        <input id="addorupdate" type="hidden"   value="0">
+                        <input type="hidden" name="id"   value="">
+                    </div>
+                </tr>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <a href="#" class="btn" id="close">Close</a>
+            @*    <input type="submit" class="btn btn-success" value="Save">*@
+        </div>
+
+    </div>
+</div>

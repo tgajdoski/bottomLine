@@ -1,0 +1,48 @@
+@(user: User, planItem: PlanItem, dimensions: List[Dimension])
+
+<div data-plan-item="@planItem.id" class="@planItem.name">
+    <table class="planitemheader" style="width:960px;">
+        <tr>
+            <th style="text-align:left;width:116px;" rowspan="2">@planItem.name.toUpperCase&nbsp;@if(user.authority >= Secured.MANAGER){<a class="addition" style="cursor: pointer;">+</a>&nbsp;/&nbsp;<a class="subtraction" style="cursor: pointer;">-</a>}</th>
+            <th style="width:76px;"></th>
+            <th colspan="2" style="width:192px;">Length</th>
+            <th colspan="2" style="width:192px;">Width</th>
+            <th colspan="2" style="width:192px;">Depth</th>
+            <th style="width:96px;"></th>
+            <th style="width:96px;"></th>
+        </tr>
+        <tr>
+            <th style="width:76px;"></th>
+            <th style="width:96px;">Feet</th>
+            <th style="width:96px;">Inches</th>
+            <th style="width:96px;">Feet</th>
+            <th style="width:96px;">Inches</th>
+            <th style="width:96px;">Feet</th>
+            <th style="width:96px;">Inches</th>
+            <th style="width:96px;">Feet</th>
+            <th style="width:96px;">Yards</th>
+        </tr>
+    </table>
+    <table class="planitem" style="width:960px;">
+        <tbody>
+        @dimensions.map { dimension =>
+        @views.html.plans.dimension(user, dimension)
+        }
+        </tbody>
+    </table>
+    <table class="planitemtotals">
+        <tr>
+            <td style="width:20px;"></td>
+            <td style="width:153px;"></td>
+            <td style="width:19px;"></td>
+            <td style="width:96px;">LN FT:</td>
+            <td class="lnft" style="text-align:right;width:96px;"/></td>
+            <td style="width:96px;">SQ FT:</td>
+            <td class="sqft" style="text-align:right;width:96px;"/></td>
+            <td style="width:96px;"></td>
+            <td style="width:96px;">CUBIC:</td>
+            <td class="cuft" style="text-align:right;width:96px;"/></td>
+            <td class="cuyds" style="text-align:right;width:96px;"/></td>
+        </tr>
+    </table>
+</div>

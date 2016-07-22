@@ -1,0 +1,10 @@
+@(user: User, attachment: Attachment)
+
+<tr data-attachment-id="@attachment.id">
+    <td>
+        <a href="/attachments/@attachment.attachment_path" target="_blank">@attachment.attachment_path</a>
+    </td>
+    <td>
+        @if(user.authority >= Secured.MANAGER){<a class="deleteAttachment">x</a>}
+    </td>
+</tr>

@@ -1,0 +1,7 @@
+@(subdivisions: List[Subdivision])
+<select id="subdivisionSelect">
+    <option></option>
+    @subdivisions.toSeq.sortBy(_.name).map { subdivision =>
+    <option value="@subdivision.id">@subdivision.name</option>
+    }
+</select>

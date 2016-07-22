@@ -1,0 +1,185 @@
+
+$(document).ready(function() {
+
+
+    $('#assigntask').hide();
+
+    var d = new Date();
+    var jobMarket = 0;
+    var selectedJob = 0;
+
+    function getMonday(d) {
+        var day = d.getDay(),
+            diff = d.getDate() - day + (day == 1 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    }
+    function formatDate(date) {
+        var d = new Date(date),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [year, month, day].join('-');
+    }
+
+
+
+
+
+    $(".close").click(function() {
+        $('#assigntask').hide();
+    });
+
+    $("#close").click(function() {
+        $('#assigntask').hide();
+    });
+
+
+    $(function() {
+        $( "#calendarmalendar" ).datepicker();
+        $( "#calendarmalendar" ).datepicker( "option", "dateFormat",'yy-mm-dd' );
+        $( "#calendarmalendar").val($.datepicker.formatDate('yy-mm-dd', new Date()));
+    });
+
+    datatablefunctions();
+
+
+
+    $('#buttonassign').click( function() {
+    // alert( table.rows('.selected').data().length +' row(s) selected' );
+        var table = $('#planbudgetlists').DataTable();
+        var celstring  = "";
+        var rowCount = 0; // table.rows('.selected').data().length
+
+        (table.rows('.selected')).each(function() {
+            //   celstring+= this[0][rowCount] + " ";
+            var idnja = table.rows('.selected')[0];
+            for (var i=0; i<idnja.length; i++)
+            {
+                celstring+=  $("#planbudgetlists tbody tr").eq(idnja[i]).attr('id')+ " ";
+            }
+        });
+        // alert(celstring);
+        updateLineItemAssignments(celstring);
+
+    } );
+
+
+});
+
+
+
+
+function datatablefunctions(){
+
+    $("#planbudgetlists").DataTable({
+        "bPaginate": false,
+        "info":     false,
+        "bFilter": false,
+        'bSortable' : false
+    });
+
+
+    var table = $('#planbudgetlists').DataTable();
+    $("#planbudgetlists tbody").on('click','tr', function() {
+        $(this).toggleClass('selected');
+    });
+
+
+
+    var startPosition;
+    var endPosition;
+    $("#planbudgetlists tbody").sortable({
+        cursor: "move",
+        start:function(event, ui){
+            startPosition = ui.item.prevAll().length + 1;
+        },
+        update: function(event, ui) {
+            endPosition = ui.item.prevAll().length + 1;
+            //   alert('Start Position: ' + startPosition + ' End Position: ' + endPosition);
+            updateLineItemOrder();
+        }
+    });
+
+
+
+    $('#buttonaddign').click( function() {
+        window.scrollTo(0, 0);
+        $('#assigntask').show();
+    } );
+
+}
+
+
+function updateLineItemOrder(){
+    var celstring  = "";
+    var rowCount = $('#planbudgetlists tr').length
+
+    $('#planbudgetlists > tbody > tr').each(function() {
+        celstring+= this.id + " ";
+        $(this).removeClass('selected');
+    });
+
+    jsRoutes.controllers.Plans_rd.reorderLineItems().ajax(
+        {
+            type: "POST",
+            data: {
+                lineitemsid: celstring
+            },
+            success: function(datasub) {
+                refreshme();
+            },
+            error: function(err) {
+                return alert("There was an error saving plan budget lines order.");
+            }
+        });
+}
+
+function updateLineItemAssignments(linitemsspilit){
+
+
+    if ($('#calendarmalendar').val() !="")
+    var selectedDate = $('#calendarmalendar').val();
+
+    jsRoutes.controllers.Plans_rd.reorderLineItemDates().ajax(
+        {
+            type: "POST",
+            data: {
+                lineitemsid: linitemsspilit,
+                datesel : selectedDate
+            },
+            success: function(datasub) {
+                refreshme();
+                $('#assigntask').hide();
+            },
+            error: function(err) {
+                return alert("There was an error saving plan budget lines dates.");
+            }
+        }
+    );
+
+}
+
+function refreshme(){
+
+    var planidno = $("#totals").attr("data-plan-id");
+        jsRoutes.controllers.Plans_rd.reorderLineItemRefresh().ajax(
+            {
+                type: "GET",
+                data: {
+                    planid: planidno
+                },
+                success: function(datasub) {
+                    $("#budget").empty().append(datasub);
+                    datatablefunctions();
+                },
+                error: function(err) {
+                    return alert("There was an error refreshing plan budget lines.");
+                }
+            }
+
+    );
+}

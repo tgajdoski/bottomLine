@@ -1,0 +1,30 @@
+@(user: User, users: List[User])
+
+@stylesheets = @{Seq(
+)}
+@scripts = @{Seq(
+        "underscore-min.js",
+        "backbone-min.js",
+        "user.js"
+)}
+@frame("User Administration",user,"users",stylesheets,scripts){
+<div style="margin-left:40px;width:960px;">
+    <table id="users">
+        <thead>
+        <tr>
+            <th style="padding: 5px;"><a id="addUser">+</a></th>
+            <th>Username</th>
+            <th>Last Activity</th>
+            <th>Authority</th>
+            <th>Password</th>
+        </tr>
+        </thead>
+        @users.filter(!_.logins.isEmpty).sortBy(_.logins.sortBy(_.updateTimestamp).last.updateTimestamp).reverse.map { u =>
+            @views.html.users.user(u)
+        }
+        @users.filter(_.logins.isEmpty).map { u =>
+            @views.html.users.user(u)
+        }
+    </table>
+</div>
+}

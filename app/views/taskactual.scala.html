@@ -1,0 +1,35 @@
+@(task: Task, assign :Assigns)
+@isCompleted() = @{if (task.completed) true else false}
+
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(d)}
+
+
+@getFieldManager(a: Long) = @{
+    val usr =  User.find.byId(a);
+    if (usr != null)
+        usr.name;
+    else
+     "";
+}
+
+
+
+<li style="list-style: none;display: list-item; clear:both;" data-task-id="@task.id">
+        <strong style="font-weight: bold;cursor: pointer;">@task.cardOrder</strong>
+        <abbr title="@task.job.jobCategory.name" style="font-weight: bold;color: red;">@task.job.jobCategory.abbr</abbr>
+
+        <a class="openJob" data-href="@task.job.id" style="font-weight: bold;text-decoration:none;@(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.id</a>
+    @*- Task@task.taskType.id*@
+
+    @if(assign == null){
+            <a class="assignTask" data-href="@task.id" data-href-mref="@task.taskType.name" data-href-date="@formatDate(task.date)" style="font-weight: bold;text-decoration:none; float: right; display: none;">assign task</a>
+        } else{
+            <a class="assignedTask" data-href="@task.id" data-href-mref="@task.taskType.name" data-href-date="@formatDate(task.date)" style="font-weight: bold;text-decoration:none; float: right;color: #3561ff ;">@getFieldManager(assign.fieldmanagerid)</a>
+            @*<a class="assignedTask" data-href="@task.id" data-href-mref="@task.taskType.name" data-href-date="@formatDate(task.date)" style="font-weight: bold;text-decoration:none; float: right;color: #3561ff ;">@assign.fieldmanagerid</a>*@
+        }
+
+        <a class="openTask" data-href="@task.taskType.id" style="font-weight: bold;text-decoration:none;@(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.subdivision.name @task.job.lot@(if (!task.managers.isEmpty && task.managers.head.user!=null) " - "+task.managers.head.user.username)</a>
+        @*<a class="openTask" href="/jobs/@task.job.id?task=@task.id" style="font-weight: bold;text-decoration:none;@(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.subdivision.name @task.job.lot@(if (!task.managers.isEmpty && task.managers.head.user!=null) " - "+task.managers.head.user.username)</a>*@
+        <span class="@(if (!isCompleted()) "notesX")">@task.notes</span>
+</li>
+

@@ -1,0 +1,93 @@
+@(user: User,  markets: List[Market], itemTypes: List[ItemType],  formJob: Form[models.Job])
+@import views.html.helper.FieldConstructor
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+    )}
+
+
+@scripts = @{Seq(
+/*    "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery-1.7.1.js",
+        "jquery-1.9.0.min.js",
+        "jquery-play-1.7.1.js",
+    "jquery.js",
+    "jquery-ui.js",*/
+       /* "jquery.confirm.js",*/
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "jquery.validate.js",
+ /*   "jquery.js",
+    "datatables.responsive.js",
+    "jquery.dataTables.js",
+    "jquery-ui.js",*/
+    "addJob.js"
+    )}
+
+
+@implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyX">
+            <table cellspacing="0">
+                <tr>
+                    <td>
+                       <div class="title">Add new Job</div>
+                            <fieldset class="newCustomerview">
+                                <label class="mylabel">Select Market</label>
+                                <select id="newJobMarket" class="userAuthority">
+                                    <option value=""></option>
+                                    @markets.toSeq.sortBy(_.id).map { m =>
+                                        <option value="@m.id">@m.city, @m.state</option>
+                                    }
+                                </select>
+
+                                <div id="skrijgobezmarket">
+
+                                    <label class="mylabel">customer</label>
+                                    <select id="newJobcustomer" class="userAuthority">
+                                        <option value=""></option>
+                                    </select>
+
+
+                                    <label class="mylabel">Subdivision</label>
+                                    <select  id="newJobsubdivision" class="userAuthority">
+                                        <option value=""></option>
+                                    </select>
+
+                                </div>
+
+                                <div id="skrijgobezsubdivision">
+                                    <label>lot</label>
+                                    <input type="text" id ="lot"  class="form-control">
+
+                                   @* <label class="mylabel">Sale item</label>
+                                    <select id="newjobitemtype" class="userAuthority">
+                                        <option value=""></option>
+                                        @itemTypes.toSeq.sortBy(_.id).map { t =>
+                                            <option value="@t.id">@t.name</option>
+                                        }
+                                    </select>
+*@
+                                    <label class="mylabel">Plan</label>
+                                    <select id="newjobplan" class="userAuthority">
+                                        <option value=""></option>
+                                    </select>
+
+                                    <label class="mylabel">Job start date </label>
+                                        <p><input type="text" class ="form-control" id="jobstartdatepicker"  style="width: 120px;"></p>
+
+                                    <input value="Add Job" type = "submit" id="buttonaddplan" class="btn btn-success">
+                                </div>
+                            </fieldset>
+                        </td>
+                    </tr>
+            </table>
+        </div>
+
+    </div>
+}

@@ -1,0 +1,41 @@
+@(user: User, lineitems: List[Lineitem])
+<table>
+    <thead>
+    <tr>
+        <th style="width:24px;">@if(user.authority >= Secured.MANAGER){<a id="addBudgetLineitem">add</a>}</th>
+        <th style="width:200px;">Vendor</th>
+        <th style="width:200px;">Item</th>
+        <th style="width:60px;">Qty</th>
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Rate</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Cost</th>}
+        @if(user.authority >= Secured.MANAGER){<th style="width:60px;">Sale</th>}
+    </tr>
+    </thead>
+    <tbody id="budgetitems">
+    @lineitems.map { lineitem =>
+    @views.html.budgets.lineitem(user,lineitem)
+    }
+    </tbody>
+</table>
+<table style="border-top:1px solid #333;">
+    <tbody>
+    <tr>
+        <td style="width:24px;"></td>
+        <td style="width:270px;"></td>
+        <td style="width:200px;"></td>
+        <td style="width:80px;"></td>
+        @if(user.authority >= Secured.MANAGER){<td style="width:140px;">TOTAL COST</td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:60px;" id="totalcost"></td>}
+        @if(user.authority >= Secured.MANAGER){<td style="width:60px;"></td>}
+    </tr>
+        <tr>
+            <td style="width:24px;"></td>
+            <td style="width:270px;"></td>
+            <td style="width:200px;"></td>
+            <td style="width:80px;"></td>
+            @if(user.authority >= Secured.MANAGER){<td style="width:140px;">TOTAL SALE</td>}
+            @if(user.authority >= Secured.MANAGER){<td style="width:60px;"></td>}
+            @if(user.authority >= Secured.MANAGER){<td style="width:60px;"  id="totalsale"></td>}
+        </tr>
+    </tbody>
+</table>

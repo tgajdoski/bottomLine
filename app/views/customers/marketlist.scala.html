@@ -1,0 +1,122 @@
+@(user: User, markets: List[Market])
+
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "jquery.dataTables.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "theme.css"
+ /*   "font-awesome.min.css",*/
+   /* "jquery-ui.css"*/
+)}
+@scripts = @{Seq(
+
+    "jquery.validate.js",
+    "jquery.js",
+    "jquery.dataTables.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "dataTables.tableTools.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "managemarkets.js"
+
+
+)}
+
+
+<div class="col-sm-user">
+    @frame_rd("Market Administration",user,"markets",stylesheets,scripts){
+        <div class="box-body">
+            <table id="markets" class="display">
+                <thead>
+                <tr>
+                  @*  <th><a href="@routes.Customers_rd.addMarket_rd()">+</a></th>*@
+                    <th><a href="#" id ="linkaddnewvendor">ADD NEW</a></th>
+                    <th><div class="title">City</div></th>
+                    <th><div class="title">State</div></th>
+                    <th><div class="title">WOEID</div></th>
+                </tr>
+                </thead>
+                    @markets.filter(!_.city.isEmpty).sortBy(_.city).reverse.map { c =>
+                        @views.html.customers.mark_rd(c)
+                    }
+                    @markets.filter(_.city.isEmpty).map { c =>
+                        @views.html.customers.mark_rd(c)
+                    }
+
+            </table>
+         </div>
+    }
+
+</div>
+
+
+
+<div class="modal" id="marketmodal" style="">
+    <div class="box-bodyX">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <div class="title">
+                <label id="marketdivselectedtext"></label>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <table cellspacing="0">
+                <tr>
+
+                    <div class="">
+                        <label class = "mylabel" for="city">City</label>
+                        <div>
+                            <input type="text" id="city" name="city" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="state">State</label>
+                        <div>
+                            <input type="text" id="state" name="state" value="" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <label class = "mylabel" for="url">url</label>
+                        <div>
+                            <input type="text" id="url" name="url" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="woeid">woeid</label>
+                        <div>
+                            <input type="text" id="woeid" name="woeid" value="" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <label class = "mylabel" for="taxrate">taxrate</label>
+                        <div>
+                            <input type="text" id="taxrate" name="taxrate" value="" class="form-control">
+                        </div>
+                    </div>
+                    <input value="Add Market" type = "submit" id="buttonadditem">
+                    <input id="addorupdate" type="hidden"   value="0">
+                    <input type="hidden" name="id"   value="">
+                </tr>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <a href="#" class="btn" id="close">Close</a>
+            @*    <input type="submit" class="btn btn-success" value="Save">*@
+        </div>
+
+    </div>
+</div>
+
+
+

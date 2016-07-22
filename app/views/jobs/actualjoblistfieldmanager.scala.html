@@ -1,0 +1,547 @@
+@(user: User, markets: List[Market], managers: List[User], tasks: List[Task], date: String, market: String, manager: String)
+
+    @formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("EEE MMM dd yyyy");f.format(d)}
+
+    @formatDateSingle(d: Date) = @{val f = new java.text.SimpleDateFormat("EEE");f.format(d)}
+    @getDay(d: Integer) = @{val cal = Calendar.getInstance();
+        val splitDate = date.split("-");
+        cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+        cal.add(Calendar.DATE,0);cal}
+    @getDayInWeek(t: Task) = @{val f = new java.text.SimpleDateFormat("EEE");f.format(t.date)}
+    @getYearMonthDay(i: Integer) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(getDay(i).getTime())}
+
+    @getPrevious() = @{
+        val cal = Calendar.getInstance();
+        val splitDate = date.split("-");
+        cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+        cal.add(Calendar.DATE,-1);
+        val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(cal.getTime())}
+
+
+    @getNext() = @{
+        val cal = Calendar.getInstance();
+        val splitDate = date.split("-");
+        cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+        cal.add(Calendar.DATE,1);
+        val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(cal.getTime())}
+
+
+@*<link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">*@
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    /*   "datatables.responsive.css",*/
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+
+)}
+@scripts = @{Seq(
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "jquery.validate.js",
+/*    "jquery.js",*/
+    "jquery.dataTables.js",
+ /*   "dataTables.tableTools.js",*/
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "actualjobfield.js"
+)}
+
+
+<style>
+
+#tabs .form-control{
+	display: block;
+	width: 100%;
+	height: 25px;
+	padding: 2px;
+	font-size: 13px !important;
+	line-height: 25px;
+	margin: 0;
+	
+}
+
+#tabs .table>tbody>tr>td{
+	padding: 1px;
+	vertical-align: middle;
+}
+
+#tabs .btn{
+	padding: 5;
+	font-size: 12px !important;
+}
+
+#tabs .pagination{
+	margin: 0;
+}
+
+.btn-success{
+	margin-top: 5px; 
+}
+
+#tabs .pagination>li>a{
+	padding: 2px 10px;
+}
+
+#tabs h1{
+	display: block;
+	border-bottom: 5px solid #6eba6e;
+	padding-bottom: 3px;
+	padding-top: 10px;
+	
+	padding-left: 5px;
+	
+	background: #fff;
+	margin-bottom: 0;
+	font-size: 22px;
+	margin-bottom: 10px;
+}
+
+#tabs hr{
+	border-top: 0;
+}
+
+.ui-widget-content{
+	background: #fff;
+	border: 1px solid #fff;
+}
+
+
+#calHead a, #calendar a{
+color: #6eba6e !important;
+cursor: pointer;
+}
+
+#calendar th{
+background: #fff;
+font-size: 12px;
+font-weight: bold;
+padding: 10px;
+border-right: 3px solid #efefef;
+
+border-bottom: 6px solid #efefef;
+}
+
+#calendar{
+	width: auto !important;
+}
+
+
+#calendar td{
+background: #fff;
+font-size: 12px;
+font-weight: normal;
+padding: 6px;
+border-right: 3px solid #efefef;
+border-bottom: 3px solid #efefef;
+border-bottom: 5px dashed #666;
+
+margin-bottom: 3px;
+}
+
+#calendar ol{
+padding: 0;
+}
+
+#calendar li{
+margin: 0;
+border-bottom: 1px solid #ccc;
+margin-bottom: 6px;
+padding-bottom: 6px;
+}
+
+#calendar  .notes{
+
+padding: 5px;
+font-size: 11px;
+background: #efefef;
+display: block;
+}
+
+#calendar .openTask{
+color: #666  !important;
+display: block;
+font-size: 13px;
+border-bottom: 2px solid #6eba6e;
+padding-bottom: 1px;
+margin-bottom: 0;
+}
+
+#calendar strong{
+background: #666 !important;
+color: #fff !important;
+
+padding: 3px;
+font-size: 10px;
+}
+
+
+
+</style>
+
+    @frame_rd("Insert actuals",user,"job",stylesheets,scripts){
+    
+    <style>div#calHead{
+    background: #fff;
+    width: 380px !important;
+    margin-bottom: 30px;
+    border:1px solid #6eba6e;
+    }</style>
+        <div class="container theme-showcase" role="main">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div id="calHead" style="width:100%;padding:1em 0 1em 0;text-align:center;">
+                        <table style="margin: 0px auto;"><tbody>
+                            <tr>
+                                <td rowspan="2">
+                                    <input type="hidden" id="gotoDatePicker" value="@date"/>
+                                    <a id="previous" href="?date=@getPrevious()&market=@market&manager=@manager">&lt;&lt;</a>&nbsp;
+                                </td>
+                                <td rowspan="2">
+                                        &nbsp;<a id="next" href="?date=@getNext()&market=@market&manager=@manager">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                </td>
+                            </tr>
+                            <tr>
+                                @*<td>
+                                    <select id="calManagerSelect" style="width:150px;border:0;text-align:center">
+                                        <option value="">All Managers</option>
+                                        @managers.toSeq.sortBy(_.username).map { m =>
+                                            <option value="@m.id"@(if (manager&&manager==m.id.toString) " selected")>@m.username</option>
+                                        }
+                                    </select>
+                                </td>*@
+                                <td>
+                                    <input class="calendarmalendar" type="text"  placeholder = "or select date" style="width: 120px; text-align: center; margin-left: auto; margin-right: auto;">
+                                </td>
+                            </tr>
+                        </tbody></table>
+        <div id ="calendarbody">
+
+        </div>
+                    </div>
+
+            </div>
+                <div class="col-sm-8">
+
+<div id="tabs">
+                    <div class= "title" id ="jobDetails"> No job selected</div>
+
+                            <div class = "comment" id = "comment1">
+                                <table>
+                                    <tr>
+                                        <td>
+                                            <textarea name="comment"  id = "comment1text" cols="60" rows="2" ></textarea>
+                                        </td>
+                                        <td>
+                                            &nbsp;<button type="button" id="commentbutton1" class="btn btn-success">add comment </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <div>Comments</div>
+                                    </tr>
+                                </table>
+                            </div>
+                            <h1>Labor</h1>
+                            <table class="table table-striped"  id ="labproposal">
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <label>Pick up the Labor Line Item: </label>
+                                        </td>
+                                        <td>
+                                            <select id="lablineitemsperuser" class = "lablineitemsperuser"  style="width: 390px;"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" readonly id="labdatepicker"  style="width: 80px;"></p>
+                                        </td>
+                                             <td>
+                                                <select id="labvendorselect" class = "labvendors"  style="width: 300px;"/>
+                                             </td>
+                                             <td>
+                                                <select id="labitemselect" class = "labitems"  style="width: 135px;"/>
+                                            </td>
+                                             <td>
+                                                <input id = "labquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                             </td>
+                                             <td>
+                                                <input id = "labprice"   type="text" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                             </td>
+                                            <td>
+                                                <input id = "labtotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                            </td>
+
+                                            <td><button type="button" id = "addlabbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            <br  style="clear: both; margin-bottom:5px"/>
+
+
+                            <table class="table table-striped"  id ="labor">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+
+                            <hr />
+                            <h1>Materials</h1>
+                            <table class="table table-striped"  id ="matproposal">
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" readonly id="matdatepicker"  style="width: 80px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="matvendorselect" class = "matvendors"  style="width: 300px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="matitemselect" class = "matitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "matquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "matprice"   type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "mattotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addmatbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <br  style="clear: both; margin-bottom:5px"/>
+
+
+                            <table class="table table-striped"  id ="materials">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+
+                            <hr />
+
+                            <h1>Concrete</h1>
+                            <table class="table table-striped"  id ="conproposal">
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" readonly id="condatepicker"  style="width: 80px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="convendorselect" class = "convendors"  style="width: 300px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="conitemselect" class = "conitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "conquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "conprice"   type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "contotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addconbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <br  style="clear: both; margin-bottom:5px"/>
+
+
+                            <table class="table table-striped"  id ="concrete">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+
+
+                            <hr />
+
+                            <h1>Landscaping materials</h1>
+                            <table class="table table-striped"  id ="landproposal">
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" readonly id="landdatepicker"  style="width: 80px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="landvendorselect" class = "landvendors"  style="width: 300px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="landitemselect" class = "landitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "landquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "landprice"   type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "landtotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addlandbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <br  style="clear: both; margin-bottom:5px"/>
+
+
+
+                            <table class="table table-striped" id ="landscape">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+
+
+                            <hr />
+
+                            <h1>Miscellaneous</h1>
+                            <table class="table table-striped"  id ="misproposal">
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p><input type="text" class ="form-control" readonly id="misdatepicker"  style="width: 80px;"></p>
+                                        </td>
+                                        <td>
+                                            <select id="misvendorselect" class = "misvendors"  style="width: 300px;"/>
+                                        </td>
+                                        <td>
+                                            <select id="misitemselect" class = "misitems"  style="width: 135px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "misquantity" type="text" placeholder= "0.0" name="" value="" class="form-control" style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "misprice"   type="text" name="" value="" class="form-control"  style="width: 35px; float: left; margin-right: 5px;"/>
+                                        </td>
+                                        <td>
+                                            <input id = "mistotal" readonly type="text" name="" value="" class="form-control" style="width: 40px; float: left; margin-right: 5px;"/>
+                                        </td>
+
+                                        <td><button type="button" id = "addmisbutton" data-href="add" data-item-id="0" class="btn btn-success">add</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <br  style="clear: both; margin-bottom:5px"/>
+
+
+
+                            <table class="table table-striped" id="miscellaneous">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Vendor</th>
+                                        <th>Item</th>
+                                        <th>Qty</th>
+                                        <th>Rate</th>
+                                        <th>Tot</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr></tr>
+                                </tbody>
+                            </table>
+
+                </div>
+
+            </div>
+            </div>
+        </div>
+    }
+
+<script type="text/javascript" src="@routes.Assets.at("javascripts/actualinternaljobselectorsfield.js")"></script>
+
+
+<script type="text/javascript" src="@routes.Assets.at("javascripts/actualinternaljobfield.js")"></script>
+

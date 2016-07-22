@@ -1,0 +1,17 @@
+@(u: User)
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("M/dd/yyyy h:mm:ss aaa");f.format(d)}
+
+<tr data-user-id="@u.id">
+    <td style="padding: 5px;"><a class="deleteUser">x</a></td>
+    <td>@u.username</td>
+    <td>@(if(!u.logins.isEmpty) formatDate(u.logins.sortBy(_.updateTimestamp).last.updateTimestamp))</td>
+    <td>
+        <select class="userAuthority">
+            <option value="0"@(if(u.authority.toString=="0") " selected")>Inactive</option>
+            <option value="1"@(if(u.authority.toString=="1") " selected")>Guest</option>
+            <option value="2"@(if(u.authority.toString=="2") " selected")>Manager</option>
+            <option value="3"@(if(u.authority.toString=="3") " selected")>Administrator</option>
+        </select>
+    </td>
+    <td style="padding: 5px;"><a class="resetPassword">reset</a></td>
+</tr>

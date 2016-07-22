@@ -1,0 +1,505 @@
+@(user: User, job: Job, categories: List[JobCategory], planItems: List[PlanItem], budgetLineitems: List[Lineitem], actualLineitems: List[Lineitem], tasks: List[Task], managers: List[User], jobassigns: List[Assigns], blocks: List[Integer])
+
+    @getYearMonthDay(j: Job) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(j.date)}
+    @stylesheets = @{Seq(
+        "base.css",
+        "skeleton.css",
+        "layout.css",
+        "plan.css",
+        "jquery-ui-1.10.3.custom.min.css",
+        "font-awesome.min.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "bootstrap.min.js",
+        "jquery-ui-1.10.3.custom.min.js",
+        "main_rd.js",
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery.autogrow-textarea.js",
+        "jquery.dataTables.js",
+        "../play-jquery-tabletools/js/TableTools.min.js",
+        "jquery-ui.js",
+        "jquery.dataTables.rowReordering.js",
+        "underscore-min.js",
+        "backbone-min.js",
+        "plan_rd.js",
+        "saleitem_rd.js",
+        "job_backbone_budget.js",
+        "job_backbone_actuals.js",
+        "jobmob.js",
+        "newjobcard.js"
+    )}
+
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <title>Job card</title>
+        <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/2013.07.03.50.192.62.201.ico")">
+            @stylesheets.map { stylesheet =>
+                <link rel="stylesheet" href="@routes.Assets.at("stylesheets/"+stylesheet)"/>
+            }
+
+        <style>
+
+        #assigntask, #updateTask {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-left: -100px;
+        margin-top: -100px;
+        }
+
+        #lineitemlist {
+        position: fixed;
+        width: 800px;
+        height: 460px;
+        top: 50%;
+        left: 50%;
+        /*margin-left: -5 0px;*/
+        margin-top: -250px;
+        margin-right: 300px
+        }
+
+
+        textarea.name{
+
+
+        }
+        .plan_name{
+        font-size: 24px;
+        font-weight: bold;
+        }
+
+        #duplicatePlan{
+        float: right;
+        margin-bottom: 50px;
+        position: relative;
+        display: block;
+        }
+
+        #saleprice{
+        font-size: 20px;
+        color: #666;
+        font-weight:bold;
+
+        border: 0;
+        }
+
+        .info_profit td{
+        width: 50%;
+        font-size: 16px;
+        padding: 0;
+        margin-left: 10px;
+        background: #fff;
+        }
+        .info_profit label{
+        padding: 10px;
+        margin: 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background: #6eba6e;
+        display: block;
+        }
+
+        .info_profit #grossprofit, .info_profit #pctprofit, .info_profit #ppsqft, .info_profit #managerprofit, .info_profit #ffiprofit{
+        padding-left: 20px;
+
+        }
+
+        #addSaleitem, #planitems dt, #attachment-button{
+        border: 1px solid #999;
+        color: #fff;
+        font-weight: normal;
+        padding: 10px;
+        background: #666;
+        height: 40px;
+        clear: both;
+        }
+
+        #attachment-button{
+        line-height: 10px !important;
+        }
+
+        #saleitems th, #saleitems td, .planitemheader th, #budget table th{
+        font-size: 14px;
+        font-weight: normal;
+        border: 1px solid #efefef;
+        padding: 5px;
+        background: #fff;
+        height: 50px;
+        }
+
+        .planitem td, #budget table td{
+        background: #ddd !important;
+
+        }
+
+        #saleitems input, #saleitems textarea{
+        width: 100%;
+        border: 1px solid #ccc !important;
+        font-size: 12px;
+        }
+        .planitem input, .planitem textarea, #budget input, #budget textarea{
+        border: 1px solid #ccc !important;
+        font-size: 12px;
+        }
+
+        #saleitems tbody{
+        border-top: 1px solid #333;
+        padding-top: 10px;
+        }
+
+        .planitemtotals {
+        color: #888;
+        margin-top: 5px;
+        font-weight: bold;
+        font-size: 12px;
+        }
+
+        .planitemheader{
+        padding: 5px;
+        margin-top: 30px;
+        margin-bottom: 10px;
+        border-top: 3px solid #6eba6e;
+
+        }
+
+        .planitemheader [style='text-align:left;width:116px;']{
+        background: #6eba6e;
+        color: #fff;
+        font-weight: bold;
+        }
+
+        .planitemheader [style='text-align:left;width:116px;'] a{
+        color: #fff !important;
+        }
+
+        .planitemheader th, .planitem th{
+        height: 30px;
+        }
+
+        .planitem th{
+        padding: 0;
+        }
+
+        #plan table[style="border-top:3px double #333;"]{
+        margin-top: 50px !important;
+        border-top: 0 !important;
+        margin-bottom: 10px;
+        }
+
+        #plan table[style="border-top:3px double #333;"] td{
+        height: 35px;
+        background: #6eba6e;
+        color: #fff;
+        font-weight: bold;
+        }
+
+
+        #budget table[style="border-top:1px solid #333;"]{
+        border: none !important;
+
+        }
+
+        #budget table[style="border-top:1px solid #333;"] td{
+        background: #f1f1f1 !important;
+        color: #888;
+        margin-top: 5px;
+        font-weight: bold;
+        font-size: 12px;
+        }
+        #budget table th{
+        height: 30px;
+
+        }
+        h1{
+        font-size: 24px !important;
+        }
+
+        .jobMarket{
+        display: block;
+        border-bottom: 5px solid #6eba6e;
+        padding-bottom: 3px;
+        padding-top: 10px;
+        color: green;
+        padding-left: 5px;
+
+        background: #fff;
+        margin-bottom: 0;
+        }
+        .jobCustomer{
+        background: #fff;
+        color: green;
+        padding-top: 3px;
+        padding-bottom: 10px;
+
+        padding-left: 5px;
+        margin-top: 0;
+
+        font-size: 18px !important;
+        font-weight: normal;
+        }
+
+        .buttons-right{
+        float: right;
+        text-align: right;
+
+        }
+
+        #jobNotes{
+        margin-right: 30px;
+        }
+
+        #actual{
+
+        background: #fff;
+        }
+
+        .ui-accordion-content{
+
+        height: auto !important;
+        }
+
+        table td{
+        border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+        }
+
+        table{
+        font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+        }
+
+
+        .btn-excel {
+        background-image: linear-gradient(to bottom, #5cb85c 0px, #419641 100%);
+        background-repeat: repeat-x;
+        border-color: #3e8f3e;
+        }
+
+        /*DODADENO*/
+
+        .form-control{
+        display: block;
+        width: 100%;
+        height: 25px;
+        padding: 2px;
+        font-size: 13px !important;
+        line-height: 25px;
+        margin: 0;
+
+        }
+
+        .table>tbody>tr>td{
+        padding: 1px;
+        vertical-align: middle;
+        }
+
+        .btn{
+        padding: 5;
+        font-size: 12px !important;
+        }
+
+        #tabs .pagination{
+        margin: 0;
+        }
+
+        .btn-success{
+        margin-top: 5px;
+        }
+
+        .pagination>li>a{
+        padding: 2px 10px;
+        }
+
+        h1{
+        display: block;
+        border-bottom: 5px solid #6eba6e;
+        padding-bottom: 3px;
+        padding-top: 10px;
+
+        padding-left: 5px;
+
+        background: #fff;
+        margin-bottom: 0;
+        font-size: 22px;
+        margin-bottom: 10px;
+        }
+
+        hr{
+        border-top: 0;
+        }
+
+        .ui-widget-content{
+        background: #fff;
+        border: 1px solid #fff;
+        }
+
+
+        #calHead a, #calendar a{
+        color: #6eba6e !important;
+        cursor: pointer;
+        }
+
+        #calendar th{
+        background: #fff;
+        font-size: 12px;
+        font-weight: bold;
+        padding: 10px;
+        border-right: 3px solid #efefef;
+
+        border-bottom: 6px solid #efefef;
+        }
+
+        #calendar{
+        width: auto !important;
+        }
+
+
+        #calendar td{
+        background: #fff;
+        font-size: 12px;
+        font-weight: normal;
+        padding: 6px;
+        border-right: 3px solid #efefef;
+        border-bottom: 3px solid #efefef;
+        border-bottom: 5px dashed #666;
+
+        margin-bottom: 3px;
+        }
+
+        #calendar ol{
+        padding: 0;
+        }
+
+        #calendar li{
+        margin: 0;
+        border-bottom: 1px solid #ccc;
+        margin-bottom: 6px;
+        padding-bottom: 6px;
+        }
+
+        #calendar  .notes{
+
+        padding: 5px;
+        font-size: 11px;
+        background: #efefef;
+        display: block;
+        }
+
+        #calendar .openTask{
+        color: #666  !important;
+        display: block;
+        font-size: 13px;
+        border-bottom: 2px solid #6eba6e;
+        padding-bottom: 1px;
+        margin-bottom: 0;
+        }
+
+        #calendar strong{
+        background: #666 !important;
+        color: #fff !important;
+
+        padding: 3px;
+        font-size: 10px;
+        }
+
+        </style>
+            @scripts.map { script =>
+                <script type="text/javascript" src="@routes.Assets.at("javascripts/"+script)"></script>
+            }
+    </head>
+
+
+
+
+    <body lang="en">
+
+        <h1 class="jobMarket"><span id="jobMarket">@job.market.city, @job.market.state</span></h1>
+        <h1 class="jobCustomer">Job @job.id - <span id="jobCustomer">@job.subdivision.customer.name</span> <span id="jobSubdivision">@job.subdivision.name</span> <span id="jobLot">@job.lot</span> <span id="jobSaleitem">@(if (job.item!=null) job.item.name else "SALEITEM")</span>@(if (job.plan!=null) " ("+job.plan.name+" plan)")@if(user.authority >= Secured.MANAGER){<a id="deleteJob">x</a>}</h1>
+
+        @if(blocks.contains(1)){
+
+            <div id="geninfo">
+                <h1 id="saleprice">$<span>@("%.2f".format(job.saleitems.foldLeft(0.0d)(_ + _.saleprice)))</span></h1>
+
+                @if(user.authority >= Secured.MANAGER){
+                    <section id="totals" data-market-id="@job.market.id" data-subdivision-id="@job.subdivision.id"
+                    data-customer-id="@job.subdivision.customer.id" data-job-id="@job.id" data-saleitem-id="@(if (job.item!=null) job.item.id)"
+                    data-sale="@job.saleitems.foldLeft(0.0d)(_ + _.saleprice)" data-cost="@job.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)" style="width:334px;margin-top:20px;margin-right:50px;margin-bottom:30px;float:left;">
+                        <table width="100%"  class="info_profit">
+                            <tbody>
+                                <tr>
+                                    <td><label class="mylabel">Gross Job Profit</label></td>
+                                    <td id="grossprofit">@("%.2f".format(job.saleitems.foldLeft(0.0d)(_ + _.saleprice)-job.lineitems.filter(_.taskType!=null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)))</td>
+
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">Net Job Profit%</label></td>
+                                    <td id="pctprofit">@("%.2f".format(90*(1-job.lineitems.filter(_.taskType!=null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)/job.saleitems.foldLeft(0.0d)(_ + _.saleprice))))</td>
+
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">$/SQFT</label></td>
+                                    <td id="ppsqft">@("%.2f".format(job.dimensions.filter(!_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))-job.dimensions.filter(_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))))</td>
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">Job Labor Overhead 10%</label></td>
+                                    <td id="managerprofit"/></td>
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">Net Job Profit</label></td>
+                                    <td id="ffiprofit"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                }
+
+                <section style="float:left;">
+                    <textarea id="jobNotes" rows="5" style="width:240px; height: 70px;">@job.notes</textarea>
+                </section>
+
+                <section id="attachments" style="float:left;width:240px;margin-bottom:30px;">
+                    <table id="attachTable" style="width:100%;margin-bottom:10px;">
+                        <tbody>
+                            <tr>
+                                <td colspan="2">
+                                    <b>Attachments:</b>
+                                </td>
+                            </tr>
+                            @job.attachments.map { attachment =>
+                                @views.html.plans.attachment_rd(user,attachment)
+                            }
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+        }
+
+        <div class="buttons-right">
+          <input type="hidden" id="jobDate" value="@getYearMonthDay(job)" />
+        </div>
+
+            @if(blocks.contains(2)){
+                <div id="saleitems" style="width:576px;margin-top:20px;margin-bottom:30px;float:left;">
+                    @views.html.print.saleitem_index_rd_print(user,job.saleitems)
+                </div>
+            }
+            @if(blocks.contains(3)){
+                <div id="planitems" style="margin-bottom:50px;float:left;">
+                        @views.html.print.planitem_index_rd_print(user,planItems,job.dimensions)
+                </div>
+            }
+            @if(blocks.contains(4)){
+               <div id="budgetlineitems" style="margin-right:50px;margin-bottom:30px;float:left;">
+                        @views.html.print.budgetlineitem_index_rd_print(user,budgetLineitems.sortBy(_.position), actualLineitems, jobassigns, managers)
+                </div>
+            }
+    </body>
+</html>
+

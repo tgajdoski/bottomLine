@@ -1,0 +1,459 @@
+@(user: User, categories: List[JobCategory], planItems: List[PlanItem], tasks: List[Task], manager: String, showRates: Boolean)
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("M/dd/yyyy");f.format(d)}
+@managerFilter(t: Task) = @{
+        if (manager==null) true
+        else if (manager.isEmpty()) true
+        else t.managers.map(_.user.id.toString).toList.contains(manager)
+}
+@stylesheets = @{Seq(
+"base.css",
+"skeleton.css",
+"layout.css",
+"ui-lightness/jquery-ui-1.10.3.custom.min.css",
+"ffi.css",
+"../javascripts/uploadify/uploadify.css",
+"plan.css"
+)}
+@scripts = @{Seq(
+)}
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <title>Calendar for @(if(!tasks.isEmpty) formatDate(tasks.head.date) else "NOTHING!")</title>
+    <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/2013.07.03.50.192.62.201.ico")">
+    @stylesheets.map { stylesheet =>
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/"+stylesheet)"/>
+    }
+    <style>
+    /* #Reset & Basics (Inspired by E. Meyers)
+    ================================================== */
+    html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline; }
+    article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+    display: block; }
+    body {
+    line-height: 1; }
+    ol, ul {
+    list-style: none; }
+    blockquote, q {
+    quotes: none; }
+    blockquote:before, blockquote:after,
+    q:before, q:after {
+    content: '';
+    content: none; }
+    table {
+    border-collapse: collapse;
+    border-spacing: 0; }
+
+
+    /* #Basic Styles
+    ================================================== */
+    body {
+    background: #fff;
+    font: 14px/21px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #444;
+    -webkit-font-smoothing: antialiased; /* Fix for webkit rendering */
+    -webkit-text-size-adjust: 100%;
+    }
+
+    a, a:visited {
+    color: #00F;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    }
+
+    #headerBar {
+    width: 100%;
+    z-index: 2;
+    position: fixed;
+    background-color: #EEE;
+    }
+
+    #headerBar>div {
+    display: inline;
+    }
+    #welcome {
+    margin-right: 10px;
+    padding: 5px 0px;
+    float: right;
+    }
+    #search {
+    margin-left: 10px;
+    padding: 2px 0px;
+    float: left;
+    }
+    #headerBar>div.nav {
+    margin-left: 10px;
+    padding: 5px 0px;
+    float: left;
+    }
+    #headerBar>div.nav>a {
+    color: #9C9;
+    }
+    #headerBar>div.nav>a.active {
+    border-bottom: 4px solid #696;
+    }
+
+    #content {
+    top: 31px;
+    position: relative;
+    float: left;
+    width: 100%;
+    }
+
+    #home table {
+    overflow:hidden;
+    border:1px solid #d3d3d3;
+    background:#fefefe;
+    width:100%;
+    max-width: 768px;
+    margin:0 auto 0;
+    -moz-border-radius:5px; /* FF1+ */
+    -webkit-border-radius:5px; /* Saf3-4 */
+    border-radius:5px;
+    -moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+
+    #home th, #home td:not(.formElement) {padding:18px 28px 18px; text-align:center; }
+
+    #home th {padding-top:22px; text-shadow: 1px 1px 1px #fff; background:#e8eaeb;}
+
+    #home td {border-top:1px solid #e0e0e0; border-right:1px solid #e0e0e0;}
+
+    #home tr:nth-child(odd) td {background:#f6f6f6;}
+
+    #home td:first-child, #home th:first-child {text-align:left}
+
+    #home td:last-child {border-right:none;}
+
+    /*
+    Background gradients are completely unnecessary but a neat effect.
+    */
+
+    #home td {
+    background: -moz-linear-gradient(100% 25% 90deg, #fefefe, #f9f9f9);
+    background: -webkit-gradient(linear, 0% 0%, 0% 25%, from(#f9f9f9), to(#fefefe));
+    }
+
+    #home tr:nth-child(odd) td {
+    background: -moz-linear-gradient(100% 25% 90deg, #f6f6f6, #f1f1f1);
+    background: -webkit-gradient(linear, 0% 0%, 0% 25%, from(#f1f1f1), to(#f6f6f6));
+    }
+
+    #home th {
+    background: -moz-linear-gradient(100% 20% 90deg, #e8eaeb, #ededed);
+    background: -webkit-gradient(linear, 0% 0%, 0% 20%, from(#ededed), to(#e8eaeb));
+    }
+
+    /*
+    I know this is annoying, but we need additional styling so webkit will recognize rounded corners on background elements.  Nice write up of this issue: http://www.onenaught.com/posts/266/css-inner-elements-breaking-border-radius
+
+    And, since we've applied the background colors to td/th element because of IE, Gecko browsers also need it.
+    */
+
+    #home tr:first-child th:first-child {
+    -moz-border-radius-topleft:5px;
+    -webkit-border-top-left-radius:5px; /* Saf3-4 */
+    }
+
+    #home tr:first-child th:last-child {
+    -moz-border-radius-topright:5px;
+    -webkit-border-top-right-radius:5px; /* Saf3-4 */
+    }
+
+    #home tr:last-child td:first-child {
+    -moz-border-radius-bottomleft:5px;
+    -webkit-border-bottom-left-radius:5px; /* Saf3-4 */
+    }
+
+    #home tr:last-child td:last-child {
+    -moz-border-radius-bottomright:5px;
+    -webkit-border-bottom-right-radius:5px; /* Saf3-4 */
+    }
+
+    td.formElement {
+    overflow:hidden;
+    padding:18px 0px 18px 5px;
+    }
+
+    td.formElement>div>label>select, td.formElement>input {
+    margin:0;
+    padding:0;
+    border:0;
+    outline:0;
+    font-size:100%;
+    vertical-align:baseline;
+    background:transparent;
+    text-align:center;
+    display: inline-block;
+    width: 100%;
+    }
+
+    #home label {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    }
+
+    .notIE label:after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    display: inline-block;
+    top: 0px;
+    right: 0px;
+    background: no-repeat right center white;
+    pointer-events: none;
+    }
+    #home tr:nth-child(odd) td label:after {background:#f6f6f6;}
+
+    #calendar>thead, #calendar>tbody, #calendar>thead>tr, #calendar>tbody>tr,
+    #calendar>thead>tr>th, #calendar>tbody>tr>td
+    {
+    border: 1px solid #000;
+    }
+
+    #calendar ol, #calendar li, #content select, #dialog select, #dialog textarea, #jobNotes
+    {
+    margin: 0;
+    padding: 0;
+    }
+
+    #content button.invoice, #applyTemplate, #copyToPlans
+    {
+    margin: 0;
+    padding: 3px 6px;
+    }
+
+    #content select, #jobNotes, #content input.completeTask
+    {
+    display: inline-block;
+    }
+
+    #content input.completeTask, #newWindow
+    {
+    width: 13px;
+    }
+
+    #calHead td
+    {
+    vertical-align: middle;
+    }
+
+    #content h1
+    {
+    margin: 0;
+    padding: 0;
+    font-size: 1.6em;
+    line-height: 1.2em;
+    }
+
+    #saleitems textarea
+    {
+    min-height: 1em;
+    }
+
+    .planitem, .planitemtotals
+    {
+    border-top: 1px solid rgb(51, 51, 51);
+    }
+    .planitemheader
+    {
+    border-top: 3px double #333;
+    }
+    .dimension TD, #budgetitems TD
+    {
+    border-top: 1px dotted #333;
+    }
+    .dimension TD INPUT, .planitemtotals TR TD INPUT, .saleitem TD INPUT, #budgetitems TD INPUT,
+    .used, .left, .hasClass, .noClass, #actualitems .quantity,  #actualitems .rate, .cost, .overhead, .saleprice,
+    .markup, .actualcost, .actualmarkup, .diffcost, .vendor>input, .item>input,
+    .vendor>select, .item>select
+    {
+    width: 100%;
+    border: 0px none;
+    text-align: right;
+    }
+    #totalcost, #grossprofit, #pctprofit, #ppsqft, #managerprofit, #ffiprofit
+    {
+    text-align: right;
+    }
+    #totallnft, #totalsqft, #totalcuyds
+    {
+    width: 100%;
+    border: 0px none;
+    text-align: right;
+    background-color: #FF0;
+    }
+    .feet, .inches
+    {
+    background-color: rgb(173, 216, 230);
+    }
+    .lnft, .sqft
+    {
+    background-color: #ff9;
+    }
+    .noPrint
+    {
+    background-color: #DDD;
+    }
+    .job
+    {
+    page-break-after: always;
+    }
+    .job td
+    {
+    vertical-align: top;
+    }
+    .job hr
+    {
+    margin-bottom: 2em;
+    }
+
+    @@page
+    {
+    size: 8.5in 11in;
+    }
+    @@media print {
+    #dialog,#headerBar,#addSaleitem,#addBudgetLineitem,#attachment,#copyToPlans,#applyTemplate { display: none }
+    #deleteJob,#deletePlan,.deleteSaleitem,.addition,.subtraction,.deleteDimension,.deleteLineitem,.deleteAttachment,.deleteTask { display: none }
+    .noPrint,.options,.addTask,.addActualLineitem { display: none }
+    }
+    </style>
+
+    <!--[if lt IE 9]>
+    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    @scripts.map { script =>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/"+script)"></script>
+    }
+</head>
+
+<body lang="en">
+<div id="content">
+@for(a <- 1 to 20) {
+@if(!tasks.filter(managerFilter(_)).groupBy(_.crew).get(a).isEmpty) {
+@tasks.filter(managerFilter(_)).groupBy(_.crew).get(a).head.sortBy(_.cardOrder).map { t =>
+<div class="job">
+    <table style="width: 700px;">
+        <tbody>
+        <tr>
+            <td style="width: 200px;"><h1>@formatDate(t.date)</h1></td>
+            <td>
+                <h1>@(if (!t.managers.isEmpty && t.managers.head.user!=null) t.managers.head.user.username+" ")Crew @t.crew</h1>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <br/><br/>
+    <h1>Job @t.job.id - @t.job.subdivision.customer.name @t.job.subdivision.name @t.job.lot@(if (t.job.plan!=null) " ("+t.job.plan.name+" plan)") - @t.taskType.name</h1>
+    <br/><br/>
+    <h3>Sale Items</h3>
+    <table style="width: 700px;">
+        <thead>
+        <tr>
+            <th></th>
+            <th style="text-align: right;">quantity</th>
+            <th style="text-align: right;">units</th>
+            <th style="text-align: right;">@(if (showRates) "rate")</th>
+            <th style="text-align: right;">@(if (showRates) "total")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @t.job.saleitems.map{ si =>
+        <tr>
+            <td style="width: 60%;">@si.name</td><td style="width: 10%; text-align: right;">@si.quantity</td><td style="width: 10%; text-align: right;">@si.units</td><td style="width: 10%; text-align: right;">@(if (showRates) "$"+"%,.2f".format(si.rate))</td><td style="width: 10%; text-align: right;">@(if (showRates) "$"+"%,.2f".format(si.quantity*si.rate))</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    <br/><br/>
+    <h3>Budget Items</h3>
+    <table style="width: 700px;">
+        <thead>
+        <tr>
+            <th></th>
+            <th></th>
+            <th style="text-align: right;">quantity</th>
+            <th style="text-align: right;">units</th>
+            <th style="text-align: right;">@(if (showRates) "rate")</th>
+            <th style="text-align: right;">@(if (showRates) "total")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @t.job.lineitems.filter(_.taskType==null).filter(_.rate>0).map{ li =>
+        <tr>
+            <td style="width: 30%;">@(if (li.vendor!=null) li.vendor.name)</td><td style="width: 30%;">@(if (li.item!=null) li.item.name)</td><td style="width: 10%; text-align: right;">@li.quantity</td><td style="width: 10%; text-align: right;">@(if (li.item!=null && !li.item.vendorItems.filter(_.vendor==li.vendor).isEmpty) li.item.vendorItems.filter(_.vendor==li.vendor).head.default_units)</td><td style="width: 10%; text-align: right;">@(if (showRates) "$"+"%,.2f".format(li.rate))</td><td style="width: 10%; text-align: right;">@(if (showRates) "$"+"%,.2f".format(li.quantity*li.rate))</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+<div class="job">
+<h1>Job @t.job.id - @t.job.subdivision.customer.name @t.job.subdivision.name @t.job.lot@(if (t.job.plan!=null) " ("+t.job.plan.name+" plan)")</h1>
+<h3>FIRM FOUNDATIONS INC.    Tel: 770-476-3371    Fax: 770-476-3971</h3>
+<br/>
+<table width="100%"><tbody>
+<tr>
+    <td>DATE:</td><td>@formatDate(t.date)</td>
+    <td>Builder:</td><td>@t.job.subdivision.customer.name</td>
+</tr>
+<tr>
+    <!--<td>Job:</td><td>@(if (!t.job.saleitems.isEmpty) t.job.saleitems.head.name else t.job.subdivision.name+" "+t.job.lot)</td>-->
+    <td>Job:</td><td>@t.notes</td>
+    <td>Task:</td><td>@t.taskType.name</td>
+</tr>
+</tbody></table>
+<br/>
+<span style="font-style:italic;font-weight:bold;text-decoration:underline">Contractual, or PO paid</span>
+<table width="100%"><tbody>
+<tr>
+    <td width="50%"><table width="100%"><tbody>
+    @t.job.dimensions.filter(dimension => (dimension.length_feet+dimension.length_inches/12)*(dimension.width_feet+dimension.width_inches/12)>0).map{ dimension =>
+        <tr>
+        <td>@dimension.notes</td>
+        <td>@(if (dimension.deduction) "-")@("%.1f".format((dimension.length_feet+dimension.length_inches/12)*(dimension.width_feet+dimension.width_inches/12)))</td>
+        </tr>
+    }
+    </tbody></table></td>
+    <td width="50%"><table width="100%"><tbody>
+    @t.job.lineitems.filter(_.taskType==null).filter(lineitem => (lineitem.rate*lineitem.quantity)>0).map{ lineitem =>
+        <tr>
+        <td>@(if (lineitem.item!=null) lineitem.item.name)</td>
+        <td>@lineitem.quantity</td>
+        </tr>
+    }
+    </tbody></table></td>
+</tr>
+</tbody></table>
+<br/>
+<span style="font-style:italic;font-weight:bold;text-decoration:underline">For any repair/demo/service work not paid for by contract or PO- please state reason for damage/service, and whether it's billable. Also include who authorized the work and price quoted:</span>
+<br/><hr/><hr/><hr/><hr/><hr/><hr/>
+<table width="100%"><tbody>
+<tr>
+    <td><span style="font-weight:bold;text-decoration:underline">Superintendent Authorization:</span></td>
+    <td width="50%"><span style="font-weight:bold">Payroll:</span><hr/><hr/><hr/><hr/><hr/><hr/></td>
+</tr>
+</tbody></table>
+</div>
+}
+}
+}
+</div>
+</body>
+
+</html>

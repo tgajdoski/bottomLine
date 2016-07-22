@@ -1,0 +1,217 @@
+@(user: User, jobs: List[Job])
+@getSale(s: List[Saleitem]) = @{
+        if (s.isEmpty()) 0.0d
+        else s.foldLeft(0.0d)(_ + _.saleprice)
+}
+@getCost(l: List[Lineitem]) = @{
+        if (l.isEmpty()) 0.0d
+        else l.foldLeft(0.0d)((a,b) => a + b.saleprice)
+}
+
+@*
+    mprofit = `((sale-total)>0)?(left>0)?((sale-total)*.1):((sale-total)*.1):0`
+    fprofit = `((sale-total)>0)?(left>0)?((sale-total)*.9):((sale-total)*.9):(sale-total)`
+*@
+        @*
+    @getFFIProfit(j: Job) = @{
+        var sale = getSale(j.saleitems);
+        var actual = getCost(j.lineitems.filter(_.taskType!=null));
+        var profit = sale - actual;
+        if (profit <= 0.0d)
+           (0.0d)
+        else
+            (profit*0.9d)
+    }
+
+    *@
+
+ @getFFIProfit(j: Job) = @{(j.saleitems.foldLeft(0.0d)(_ + _.saleprice)-j.lineitems.filter(_.taskType!=null).foldLeft(0.0d)((a,b) => a + b.saleprice))}
+
+
+
+@* za job 44551 offset e -379.80
+budget  - 906.30
+    actual =  	1286.10
+
+
+    @getFFIProfit(j: Job) = @{
+        var sale = getSale(j.saleitems);
+        var actual = getCost(j.lineitems.filter(_.taskType!=null));
+        var budget = getCost(j.lineitems.filter(_.taskType==null));
+        var offset = budget - actual;
+        var profit = sale - actual;
+        if (offset <= 0.0d) {
+            actual
+        }
+        else {
+            actual
+        }
+    }
+
+    *@
+
+
+
+    @getManagerProfit(j: Job) = @{
+        var ffiprofit = getFFIProfit(j);
+
+        if (ffiprofit <= 0.0d)
+             0.0d
+            else
+            (ffiprofit*0.1d)
+
+    }
+
+    @getSQFTnum(j: Job) = @{
+    j.dimensions.filter(!_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12))-j.dimensions.filter(_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12))
+}
+
+    @getSQFT(j: Job) = @{
+        if (getSale(j.saleitems) <=0.0d || getSQFTnum(j) <= 0.0d)
+             0.0d
+        else
+            getSale(j.saleitems) / getSQFTnum(j)
+    }
+
+    @getNetProfit(j: Job) = @{
+        var ffiprofit = getFFIProfit(j);
+        if (ffiprofit <= 0.0d)
+            0.0d
+        else
+            (ffiprofit*0.9d)
+
+    }
+
+    @getCostofGoods(j: Job) = @{
+        val costofgoods = getSale(j.saleitems) - getFFIProfit(j);
+        if (costofgoods <= 0.0d)
+            0.0d
+        else
+            costofgoods
+    }
+
+    @getNetJobProfit(j: Job) = @{
+       val netjobprofit = 90*(1-j.lineitems.filter(_.taskType!=null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)/j.saleitems.foldLeft(0.0d)(_ + _.saleprice))
+        if (netjobprofit <= 0.0d || getSale(j.saleitems) <=0.0d)
+            0.0d
+        else
+            netjobprofit
+    }
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css"
+    )}
+
+    @scripts = @{Seq(
+        "jquery.js",
+        "jquery-ui.js",
+        "frontProfitRedesigned.js"
+    )}
+
+@frame_rd("Job Profit Report",user,"jobs",stylesheets,scripts) {
+
+<style>
+.ui-accordion-content{
+	
+	height: auto !important;
+}
+
+table td{
+	 border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+}
+
+table{
+	font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+}
+
+
+    .btn-excel {
+    background-image: linear-gradient(to bottom, #5cb85c 0px, #419641 100%);
+    background-repeat: repeat-x;
+    border-color: #3e8f3e;
+    }
+</style>
+<div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+
+                    <a id="open" style="text-align: right; padding-right: 10px;">expand all</a>
+
+                    <div id="accordion" >
+                             @jobs.groupBy(_.market).map {
+                                        case (m, marketJobs) => {
+                                    <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">@m.city, @m.state JOB</h3>
+                                        <div style="padding-left: 30px;">
+                                            <p>
+                                            <table id = "@m.id" style="width:900px;" class="market-row">
+                                                <tbody>
+                                            <tr>
+                                                <td style="padding: 5px; background: #EFEFEF;">@m.city, @m.state JOB</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">SALE</td>
+                                                <td style="padding: 5px; background: #EFEFEF;">GROSS PROFIT</td>
+                                              @*  <td style="padding: 5px; background: #EFEFEF;">NET JOB PROFIT</td>*@
+                                                <td style="padding: 5px; background: #EFEFEF;">$/SQFT</td>
+                                              @*  <td style="padding: 5px; background: #EFEFEF;">LABOR OVERHEAD</td>*@
+                                                @*<td style="padding: 5px; background: #EFEFEF;">NET PROFIT</td>*@
+                                                <td style="padding: 5px; background: #EFEFEF;">COST OF GOODS</td>
+                                            </tr>
+                                            @marketJobs.sortBy(_.id).map { j =>
+                                            <tr>
+                                                <td style="padding: 5px;"><a href="@routes.Jobs_rd.loadJob(j.id)">@j.subdivision.customer.name @j.subdivision.name @j.lot @j.id</a></td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(getSale(j.saleitems)))</td>
+                                                <td style="padding: 5px;">$@("%.2f".format(getFFIProfit(j)))</td>
+                                               @* <td style="padding: 5px;">%@("%.2f".format(getNetJobProfit(j)))</td>*@
+                                                <td style="padding: 5px;">$@("%.2f".format(getSQFT(j)))</td>
+                                             @*   <td style="padding: 5px;">$@("%.2f".format(getManagerProfit(j)))</td>*@
+                                              @*  <td style="padding: 5px;">$@("%.2f".format(getNetProfit(j)))</td>*@
+                                                <td style="padding: 5px;">$@("%.2f".format(getCostofGoods(j)))</td>
+                                            </tr>
+                                            }
+                                            <tr>
+                                                <td style="padding: 5px;">@m.city, @m.state TOTAL:</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getFFIProfit(j))))</td>
+                                             @*   <td style="padding: 5px;">avg% @("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getNetJobProfit(j))/ marketJobs.length))</td>*@
+                                                <td style="padding: 5px;">avg$ @("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getSQFT(j)) / marketJobs.length))</td>
+                                              @*  <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getManagerProfit(j))))</td>
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getNetProfit(j))))</td>*@
+                                                <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getCostofGoods(j))))</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="6"><hr/></td>
+                                            </tr>
+                                                    <tr>
+                                                        <button type="submit" value = "@m.id" class="btn-excel">Export to Excel</button>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            </p>
+                                        </div>
+                                        }
+                                }
+                   </div>
+                    <table style="width:900px;" class="market-row">
+                        <tbody>
+                        <tr>
+                            <td style="padding: 5px;">GRAND TOTAL:</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getSale(j.saleitems))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getFFIProfit(j))))</td>
+                          @*  <td style="padding: 5px;">avg% @("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getNetJobProfit(j))/ jobs.length))</td>*@
+                            <td style="padding: 5px;">avg$ @("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getSQFT(j)) / jobs.length))</td>
+                            @*<td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getManagerProfit(j))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getNetProfit(j))))</td>*@
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a +getCostofGoods(j))))</td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                    <button type="submit" id = "exall">Export all tables to Excel</button>
+                </div>
+            </div>
+        </div>
+</div>
+
+}

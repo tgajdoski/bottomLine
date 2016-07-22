@@ -1,0 +1,51 @@
+@(loginForm: Form[_])
+
+@import helper._
+@import helper.twitterBootstrap._
+
+@stylesheets = @{Seq(
+"login.css"
+)}
+@scripts = @{Seq(
+"jquery-1.7.1.js",
+"jquery-play-1.7.1.js",
+"jquery-ui-1.10.3.custom.min.js",
+"routes"
+)}
+@html5(Messages("playauthenticate.login.title"), stylesheets, scripts) {
+
+@helper.form(routes.Application.doLogin) {
+
+<h1>Sign in</h1>
+
+@if(loginForm.hasGlobalErrors) {
+<p class="error">
+    @loginForm.globalError.message
+</p>
+}
+
+@if(flash.contains("success")) {
+<p class="success">
+    @flash.get("success")
+</p>
+}
+
+<p>
+    <input type="username" name="email" placeholder="Username" value="@loginForm("email").value">
+</p>
+<p>
+    <input type="password" name="password" placeholder="Password">
+</p>
+<p>
+    <button type="submit">Login</button>
+</p>
+<p>
+    <a href="javascript:void(0);" onclick="window.location.href = jsRoutes.controllers.Signup.forgotPassword($('#email').val() || null).absoluteURL();">@Messages("playauthenticate.login.forgot.password")</a>
+</p>
+<p>
+    @_providerPartial(skipCurrent=false)
+</p>
+
+}
+
+}

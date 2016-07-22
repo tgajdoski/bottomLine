@@ -1,0 +1,11 @@
+@(vendorItems: List[VendorItem], market: Long)
+<select id="vendorSelect">
+    <option></option>
+    @vendorItems.filter(_.vendor!=null).groupBy(_.vendor).toSeq.sortBy(_._1.name).map {
+    case (vendor, vendorItems) => {
+    @if(market==null||(vendor.market!=null&&vendor.market.id==market)){
+    <option value="@vendor.id">@vendor.name</option>
+    }
+    }
+    }
+</select>

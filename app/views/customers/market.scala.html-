@@ -1,0 +1,24 @@
+@(user: User, myForm: Form[Market])
+
+@stylesheets = @{Seq(
+)}
+@scripts = @{Seq(
+)}
+@frame("Market",user,"customers",stylesheets,scripts){
+<div style="margin-left:40px;">
+    @helper.form(action = routes.Customers.updateMarket()) {
+    <input type="hidden" name="id" value="@myForm("id").value"/>
+    @helper.inputText(myForm("city"), '_showConstraints -> false)
+    @helper.inputText(myForm("state"))
+    @helper.inputText(myForm("url"))
+    @helper.inputText(myForm("woeid"))
+    @helper.inputText(myForm("taxrate"))
+    <input type="submit">
+    }
+    <br/>
+    @helper.form(action = routes.Customers.deleteMarket()) {
+    <input type="hidden" name="id" value="@myForm("id").value"/>
+    <input type="submit" value="Delete">
+    }
+</div>
+}

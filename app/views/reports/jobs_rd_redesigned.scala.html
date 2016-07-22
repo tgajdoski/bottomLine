@@ -1,0 +1,92 @@
+@(user: User, tasks: List[Task])
+
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+    @stylesheets = @{Seq(
+        "jquery.dataTables.css",
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "../play-jquery-tabletools/css/TableTools.css",
+        "../play-jquery-tabletools/css/TableTools_JUI.css",
+        "theme.css"
+    )}
+
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery.js",
+        "jquery-ui.js",
+        "jquery.dataTables.js",
+    /*    "dataTables.tableTools.js",*/
+        "../play-jquery-tabletools/js/TableTools.min.js",
+        "frontJob.js"
+    )}
+
+@frame_rd("Job Report",user,"jobs",stylesheets,scripts) {
+<<div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+                @*  <button id="excel" type="button">Excel export</button>*@
+
+                 @*   komentiran export button zosto ne e od datatable - a ne se iskalkulirani kolonite vo java, tuku samo vo skala view-to---\\
+                    treba da se dopravi vo Reports_rd excelExport *@
+                    <table id="jobs" class="display">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Invoiced</th>
+                            <th>Not Invoiced</th>
+                            <th>Spent</th>
+                            <th>Difference</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @tasks.map(_.job).toList.distinct.flatMap(_.saleitems).groupBy(_.job).toSeq.sortBy(_._1.subdivision.customer.name).map {
+                        case (j, saleitems) => {
+                        <tr>
+                            <td style="padding: 5px;"><a href="@routes.Jobs_rd.loadJob(j.id)">Job @j.id - @j.subdivision.customer.name @j.subdivision.name @j.lot</a></td>
+                            <td style="padding: 5px;text-align: right;">@j.subdivision.customer.name</td>
+                            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.foldLeft(0.0d)(_ + _.saleprice)))</td>
+                            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+                            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.filter(_.qb_refnumber=="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+                            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(j.lineitems.filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+                            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)-j.lineitems.filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+                        </tr>
+                        }
+                        }
+                        </tbody>
+                    </table>
+                    <br>
+                    <br>
+                    <hr>
+                     <table class="display" style="margin-left:40px;width:960px;">
+                          <thead>
+                              <tr>
+                                  <th></th>
+                                  <th style="padding: 5px;text-align: right;">Total</th>
+                                  <th style="padding: 5px;text-align: right;">Invoiced</th>
+                                  <th style="padding: 5px;text-align: right;">Not Invoiced</th>
+                                  <th style="padding: 5px;text-align: right;">Spent</th>
+                                  <th style="padding: 5px;text-align: right;">Difference</th>
+                              </tr>
+                          </thead>
+                         <tbody>
+                                <tr>
+                                    <td>TOTAL:</td>
+                                    <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.flatMap(_.saleitems).foldLeft(0.0d)(_ + _.saleprice)))</td>
+                                    <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.flatMap(_.saleitems).filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+                                    <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.flatMap(_.saleitems).filter(_.qb_refnumber=="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+                                    <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.flatMap(_.lineitems).filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+                                    <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.flatMap(_.saleitems).filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice) - tasks.map(_.job).toList.distinct.flatMap(_.lineitems).filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+
+                                </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+</div>
+
+}

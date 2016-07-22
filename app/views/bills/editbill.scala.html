@@ -1,0 +1,177 @@
+@(user: User, markets: List[Market], vendors: List[Vendor], exp : Bill, acctypes: List[AccountType])
+
+<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/jqueryui/dataTables.jqueryui.css">-->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@getYearMonthDay(exp : Bill) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(exp.billdate)}
+@getDueYearMonthDay(exp : Bill) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(exp.duedate)}
+
+@getInccureYearMonthDay(exp : Bill) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(exp.incurreddate)}
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+
+@scripts = @{Seq(
+    "jquery.validate.js",
+    "jquery.dataTables.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "editbill.js"
+)}
+
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="box-body">
+                    <div class="title"> Bills</div>
+                    <br>
+
+                        <table cellspacing="0">
+
+                            <tbody>
+                            <tr>
+
+
+                                <td>
+                                    <label> <span>Select market </span> </label>
+                                    <br>
+                                    <select id="marketSelect" class="userAuthority">
+                                        <option value="0">All Markets</option>
+                                        @markets.toSeq.sortBy(_.id).map { m =>
+                                        <option value="@m.id"@(if (exp.market!=null && m.id==exp.market.id ) " selected")>@m.city, @m.state</option>
+                                        }
+                                    </select>
+                                    <br>
+                                </td>
+
+                                <td>
+                                    <label> <span>Select vendor </span> </label>
+                                    <br>
+                                    <select id="vendorSelect" class="userAuthority">
+                                        @vendors.toSeq.sortBy(_.id).map { m =>
+                                        <option value="@m.id"@(if (exp.vendor!=null && m.id==exp.vendor.id) " selected")>@m.name</option>
+                                        }
+                                    </select>
+                                    <br>
+                                </td>
+                            </tr>
+                            <tr></tr>
+                            <tr></tr>
+                            <tr>
+                                <td>
+                                    <label> <span>Bill date (Effective)</span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="startdatepicker" value="@getYearMonthDay(exp)" >
+                                    <br>
+                                </td>
+
+                                <td>
+                                    <label> <span>terms full name </span> </label>
+                                    <br>
+                                    <select id="termsfullname" class="userAuthority">
+                                        <option value="1" @(if (exp.termsfullname=="Due on Date Specified")  " selected")>Due on Date Specified</option>
+                                        <option value="2" @(if (exp.termsfullname=="Due on Receipt")  " selected")>Due on Receipt</option>
+                                        <option value="3"@(if (exp.termsfullname=="Net 10")  " selected")>Net 10</option>
+                                        <option value="4"@(if (exp.termsfullname=="Net 15")  " selected")>Net 15</option>
+                                        <option value="5"@(if (exp.termsfullname=="Net 30")  " selected")>Net 30</option>
+                                        <option value="6"@(if (exp.termsfullname=="Net 45")  " selected")>Net 45</option>
+                                        <option value="7"@(if (exp.termsfullname=="Net 60")  " selected")>Net 60</option>
+                                    </select>
+                                    <br>
+                                </td>
+
+
+
+                            </tr>
+                            <tr>
+                                <td>
+                                    <label> <span>Due date </span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="duedatepicker"  value="@getDueYearMonthDay(exp)">
+                                    <br>
+                                </td>
+                                <td>
+                                    <label> <span>Incurred Date</span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="incurreddatepicker" value="@getInccureYearMonthDay(exp)">
+                                    <br>
+                                </td>
+
+                            </tr>
+                            <tr>
+
+                                <td>
+                                    <label> <span>account full name </span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="accountfullname"  value="@exp.accountfullname">
+                                    <br>
+                                </td>
+                                <td>
+                                    <label> <span>Select account type </span> </label>
+                                    <br>
+                                    <select id="accounttypeSelect" class="userAuthority">
+                                        @acctypes.toSeq.sortBy(_.id).map { m =>
+                                        <option value="@m.id"@(if (m.id==exp.accountType.id)  " selected")>@m.account, @m.tpe</option>
+                                        }
+                                    </select>
+                                    <br>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <label> <span>Bill Number</span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="billnumber" value="@exp.billnumber">
+                                    <br>
+                                </td>
+
+                                <td>
+                                    <label> <span>Amount </span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="amount" value="@exp.amount">
+                                    <br>
+                                </td>
+                            </tr>
+                            <tr>
+
+                                <td>
+                                    <label> <span>job number </span> </label>
+                                    <br>
+                                    <input type="text" class ="form-control" id="jobnumber"  value="@exp.job_id">
+                                    <br>
+                                </td>
+
+                                <td>
+                                    <label> <span>Note</span> </label>
+                                    <br>
+                                    <textarea rows="2" cols="20" id ="note" class="note">@exp.note</textarea>
+                                </td>
+                                <td>
+                                    <div>
+                                        <p>
+                                            <button type="submit" class="btn btn-success">Save</button>
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+
+                        </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,96 @@
+@(user: User, markets: List[Market], managers: List[User], itemTypes: List[ItemType], jobCategories: List[JobCategory])
+
+
+
+@stylesheets = @{Seq(
+    "jquery.dataTables.css",
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+)}
+@scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+    "    jquery.dataTables.js",
+        "frontItemRedesigned.js"
+)}
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-9">
+                <div class="box-body">
+                    <div class="title"> item report </div>
+                    <br>
+
+                        <table cellspacing="0">
+                            <tbody>
+
+                                <tr>
+                                    <td>
+                                        <label> <span>Select market </span> </label>
+                                        <br>
+
+                                        <select multiple id="marketSelect" class="userAuthority"  style="height:125px;">
+                                            <option value="">All Markets</option>
+                                            @markets.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                                            }
+                                        </select>
+                                        <br>
+                                    </td>
+                                </tr>
+                                        <tr>
+                                            <td>
+                                                 <label> <span>Select crew leader </span> </label>
+                                                 <br>
+
+                                                    <select id="managerSelect" class="userAuthority">
+                                                        <option value="">All Crew Leaders</option>
+                                                            @managers.toSeq.sortBy(_.id).map { m =>
+                                                           <option value="@m.id">@m.name</option>
+                                                                       }
+                                                     </select>
+                                                  <br>
+                                             </td>
+
+
+                                             <td>
+                                                 <label> <span>Select item type </span> </label>
+                                                 <br>
+
+                                                <select id="reportSelect" class="userAuthority">
+                                                    <option value="">All Item Types</option>
+                                                    @itemTypes.toSeq.sortBy(_.id).map { m =>
+                                                        <option value="@m.id">@m.name</option>
+                                                    }
+                                                </select>
+                                                <br>
+                                            </td>
+                                        </tr>
+                                  <tr>
+                                    <td>
+                                        <p> <label> <span>Select start date </span> </label>
+                                            <input type="text" class ="form-control" id="startdatepicker"></p>
+                                    </td>
+                                    <td>
+                                        <p style="padding-left: 20px;"><label> <span>Select end date </span> </label>
+                                            <input type="text" class ="form-control" id="enddatepicker"></p>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                    <div>
+                        <p>
+                            <button type="submit" class="btn btn-success">Report</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+}

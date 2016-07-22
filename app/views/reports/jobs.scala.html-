@@ -1,0 +1,49 @@
+@(user: User, tasks: List[Task], jobCategory: JobCategory)
+@applyFilters(j: Job) = @{
+if (jobCategory!=null&&j.jobCategory!=jobCategory) false
+else true
+}
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+@stylesheets = @{Seq(
+)}
+@scripts = @{Seq(
+)}
+@frame("Job Report",user,"jobs",stylesheets,scripts) {
+<div style="margin-left:40px;width:960px;">
+    <table>
+        <thead>
+        <tr>
+            <th></th>
+            <th>Total</th>
+            <th>Invoiced</th>
+            <th>Not Invoiced</th>
+            <th>Spent</th>
+            <th>Difference</th>
+        </tr>
+        </thead>
+        <tbody>
+        @tasks.map(_.job).toList.distinct.filter(applyFilters(_)).flatMap(_.saleitems).groupBy(_.job).toSeq.sortBy(_._1.subdivision.customer.name).map {
+        case (j, saleitems) => {
+        <tr>
+            <td style="padding: 5px;"><a href="@routes.Jobs.loadJob(j.id)">Job @j.id - @j.subdivision.customer.name @j.subdivision.name @j.lot</a></td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.filter(_.qb_refnumber=="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(j.lineitems.filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(saleitems.filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)-j.lineitems.filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+        </tr>
+        }
+        }
+        <tr>
+            <td style="padding: 5px;">TOTAL:</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.filter(applyFilters(_)).flatMap(_.saleitems).foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.filter(applyFilters(_)).flatMap(_.saleitems).filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.filter(applyFilters(_)).flatMap(_.saleitems).filter(_.qb_refnumber=="").foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.filter(applyFilters(_)).flatMap(_.lineitems).filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.map(_.job).toList.distinct.filter(applyFilters(_)).flatMap(_.saleitems).filter(_.qb_refnumber!="").foldLeft(0.0d)(_ + _.saleprice)-tasks.map(_.job).filter(applyFilters(_)).flatMap(_.lineitems).filter(_.taskType!=null).foldLeft(0.0d)(_ + _.saleprice)))</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+}

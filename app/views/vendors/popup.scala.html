@@ -1,0 +1,154 @@
+@(user: User,  formVendor: Form[Vendor], vend: Vendor)
+
+
+<div class="modal" style="">
+    @helper.form(action = routes.Vendors_rd.updateVendor()) {
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Vendor Form</h3>
+        </div>
+        <div class="modal-body">
+
+
+            <div class="">
+                <label class = "mylabel" for="name">name</label>
+                <div>
+                    <input type="text" id="name" name="name" value="" class="form-control">
+                </div>
+            </div>
+            <div class="">
+                <label class = "mylabel" for="address1">address1</label>
+                <div>
+                    <input type="text" id="address1" name="address1" value="" class="form-control">
+                </div>
+            </div>
+
+
+
+            <div class="">
+                <label class = "mylabel" for="address2">address2</label>
+                <div>
+                    <input type="text" id="address2" name="address2" value="" class="form-control">
+                </div>
+            </div>
+            <div class="">
+                <label class = "mylabel" for="city">city</label>
+                <div>
+                    <input type="text" id="city" name="city" value="" class="form-control">
+                </div>
+            </div>
+
+
+            <div class="">
+                <label class = "mylabel" for="state">state</label>
+                <div>
+                    <input type="text" id="state" name="state" value="" class="form-control">
+                </div>
+            </div>
+            <div class="">
+                <label class = "mylabel" for="zip">zip</label>
+                <div>
+                    <input type="text" id="zip" name="zip" value="" class="form-control">
+                </div>
+            </div>
+
+
+            <div class="">
+                <label class = "mylabel" for="contact_name">contact_name</label>
+                <div>
+                    <input type="text" id="contact_name" name="contact_name" value="" class="form-control">
+                </div>
+            </div>
+            <div class="">
+                <label class = "mylabel" for="contact_number1">contact_number1</label>
+                <div>
+                    <input type="text" id="contact_number1" name="contact_number1" value="" class="form-control">
+                </div>
+            </div>
+
+
+            <div class="">
+                <label class = "mylabel" for="contact_number2">contact_number2</label>
+                <div>
+                    <input type="text" id="contact_number2" contact_number2="name" value="" class="form-control">
+                </div>
+            </div>
+            <div class="">
+                <label class = "mylabel" for="contact_fax">contact_fax</label>
+                <div>
+                    <input type="text" id="contact_fax" name="contact_fax" value="" class="form-control">
+                </div>
+            </div>
+
+
+            <div class="">
+                <label class = "mylabel" for="contact_email1">contact_email1</label>
+                <div>
+                    <input type="text" id="contact_email1" name="contact_email1" value="" class="form-control">
+                </div>
+            </div>
+            <div class="">
+                <label class = "mylabel" for="contact_email2">contact_email2</label>
+                <div>
+                    <input type="text" id="contact_email2" name="contact_email2" value="" class="form-control">
+                </div>
+            </div>
+
+
+            <div class="">
+                <label class = "mylabel" for="contact_email3">contact_email3</label>
+                <div>
+                    <input type="text" id="contact_email3" name="contact_email3" value="" class="form-control">
+                </div>
+            </div>
+            <input id="dataDiv" type="hidden" name="id"  value="@vend.id">
+
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn">Close</a>
+            @*   <a href="#" id="updateVendor" class="btn btn-primary">Save</a>*@
+            <input type="submit" class="btn btn-success" value="Save">
+
+
+        </div>
+    }
+</div>
+@*
+
+
+<div class="modal" style="">
+    @helper.form(action = routes.Vendors_rd.updateVendor()) {
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <div class="title">Vendor  <label class="custdivselected">@vend.name<label> </div>
+          </div>
+            <div class="modal-body">
+            <br>
+            @helper.inputText(formVendor("name"), '_label -> "name", 'class -> "form-control-invisible")
+            @helper.inputText(formVendor("address1"), '_label -> "address1", 'class -> "form-control")
+            @helper.inputText(formVendor("address2"), '_label -> "address2", 'class -> "form-control")
+            @helper.inputText(formVendor("city"),'_label -> "city", 'class -> "form-control")
+            @helper.inputText(formVendor("state"),'_label -> "state", 'class -> "form-control")
+            @helper.inputText(formVendor("zip"),'_label -> "zip", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_name"),'_label -> "contact name", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_number1"),'_label -> "contact number1", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_number2"),'_label -> "contact number2", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_fax"),'_label -> "contact fax", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_email1"),'_label -> "contact email1", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_email2"),'_label -> "contact email2", 'class -> "form-control")
+            @helper.inputText(formVendor("contact_email3"),'_label -> "contact email3", 'class -> "form-control")
+
+            <input type="hidden" name="id"  value="@vend.id">
+                </div>
+            <div class="modal-footer">
+                <a href="#" class="btn">Close</a>
+                <input type="submit" class="btn btn-success" value="Save">
+            </div>
+
+    }
+
+</div>
+*@
+
+

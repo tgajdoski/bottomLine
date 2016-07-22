@@ -1,0 +1,51 @@
+@(user: User,  formSubdivision: Form[Subdivision], customer: Customer, subdivid: Long)
+
+    @import views.html.helper.FieldConstructor
+
+
+    @stylesheets = @{Seq(
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+
+    @scripts = @{Seq(
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery.validate.js",
+        "jquery.js"
+    )}
+
+    @implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+    @frame_rd("Customer",user,"customers",stylesheets,scripts){
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyX">
+    @helper.form(action = routes.Customers_rd.updateSubdivision(customer.id)) {
+        <fieldset class="step2">
+            <div class="title">Customer  <label class="subdivselection">@customer.name </label>  Subdivision <label class="subdivselection">@Subdivision.find.byId(subdivid).name </label> </div>
+
+            <br>
+            @helper.inputText(formSubdivision("name"), '_label -> "name", 'class -> "form-control-invisible")
+            @helper.inputText(formSubdivision("address1"), '_label -> "address1", 'class -> "form-control")
+            @helper.inputText(formSubdivision("address2"), '_label -> "address2", 'class -> "form-control")
+            @helper.inputText(formSubdivision("city"),'_label -> "city", 'class -> "form-control")
+            @helper.inputText(formSubdivision("state"),'_label -> "state", 'class -> "form-control")
+            @helper.inputText(formSubdivision("zip"),'_label -> "zip", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_name"),'_label -> "contact name", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_number1"),'_label -> "contact number1", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_number2"),'_label -> "contact number2", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_fax"),'_label -> "contact fax", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_email1"),'_label -> "contact email1", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_email2"),'_label -> "contact email2", 'class -> "form-control")
+            @helper.inputText(formSubdivision("contact_email3"),'_label -> "contact email3", 'class -> "form-control")
+            @helper.inputText(formSubdivision("url"),'_label -> "Url", 'class -> "form-control")
+            <input type="hidden" name="id"  value="@subdivid">
+            <input type="submit" class="btn btn-success" value="Save">
+        </fieldset>
+
+    }
+        </div>
+        </div>
+}

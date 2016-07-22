@@ -1,0 +1,52 @@
+@(user: User,  formCustomer: Form[models.Customer], cust: Customer)
+@import views.html.helper.FieldConstructor
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+    )}
+@scripts = @{Seq(
+        "jquery-1.7.1,js",
+        "jquery-1.9.0.min.js",
+        "jquery-play-1.7.1.js"
+    )}
+
+
+@implicitFields = @{FieldConstructor(_my_field_constructor.f)}
+
+@frame_rd("Add new customer",user,"new customer",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+    <div class="box-bodyX">
+        <table cellspacing="0">
+                <tr>
+                @helper.form(action = routes.Customers_rd.updateCustomer()) {
+                    <fieldset class="step2">
+                        <div class="title">Customer  <label class="custdivselected">@cust.name<label> </div>
+                        <br>
+                        @helper.inputText(formCustomer("name"), '_label -> "name", 'class -> "form-control-invisible")
+                        @helper.inputText(formCustomer("address1"), '_label -> "address1", 'class -> "form-control")
+                        @helper.inputText(formCustomer("address2"), '_label -> "address2", 'class -> "form-control")
+                        @helper.inputText(formCustomer("city"),'_label -> "city", 'class -> "form-control")
+                        @helper.inputText(formCustomer("state"),'_label -> "state", 'class -> "form-control")
+                        @helper.inputText(formCustomer("zip"),'_label -> "zip", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_name"),'_label -> "contact name", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_number1"),'_label -> "contact number1", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_number2"),'_label -> "contact number2", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_fax"),'_label -> "contact fax", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_email1"),'_label -> "contact email1", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_email2"),'_label -> "contact email2", 'class -> "form-control")
+                        @helper.inputText(formCustomer("contact_email3"),'_label -> "contact email3", 'class -> "form-control")
+
+                        <input type="hidden" name="id"  value="@cust.id">
+                        <input type="submit" class="btn btn-success" value="Save">
+                    </fieldset>
+                    }
+                </tr>
+
+        </table>
+    </div>
+    </div>
+}

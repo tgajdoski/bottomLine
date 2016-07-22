@@ -1,0 +1,85 @@
+@(user: User, tasks: List[Task], itemType: ItemType, manager: User)
+@applyFilters(l: Lineitem) = @{
+    if (itemType!=null&&l.itemType!=itemType) false
+    else if (manager!=null&&l.user!=manager) false
+    else true
+}
+@getYearMonthDay(t: Task) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(t.date)}
+
+
+    @stylesheets = @{Seq(
+        "jquery.dataTables.css",
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+    @scripts = @{Seq(
+        "jquery-1.10.2.js",
+        "jquery-ui.js",
+        "jquery.dataTables.js",
+        "frontItem.js"
+    )}
+
+@frame_rd("Item Report",user,"vendors",stylesheets,scripts) {
+<script>
+    $(document).ready(function() {
+        $(".vendor").click(function(event){
+            $(this).parent().parent().next().toggle();
+            event.preventDefault();
+        });
+    });
+</script>
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="box-body">
+                        <table style="width: 100%;">
+                            <tbody>
+                                @tasks.flatMap(_.lineitems).filter(applyFilters(_)).groupBy(_.vendor).map {
+                                    case (v, lineitems) => {
+                                        <tr>
+                                            <td style="padding: 5px; cursor: pointer;"><a class="vendor" style="color: #000; padding: 5px; font-size: 12px; background: #efefef; display: block;">@(if (v != null) v.name else "MISC")</a></td>
+                                            <td style="padding: 5px;text-align: right;">$@("%,.2f".format(lineitems.foldLeft(0.0d)(_ + _.saleprice)))</td>
+                                        </tr>
+                                        <tr style="display: none;">
+                                            <td style="padding: 10px;">
+                                                <table style="width: 100%; font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;">
+                                                    <tbody>
+                                                    @lineitems.map { l =>
+                                                    <tr>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@getYearMonthDay(l.task)</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@(if (l.item!=null) l.item.name)</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.job.subdivision.customer.name @l.job.subdivision.name @l.job.lot</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">@l.quantity</td>
+                                                        <td style="padding: 5px; border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$@l.rate</td>
+                                                        <td style="padding: 5px;text-align: right;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">$@("%,.2f".format(l.saleprice))</td>
+                                                        @if(user.authority >= Secured.MANAGER && l.job != null){<td style="width: 52px;text-align:center;  border-left: 1px solid #ccc; border-top: 1px solid #ccc;">
+                                                        @if(l.qb_refnumber!=null && l.qb_refnumber!="" && l.qb_refnumber!="ERR" && l.itemType!= null){
+                                                        @Html(l.qb_refnumber)
+                                                        }
+                                                        @if(l.qb_refnumber==null||l.qb_refnumber==""||l.qb_refnumber=="ERR"){
+                                                        <button class="invoice">INV</button>
+                                                        }
+                                                    </td>}
+                                                    </tr>
+                                                    }
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
+                                <tr>
+                                    <td style="padding: 5px;">TOTAL:</td>
+                                    <td style="padding: 5px;text-align: right;">$@("%,.2f".format(tasks.flatMap(_.lineitems).filter(applyFilters(_)).foldLeft(0.0d)(_ + _.saleprice)))</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}

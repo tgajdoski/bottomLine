@@ -1,0 +1,434 @@
+@(user: User, plan: Plan, planItems: List[PlanItem],  novplan: Boolean)
+
+
+
+    @stylesheets = @{Seq(
+      //  "../javascripts/uploadify/uploadify.css",
+        "plan.css",
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"/*,
+        "jquery.dataTables.css"*/
+    )}
+
+    @scripts = @{Seq(
+        /* "jquery.autogrow-textarea.js",
+         "jquery.dataTables.js",
+         "../play-jquery-tabletools/js/TableTools.min.js",
+         "jquery-ui.js",
+         "jquery.dataTables.rowReordering.js",
+         "underscore-min.js",*/
+        "noty/packaged/jquery.noty.packaged.min.js",
+        "jquery.autogrow-textarea.js",
+        "jquery.dataTables.js",
+        "../play-jquery-tabletools/js/TableTools.min.js",
+        "jquery-ui.js",
+        "jquery.dataTables.rowReordering.js",
+        "underscore-min.js",
+         "backbone-min.js",
+        "plan_rd.js",
+         "saleitem_rd.js",
+      /*   "budget_rd.js",*/
+    /*    "plan_backbone_budget.js",*/
+        "plan_backbone.js"
+
+        /* "plan_new.js"*/
+
+    )}
+
+@frame_rd("Plan "+plan.id+" - "+plan.name,user,"plans", stylesheets, scripts){
+    <style>
+
+    .plan_name{
+    font-size: 24px;
+    font-weight: bold;
+    }
+
+    #duplicatePlan{
+    float: right;
+    margin-bottom: 50px;
+    position: relative;
+    display: block;
+    }
+
+    #saleprice{
+    font-size: 20px;
+    color: #666;
+    font-weight:bold;
+
+    border: 0;
+    }
+
+
+    .selected {
+    background-color: #b0bed9;
+    }
+
+    .info_profit td{
+    width: 50%;
+    font-size: 16px;
+    padding: 0;
+    margin-left: 10px;
+    background: #fff;
+    }
+    .info_profit label{
+    padding: 10px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: #6eba6e;
+    display: block;
+    }
+
+    .info_profit #grossprofit, .info_profit #pctprofit, .info_profit #ppsqft{
+    padding-left: 20px;
+
+    }
+
+    #addSaleitem, #planitems dt{
+    border: 1px solid #999;
+    color: #fff;
+    font-weight: normal;
+    padding: 10px;
+    background: #666;
+    height: 40px;
+    clear: both;
+    }
+
+    #table_sale th, #table_sale td, .planitemheader th, #budget table th{
+    font-size: 14px;
+    font-weight: normal;
+    border: 1px solid #efefef;
+    padding: 5px;
+    background: #fff;
+    height: 50px;
+    }
+
+    .planitem td, #budget table td{
+    background: #ddd !important;
+
+    }
+
+    #table_sale input, #table_sale textarea{
+    width: 100%;
+    border: 1px solid #ccc !important;
+    font-size: 12px;
+    }
+    .planitem input, .planitem textarea, #budget input, #budget textarea{
+    border: 1px solid #ccc !important;
+    font-size: 12px;
+    }
+
+    #table_sale tbody{
+    border-top: 1px solid #333;
+    padding-top: 10px;
+    }
+
+    .planitemtotals {
+    color: #888;
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 12px;
+    }
+
+    .planitemheader{
+    padding: 5px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    border-top: 3px solid #6eba6e;
+
+    }
+
+    .planitemheader [style='text-align:left;width:116px;']{
+    background: #6eba6e;
+    color: #fff;
+    font-weight: bold;
+    }
+
+    .planitemheader [style='text-align:left;width:116px;'] a{
+    color: #fff !important;
+    }
+
+    .planitemheader th, .planitem th{
+    height: 30px;
+    }
+
+    .planitem th{
+    padding: 0;
+    }
+
+    #assigntask {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -100px;
+    margin-top: -100px;
+    }
+
+    #plan table[style="border-top:3px double #333;"]{
+    margin-top: 50px !important;
+    border-top: 0 !important;
+    margin-bottom: 10px;
+    }
+
+    #plan table[style="border-top:3px double #333;"] td{
+    height: 35px;
+    background: #6eba6e;
+    color: #fff;
+    font-weight: bold;
+    }
+
+
+    #budget table[style="border-top:1px solid #333;"]{
+    border: none !important;
+
+    }
+
+    #budget table[style="border-top:1px solid #333;"] td{
+    background: #f1f1f1 !important;
+    color: #888;
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 12px;
+    }
+    #budget table th{
+    height: 30px;
+
+    }
+
+    .ui-accordion-content{
+
+    height: auto !important;
+    }
+
+    table td{
+    border-left: 1px solid #ccc; border-top: 1px solid #ccc;
+    }
+
+    table{
+    font-size: 12px; border-right: 1px solid #ccc; border-bottom: 1px solid #ccc;
+    }
+
+
+    </style>
+
+
+    <script>
+    $(document).ready(
+    function()
+    {
+    $('#progressbox').hide();
+    $('#statustxt').hide();
+    document.getElementById('fileupload').addEventListener('change', function(e) {
+    var file = this.files[0];
+    var xhr = new XMLHttpRequest();
+    xhr.file = file; // not necessary if you create scopes like this
+    xhr.addEventListener('progress', function(e) {
+    var done = e.position || e.loaded, total = e.totalSize || e.total;
+    //  console.log('xhr progress: ' + (Math.floor(done/total*1000)/10) + '%');
+    }, false);
+
+    if ( xhr.upload ) {
+    $('#progressbox').show();
+    $('#statustxt').show();
+    xhr.upload.onprogress = function(e) {
+    var done = e.position || e.loaded, total = e.totalSize || e.total;
+    //   console.log('xhr.upload progress: ' + done + ' / ' + total + ' = ' + (Math.floor(done/total*1000)/10) + '%');
+
+    $('#progressbar').width((Math.floor(done/total*1000)/10) + '%') //update progressbar percent complete
+    $('#statustxt').html((Math.floor(done/total*1000)/10) + '%'); //update status text
+    if(done>50)
+    {
+    $('#statustxt').css('color','#000'); //change status text to white after 50%
+    }
+    };
+    }
+    xhr.onreadystatechange = function(e) {
+    if ( 4 == this.readyState ) {
+    $('#statustxt').html("upload complete");
+    if (xhr.status == 200 && xhr.responseText.length > 20) {
+    $(xhr.responseText).appendTo("#attachTable");
+    }
+    setTimeout("hide_status()", 3000);
+    }
+    };
+
+
+
+    var jobid = ""
+    if ($("#totals").attr("data-job-id") )
+    {
+    jobid =  $("#totals").attr("data-job-id");
+    }
+    var planid = ""
+    if ( $("#totals").attr("data-plan-id"))
+    {
+    planid =   $("#totals").attr("data-plan-id")
+    }
+    /*
+            if (jobid == "" && planid =="")
+            {
+            xhr.open('post', '/rd/plans/upload?filename=' + $('#fileupload').val(), true);
+            }
+            if (jobid == "" && planid !="")
+            {
+                xhr.open('post', '/rd/plans/upload?filename=' + $('#fileupload').val() +'&planid='+planid, true);
+            }
+            if (planid == "" && jobid !="")
+            {
+                xhr.open('post', '/rd/plans/upload?filename=' + $('#fileupload').val() + '&jobid='+jobid, true);
+            }
+            if (jobid != "" && planid!="")
+            {
+                xhr.open('post', '/rd/plans/upload?filename=' + $('#fileupload').val() + '&jobid='+jobid+'&planid='+planid, true);
+            }*/
+    if (jobid == "" && planid =="")
+    {
+    xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", ""), true);
+    }
+    if (jobid == "" && planid !="")
+    {
+    xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", "") +'&planid='+planid, true);
+    }
+    if (planid == "" && jobid !="")
+    {
+    xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", "") + '&jobid='+jobid, true);
+    }
+    if (jobid != "" && planid!="")
+    {
+    xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", "") + '&jobid='+jobid+'&planid='+planid, true);
+    }
+
+    xhr.send(file);
+
+    //  $('<a target="_blank" href="/attachments/'+$('#fileupload').val()+'">'+$('#fileupload').val()+'</a>').appendTo("#attachTable")
+
+
+
+    }, false);
+
+    });
+
+    function hide_status()
+    {
+    $('#statustxt').hide();
+
+    }
+
+
+
+    </script>
+
+
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyl">
+            <div class="title plan_name"> @if(novplan){New - }Plan @plan.id - <span id="planName">@plan.name</span>@if(user.authority >= Secured.MANAGER){<a id="deletePlan"></a>}</div>
+            @if(user.authority >= Secured.MANAGER){
+                <button id="duplicatePlan" class="btn btn-success">DUPLICATE PLAN</button>
+                <div class="title" id="saleprice">$<span>@("%.2f".format(plan.saleitems.foldLeft(0.0d)(_ + _.saleprice)))</span></div>
+            }
+            <a id="open" style="text-align: right; padding-right: 10px;">expand all</a>
+
+            <div id="accordion" >
+                <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; padding-left:25px; border-radius: 5px;">general information</h3>
+                <div>
+
+
+                        @if(user.authority >= Secured.MANAGER){
+                        <section id="totals" data-plan-id="@plan.id" data-customer-id="@(if (plan.customer!=null) plan.customer.id)" data-sale="@plan.saleitems.foldLeft(0.0d)(_ + _.saleprice)"
+                        data-cost="@plan.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)" style="width:334px;margin-top:20px;margin-right:50px;margin-bottom:30px;float:left;">
+                            <table width="100%" class="info_profit">
+                                <tbody>
+                                    <tr>
+                                        <td> <label class="mylabel">Gross Profit</label></td>
+                                        <td id="grossprofit"><span class="myspan">@("%.2f".format(plan.saleitems.foldLeft(0.0d)(_ + _.saleprice)-plan.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)))</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td> <label class="mylabel">% Profit</label></td>
+                                        <td id="pctprofit"><span class="myspan">@("%.2f".format(100*(1-plan.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)/plan.saleitems.foldLeft(0.0d)(_ + _.saleprice))))</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td> <label class="mylabel">$/SQFT</label></td>
+                                        <td id="ppsqft"><span class="myspan">@("%.2f".format(plan.dimensions.filter(!_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))-plan.dimensions.filter(_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))))</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    }
+                    <section id="attachments" style="float:left;width:240px;margin-bottom:30px;">
+                        <table id="attachTable" style="width:100%;margin-bottom:10px;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2">
+                                        <b>Attachments:</b>
+                                    </td>
+                                </tr>
+                                @plan.attachments.map { attachment =>
+                                    @views.html.plans.attachment_rd(user,attachment)
+                                }
+                            </tbody>
+                        </table>
+                        <input id="fileupload" type="file"/>
+                        @*class="filestyle" data-input="false"*@
+                        <div id="statustxt">0%</div>
+                    </section>
+                </div>
+                <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; width: 100%; padding-left:25px; border-radius: 5px;">saleitems</h3>
+                <div>
+                    <section id="saleitems" style="width:576px;margin-top:20px;margin-bottom:30px;float:left; width: 100%;">
+                        @views.html.saleitems.index_rd(user,plan.saleitems)
+                    </section>
+                </div>
+                <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; padding-left:25px; border-radius: 5px;">planitems</h3>
+                <div>
+                    <section id="plan" style="margin-top:10px; width: 100%;">
+                        @views.html.plans.index_rd(user,planItems,plan.dimensions)
+                    </section>
+                </div>
+                <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; padding-left:25px; border-radius: 5px;">budgetitems</h3>
+                <div>
+                    <section id="budget" style="margin-right:50px;margin-bottom:30px;float:left; width: 100%;">
+                    @views.html.budgets.index_rd_new(user,plan.lineitems.sortBy(_.position))
+                    </section>
+                </div>
+
+        </div>
+    </div>
+
+
+
+    <div class="modal" id="assigntask" style="">
+        <div class="box-bodyX">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+                <div class="title">
+                    <label>Assign schedule dates</label>
+                </div>
+
+            </div>
+            <div class="modal-body">
+                <td>
+                    <p><input type="text" class ="form-control" id="calendarmalendar"  style="width: 140px;"></p>
+                </td>
+                <td>
+                    <div>
+                        <input id="addedit" type="hidden" name="id"  value="">
+                        <input value="Assign" type = "submit" id="buttonassign">
+                    </div>
+                </td>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn" id="close">Close</a>
+
+            </div>
+
+        </div>
+    </div>
+
+
+}

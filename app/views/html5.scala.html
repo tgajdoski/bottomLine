@@ -1,0 +1,45 @@
+@(title: String, stylesheets: Seq[String], scripts: Seq[String])(content: Html)
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+<head>
+   @* <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>*@
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="">
+
+    <title>@title</title>
+    <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/favicon.ico")">
+    @stylesheets.map { stylesheet =>
+    <link rel="stylesheet" href="@routes.Assets.at("stylesheets/"+stylesheet)"/>
+    }
+
+    <!--[if lt IE 9]>
+    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+
+    <![endif]-->
+    @scripts.map { script =>
+    <script type="text/javascript" src="@routes.Assets.at("javascripts/"+script)"></script>
+    }
+    
+    <style>
+    .btn-primary{
+    	background: #ccc; 
+    	border: 1px solid #eee;
+    }
+    </style>
+</head>
+
+<body lang="en">
+
+@content
+
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+@(title: String, user: User, section: String = "", moreStylesheets: Seq[String], moreScripts: Seq[String])(content: Html)
+@import com.feth.play.module.pa.views.html._
+
+@showMenuItem(authority:Int, itemName:String )  = @{
+    itemName match{
+        case("Home") =>  true
+        case("Calendar") =>  if (authority >1 ) true else false
+        case ("Jobs") =>  if (authority > 0) true else false
+        case ("Reports") =>  if (authority >4) true else false
+        case ("Plans/Take-offs") =>  if (authority >5 || authority ==4 || authority == 3) true else false
+        case ("Vendors/Items") =>  if (authority >4 || authority==2 || authority ==1) true else false
+        case ("Customers") =>  if (authority >4 || authority ==2 || authority ==1) true else false
+        case ("Employees") =>  if (authority > 4 || authority == 1) true else false
+        case ("Users") =>  if (authority > 5) true else false
+        case _ => false
+    }
+}
+
+    @stylesheets = @{Seq(
+        "jquery-ui-1.10.3.custom.min.css",
+        "font-awesome.min.css"
+    )}
+    @scripts = @{Seq(
+
+    /*    "jquery-1.7.1.js",
+        "jquery-play-1.7.1.js",
+        "jquery-ui-1.10.3.custom.min.js",
+        "routes",
+        "bootstrap.2.0.3.min.js",
+        "main_rd.js"*/
+
+        "jquery-1.7.1.js",
+        "jquery-play-1.7.1.js",
+        "bootstrap.2.0.3.min.js",
+        "jquery-ui-1.10.3.custom.min.js",
+        "routes",
+        "weatherscript.js",
+        "main_rd.js"
+    )}
+
+
+
+@menuItems = @{Seq(
+("home", "Home", routes.Home_rd.index),
+("calendar", "Calendar", routes.Employees.index), //routes.Tasks_rd.getWeekTasks
+("reports", "Reports", routes.Employees.index), //routes.Reports_rd.index
+("jobs", "Jobs",  routes.Employees.index), //routes.Jobs_rd.index
+("plans", "Plans/Take-offs",routes.Employees.index ), // routes.Plans_rd.index
+("vendors", "Vendors/Items",routes.Employees.index), //  routes.Vendors_rd.index
+("customers", "Customers", routes.Employees.index), // routes.Customers_rd.index
+("employees", "Employees", routes.Employees.index),
+("users", "Users", routes.Users_rd.index)
+)}
+@html5(title,stylesheets++moreStylesheets,scripts++moreScripts){
+
+
+    <div class="navbar-fixed-top top-header" role="navigation">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12"> Search
+                    <input id="search" type="text" name="" value="" />
+                    <a href="#"> <img src="/assets/images/search.png" alt="" /> </a> <span  style="float: right;">
+
+                    <span class="gray alignright"> Logged in as: </span>
+                    <strong><a href="@routes.Application.profile_rd">@user.username</a></strong> <a href="@com.feth.play.module.pa.controllers.routes.Authenticate.logout()"> <img src="@routes.Assets.at("images/logout.png")" alt="" /> </a></span> </div>
+            </div>
+        </div>
+    </div>
+    <div class="navbar navbar-inverse navbar-fixed-top top-menu" role="navigation">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-2">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"> <span class="sr-only"> Toggle navigation </span> <span class="icon-bar"> </span> <span class="icon-bar"> </span> <span class="icon-bar"> </span> </button>
+                        <a class="navbar-brand" href="#"> <img src="@routes.Assets.at("images/logo.png")" alt="" class="logo" /> </a> </div>
+                </div>
+                <div class="col-sm-10floatright">
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li class="active"> <a href="@routes.Home_rd.index()"> Home </a> </li>
+                            @if(showMenuItem(user.authority, "Calendar")) {
+                            <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Calendar <b class="caret"> </b> </a>
+                                <ul class="dropdown-menu">
+                                    <li> <a href="@routes.Tasks_rd.getDailyTasks()"> Daily </a> </li>
+                                    <li> <a href="@routes.Tasks_rd.getWeekTasks()"> Weekly </a> </li>
+                                  <!--  <li> <a href="@routes.Tasks_rd.getMoveJobs()"> Move Tasks </a> </li>-->
+                                </ul>
+                            </li>
+                            }
+                            @if(showMenuItem(user.authority, "Jobs")) {
+                            <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown">Jobs <b class="caret"> </b> </a>
+                                <ul class="dropdown-menu">
+                                    <li> <a href="@routes.Jobs_rd.addJob_rd()"> Add New Job </a> </li>
+                                    <li> <a href="@routes.Jobs_rd.listJobs()"> Manage Jobs </a> </li>
+                                 @*  @if(user.authority == 3) {*@
+                                    <li> <a href="@routes.Jobs_rd.actualJobs()"> Input Labor </a> </li>
+                                 @*  }*@
+                                </ul>
+                            </li>
+                            }
+                            @if(showMenuItem(user.authority, "Reports")){
+                            <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Reports <b class="caret"> </b> </a>
+                                <ul class="dropdown-menu">
+                                  @*  <li> <a href="@routes.Reports_rd.index_job()"> Job Report </a> </li>
+                                    <li> <a href="@routes.Reports_rd.index_profit()"> Profit Report </a> </li>*@
+                                    <li> <a href="@routes.Reports_rd.index_item()"> Item Report </a> </li>
+                               @*     <li> <a href="@routes.Reports_rd.new1front()"> Verified Job Profit </a> </li>*@
+                                    <li> <a href="@routes.Reports_rd.new2front()"> Performance Report </a> </li>
+                                    <li> <a href="@routes.Reports_rd.new3front()"> Category Report </a> </li>
+                                    <li> <a href="@routes.Reports_rd.new6front()"> Alternative Category  </a> </li>
+                                  @*  <li> <a href="@routes.Reports_rd.new4front()"> Overall Purchasing Report </a> </li>*@
+                                    <li> <a href="@routes.Reports_rd.new5front()"> Variance Report </a> </li>
+                                    <li> <a href="@routes.Reports_rd.purchase()"> Purchasing Report </a> </li>
+                                    <li>  <a  href="@routes.Reports_rd.getLaborperiod()"> Labor Report </a></li>
+                                   @* <li> <a href="@routes.Todos.index()"> User Activity </a> </li>*@
+                                </ul>
+                            </li>
+                            }
+                            @if(showMenuItem(user.authority, "Plans/Take-offs")){
+                            <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Plans/Take-offs <b class="caret"> </b> </a>
+                                <ul class="dropdown-menu">
+                                    <li> <a href="@routes.Plans_rd.addPlan_rd()"> Add New Plan </a> </li>
+                                    <li> <a href="@routes.Plans_rd.listPlans()"> Manage Plans </a> </li>
+                                    @*  <li> <a href="@routes.Todos.index()"> Add New Plan </a> </li>
+                                    <li> <a href="@routes.Todos.index()"> Manage Plans </a> </li>*@
+                                </ul>
+                            </li>
+                            }
+                            @if(showMenuItem(user.authority, "Vendors/Items")){
+                                <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Vendors/Items <b class="caret"> </b> </a>
+                                    <ul class="dropdown-menu">
+                                        @*   <li> <a href="@routes.Vendors_rd.addVendor_rd()"> Add New Vendor</a> </li>*@
+                                        <li> <a href="@routes.Vendors_rd.listVendors()"> Manage Vendors </a> </li>
+                                        @*    <li> <a href="@routes.Vendors_rd.addItem_rd()"> Add New Item</a> </li>*@
+                                        <li> <a href="@routes.Vendors_rd.listItems()"> Manage Items </a> </li>
+                                        <li> <a href="@routes.Vendors_rd.index()"> Inovice errors </a> </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if(showMenuItem(user.authority, "Customers")){
+                                <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Customers <b class="caret"> </b> </a>
+                                    <ul class="dropdown-menu">
+                                        @*   <li> <a href="@routes.Customers_rd.addCustomer_rd()"> Add New Customer </a> </li>*@
+                                        <li> <a href="@routes.Customers_rd.listCustomer()"> Manage Customers </a> </li>
+                                        @*   <li> <a href="@routes.Customers_rd.addMarket_rd()"> Add New Market </a> </li>*@
+                                        <li> <a href="@routes.Customers_rd.listMarket()"> Manage Markets </a> </li>
+                                        <li> <a href="@routes.Customers_rd.index()"> Inovice errors </a> </li>
+                                    </ul>
+                                </li>
+                            }
+                           @* @if(showMenuItem(user.authority, "Employees")){
+                                <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Employees <b class="caret"> </b> </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a href="@routes.Todos.index()">Add New</a></li>
+                                        <li><a href="@routes.Todos.index()">Edit Employee</a></li>
+                                    </ul>
+                                </li>
+                            }*@
+                            @if(showMenuItem(user.authority, "Users")){
+                            <li class="dropdown"> <a href="#" class="dropdown-toggle" data-toggle="dropdown"> Users <b class="caret"> </b> </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="@routes.Users_rd.addUser()">Add New User</a></li>
+                                    <li><a href="@routes.Application.profile_rd()">My User Profile</a></li>
+                                    <li><a href="@routes.Users_rd.index()">Manage Users</a></li>
+                                    <li><a href="@com.feth.play.module.pa.controllers.routes.Authenticate.logout()">Log out</a></li>
+                                </ul>
+                            </li>
+                            }
+
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+        <div id="content">
+            @content
+        </div>
+        <div id="dialog" style="display:none;"></div>
+        }

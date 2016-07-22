@@ -1,0 +1,397 @@
+@(user: User, job: Job, categories: List[JobCategory], planItems: List[PlanItem], budgetLineitems: List[Lineitem], actualLineitems: List[Lineitem], tasks: List[Task])
+
+    @getYearMonthDay(j: Job) = @{val f = new java.text.SimpleDateFormat("yyyy-MM-dd");f.format(j.date)}
+    @stylesheets = @{Seq(
+        "plan.css",
+        "bootstrap.min.css",
+        "bootstrap-theme.min.css",
+        "theme.css",
+        "font-awesome.min.css",
+        "jquery-ui.css"
+    )}
+    @scripts = @{Seq(
+        "jquery.autogrow-textarea.js",
+        "underscore-min.js",
+        "backbone-min.js",
+        "plan_rd.js",
+        "saleitem_rd.js",
+        "budget_rd.js",
+        "actual_rd.js"
+    )}
+    @frame_rdp("Job "+job.id+" - "+job.subdivision.customer.name+" "+job.subdivision.name+" "+job.lot,user,"jobs",stylesheets,scripts){
+    
+    
+    <style>
+    textarea.name{
+    	
+    	
+    }
+    .plan_name{
+    	font-size: 24px;
+    	font-weight: bold;
+    }
+    
+    #duplicatePlan{
+    	float: right;
+    	margin-bottom: 50px;
+    	position: relative;
+    	display: block;
+    }
+    
+    #saleprice{
+    	font-size: 20px;
+    	color: #666;
+    	font-weight:bold;
+    	
+    	border: 0;
+    }
+    
+    .info_profit td{
+    	width: 50%;
+    	font-size: 16px;
+    	padding: 0;
+    	margin-left: 10px;
+    	background: #fff;
+    }
+    .info_profit label{
+    	padding: 10px;
+    	margin: 0;
+    	font-size: 16px;
+    	font-weight: bold;
+    	color: #fff;
+    	background: #6eba6e;
+    	display: block;
+    }
+    
+    .info_profit #grossprofit, .info_profit #pctprofit, .info_profit #ppsqft, .info_profit #managerprofit, .info_profit #ffiprofit{
+    	padding-left: 20px;
+    
+    }
+    
+    #addSaleitem, #planitems dt, #attachment-button{
+    	border: 1px solid #999;
+    	color: #fff;
+    	font-weight: normal;
+    	padding: 10px;
+    	background: #666;
+    	height: 40px;
+    	clear: both;
+    }
+    
+    #attachment-button{
+    	line-height: 10px !important;
+    }
+    
+    #saleitems th, #saleitems td, .planitemheader th, #budget table th{
+    	font-size: 14px;
+    	font-weight: normal;
+    	border: 1px solid #efefef;
+    	padding: 5px;
+    	background: #fff;
+    	height: 50px;
+    }
+    
+    .planitem td, #budget table td{
+    	background: #ddd !important;
+    
+    }
+    
+    #saleitems input, #saleitems textarea{
+    	width: 100%;
+    	border: 1px solid #ccc !important;
+    	font-size: 12px;
+    }
+    .planitem input, .planitem textarea, #budget input, #budget textarea{
+    	border: 1px solid #ccc !important;
+    	font-size: 12px;
+    }
+    
+    #saleitems tbody{
+    	border-top: 1px solid #333;
+    	padding-top: 10px;
+    }
+    
+    .planitemtotals {
+    	color: #888;
+    	margin-top: 5px;
+    	font-weight: bold;
+    	font-size: 12px;
+    }
+    
+    .planitemheader{
+    	padding: 5px;
+    	margin-top: 30px;
+    	margin-bottom: 10px;
+    	border-top: 3px solid #6eba6e;
+    
+    }
+    
+    .planitemheader [style='text-align:left;width:116px;']{
+    	background: #6eba6e;
+    	color: #fff;
+    	font-weight: bold;
+    }
+    
+    .planitemheader [style='text-align:left;width:116px;'] a{
+    	color: #fff !important;
+    }
+    
+    .planitemheader th, .planitem th{
+    	height: 30px;
+    }
+    
+    .planitem th{
+    	padding: 0;
+    }
+    
+    #plan table[style="border-top:3px double #333;"]{
+    	margin-top: 50px !important;
+    	border-top: 0 !important;
+    	margin-bottom: 10px;
+    }
+    
+    #plan table[style="border-top:3px double #333;"] td{
+    	height: 35px;
+    	background: #6eba6e;
+    	color: #fff;
+    	font-weight: bold;
+    }
+    
+    
+    #budget table[style="border-top:1px solid #333;"]{
+    	border: none !important;
+    	
+    }
+    
+    #budget table[style="border-top:1px solid #333;"] td{
+    	background: #f1f1f1 !important;
+    	color: #888;
+    	margin-top: 5px;
+    	font-weight: bold;
+    	font-size: 12px;
+    }
+    #budget table th{
+    	height: 30px;
+    	
+    }
+    h1{
+    	font-size: 24px !important;
+    }
+    
+    .jobMarket{
+    	display: block;
+    	border-bottom: 5px solid #6eba6e;
+    	padding-bottom: 3px;
+    	padding-top: 10px;
+    	
+    	padding-left: 5px;
+    	
+    	background: #fff;
+    	margin-bottom: 0;
+    }
+    .jobCustomer{
+    	background: #fff;
+    	
+    	padding-top: 3px;
+    	padding-bottom: 10px;
+    	
+    	padding-left: 5px;
+    	margin-top: 0;
+    	
+    	font-size: 18px !important;
+    	font-weight: normal;
+    }
+    
+    .buttons-right{
+    	float: right;
+    	text-align: right;
+    	
+    }
+    
+    #jobNotes{
+    	margin-right: 30px;
+    }
+    
+    #actual{
+    	
+    	background: #fff;
+    }
+    </style>
+
+
+        <script>
+        $(document).ready(
+        function()
+        {
+        $('#progressbox').hide();
+        $('#statustxt').hide();
+        document.getElementById('fileupload').addEventListener('change', function(e) {
+        var file = this.files[0];
+        var xhr = new XMLHttpRequest();
+        xhr.file = file; // not necessary if you create scopes like this
+        xhr.addEventListener('progress', function(e) {
+        var done = e.position || e.loaded, total = e.totalSize || e.total;
+        //  console.log('xhr progress: ' + (Math.floor(done/total*1000)/10) + '%');
+        }, false);
+
+        if ( xhr.upload ) {
+        $('#progressbox').show();
+        $('#statustxt').show();
+        xhr.upload.onprogress = function(e) {
+        var done = e.position || e.loaded, total = e.totalSize || e.total;
+        //   console.log('xhr.upload progress: ' + done + ' / ' + total + ' = ' + (Math.floor(done/total*1000)/10) + '%');
+
+        $('#progressbar').width((Math.floor(done/total*1000)/10) + '%') //update progressbar percent complete
+        $('#statustxt').html((Math.floor(done/total*1000)/10) + '%'); //update status text
+        if(done>50)
+        {
+        $('#statustxt').css('color','#000'); //change status text to white after 50%
+        }
+        };
+        }
+        xhr.onreadystatechange = function(e) {
+        if ( 4 == this.readyState ) {
+        $('#statustxt').html("upload complete");
+        if (xhr.status == 200 && xhr.responseText.length > 20) {
+        $(xhr.responseText).appendTo("#attachTable");
+        }
+        setTimeout("hide_status()", 3000);
+        }
+        };
+
+
+
+        var jobid = ""
+        if ($("#totals").attr("data-job-id") )
+        {
+        jobid =  $("#totals").attr("data-job-id");
+        }
+        var planid = ""
+        if ( $("#totals").attr("data-plan-id"))
+        {
+        planid =   $("#totals").attr("data-plan-id")
+        }
+
+        if (jobid == "" && planid =="")
+        {
+        xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", ""), true);
+        }
+        if (jobid == "" && planid !="")
+        {
+        xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", "") +'&planid='+planid, true);
+        }
+        if (planid == "" && jobid !="")
+        {
+        xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", "") + '&jobid='+jobid, true);
+        }
+        if (jobid != "" && planid!="")
+        {
+        xhr.open('post', '/plans/upload?filename=' + $('#fileupload').val().replace("C:\\fakepath\\", "") + '&jobid='+jobid+'&planid='+planid, true);
+        }
+
+        xhr.send(file);
+
+        //  $('<a target="_blank" href="/attachments/'+$('#fileupload').val()+'">'+$('#fileupload').val()+'</a>').appendTo("#attachTable")
+
+
+
+        }, false);
+
+        });
+
+        function hide_status()
+        {
+        $('#statustxt').hide();
+        }
+        </script>
+
+    <div class="container theme-showcase" role="main">
+            <div class="box-bodyl">
+        <div style="margin-left:40px;width:960px;">
+            <h1 class="jobMarket"><span id="jobMarket">@job.market.city, @job.market.state</span></h1>
+            <h1 class="jobCustomer">Job @job.id - <span id="jobCustomer">@job.subdivision.customer.name</span> <span id="jobSubdivision">@job.subdivision.name</span> <span id="jobLot">@job.lot</span> <span id="jobSaleitem">@(if (job.item!=null) job.item.name else "SALEITEM")</span>@(if (job.plan!=null) " ("+job.plan.name+" plan)")@if(user.authority >= Secured.MANAGER){<a id="deleteJob">x</a>}</h1>
+            @*<h1  class="jobCustomer">Job @job.id - <span id="jobCustomer">@job.subdivision.customer.name</span> <span id="jobSubdivision">@job.subdivision.name</span> <span id="jobLot">@job.lot</span>@(if (job.plan!=null) " ("+job.plan.name+" plan)")@if(user.authority >= Secured.MANAGER){<a id="deleteJob">x</a>}</h1>
+              <h1  class="jobCustomer">Job @job.id - <span id="jobCustomer">@job.subdivision.customer.name</span> <span id="jobSubdivision">@job.subdivision.name</span> <span id="jobLot">@job.lot</span>@(if (job.plan!=null) " ("+job.plan.name+" plan)")@if(user.authority >= Secured.MANAGER){<a id="deleteJob">x</a>}</h1>*@
+                @if(user.authority >= Secured.MANAGER){
+
+                <div class="buttons-right">
+                    <select id="jobCategory">
+    @categories.map { category =>
+                    <option value="@category.id"@(if (category.id==job.jobCategory.id) " selected=selected")>@category.name</option>
+                        }
+</select>
+                    <input type="hidden" id="jobDate" value="@getYearMonthDay(job)" />
+                    <button id="copyToPlans">COPY TO PLANS</button>
+                    <button id="applyTemplate">APPLY TEMPLATE</button>
+                    </div>
+                    
+                    <h1 id="saleprice">$<span>@("%.2f".format(job.saleitems.foldLeft(0.0d)(_ + _.saleprice)))</span></h1>
+                    }
+                    @if(user.authority >= Secured.MANAGER){
+                    <section id="totals" data-market-id="@job.market.id" data-subdivision-id="@job.subdivision.id"
+                    data-customer-id="@job.subdivision.customer.id" data-job-id="@job.id" data-saleitem-id="@(if (job.item!=null) job.item.id)"
+                    data-sale="@job.saleitems.foldLeft(0.0d)(_ + _.saleprice)" data-cost="@job.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)" style="width:334px;margin-top:20px;margin-right:50px;margin-bottom:30px;float:left;">
+                        <table width="100%"  class="info_profit">
+                            <tbody>
+                                <tr>
+                                    <td><label class="mylabel">Gross Profit</label></td>
+                                    <td id="grossprofit">@("%.2f".format(job.saleitems.foldLeft(0.0d)(_ + _.saleprice)-job.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)))</td>
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">% Profit</label></td>
+                                    <td id="pctprofit">@("%.2f".format(100*(1-job.lineitems.filter(_.taskType==null).foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)/job.saleitems.foldLeft(0.0d)(_ + _.saleprice))))</td>
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">$/SQFT</label></td>
+                                    <td id="ppsqft">@("%.2f".format(job.dimensions.filter(!_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))-job.dimensions.filter(_.deduction).filter(!_.planItem.name.contains("footing")).foldLeft(0.0d)((a,b) => a + (b.length_feet+b.length_inches/12) * (b.width_feet+b.width_inches/12) * (b.depth_feet+b.depth_inches/12))))</td>
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">Manager Profit</label></td>
+                                    <td id="managerprofit"/></td>
+                                </tr>
+                                <tr>
+                                    <td><label class="mylabel">FFI Profit</label></td>
+                                    <td id="ffiprofit"/></td>
+                                </tr>
+                            </tbody>
+                            </table>
+                      </section>
+                            }
+                            <section id="saleitems" style="width:576px;margin-top:20px;margin-bottom:30px;float:left;">
+    @views.html.saleitems.index_rd(user,job.saleitems)
+                            </section>
+                            <section id="plan" style="margin-bottom:50px;float:left;">
+    @views.html.plans.index_rd(user,planItems,job.dimensions)
+                            </section>
+                            <section id="budget" style="margin-right:50px;margin-bottom:30px;float:left;">
+    @views.html.budgets.index_rd(user,budgetLineitems)
+                            </section>
+                            <section style="float:left;">
+                                <textarea id="jobNotes" rows="5" style="width:240px;">@job.notes</textarea>
+                            </section>
+                            <section id="attachments" style="float:left;width:240px;margin-bottom:30px;">
+                                <table id="attachTable" style="width:100%;margin-bottom:10px;">
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2">
+                                                <b>Attachments:</b>
+                                            </td>
+                                        </tr>
+                                        @job.attachments.map { attachment =>
+                                        @views.html.plans.attachment_rd(user,attachment)
+                                        }
+                                    </tbody>
+                                </table>
+                                <input id="fileupload" type="file"/>
+                                @*class="filestyle" data-input="false"*@
+                                <div id="statustxt">0%</div>
+                            </section>
+                            @if(user.authority >= Secured.MANAGER){
+                            <section id="actual" data-op-multiplier="@job.op_multiplier" style="margin-bottom:50px;float:left;">
+    @views.html.actuals.index(user,job.budget.budgetItems,actualLineitems,tasks)
+                            </section>
+                            }
+        </div>
+        </div>
+  </div>
+    }

@@ -1,0 +1,37 @@
+@(user: User, tasks: List[Task], date: String)
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("EEE MMM dd yyyy");f.format(d)}
+@getDay(d: Integer) = @{val cal = Calendar.getInstance();
+    val splitDate = date.split("-");
+    cal.set(Integer.parseInt(splitDate(0)),Integer.parseInt(splitDate(1))-1,Integer.parseInt(splitDate(2)));
+    cal.add(Calendar.DATE,d+1-cal.get(Calendar.DAY_OF_WEEK));cal}
+
+@stylesheets = @{Seq(
+)}
+@scripts = @{Seq(
+)}
+@frame("Weekly Items for "+formatDate(getDay(1).getTime())+" through "+formatDate(getDay(6).getTime()),user,"vendors",stylesheets,scripts) {
+<div style="margin-left:40px;width:960px;">
+    <table>
+        <tbody>
+        @tasks.map(_.job).flatMap(_.lineitems).filter(_.itemType!=null).filter(_.itemType.name!="labor").filter(_.taskType==null).filter(_.rate>0).groupBy(_.vendor).map {
+        case (v, lineitems) => {
+            <tr>
+                <td style="padding: 5px;">@(if (v != null) v.name else "MISC")</td>
+                <td style="padding: 5px;"></td>
+                <td style="padding: 5px;"></td>
+                <td style="padding: 5px;"></td>
+            </tr>
+            @lineitems.groupBy(_.item).map {
+            case (i, l) => {
+                <tr>
+                    <td style="padding: 5px;"></td>
+                    <td style="padding: 5px;">@(if (i != null) i.name else "MISC")</td>
+                    <td style="padding: 5px;text-align: right;">@("%.1f".format(l.foldLeft(0.0d)(_ + _.quantity)))</td>
+                    <td style="padding: 5px;">@(if (!i.vendorItems.filter(_.vendor==v).isEmpty) i.vendorItems.filter(_.vendor==v).head.default_units)</td>
+                </tr>
+            }}
+        }}
+        </tbody>
+    </table>
+</div>
+}

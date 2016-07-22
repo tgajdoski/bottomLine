@@ -1,0 +1,345 @@
+@(user: User, customers: List[Customer], markets: List[Market])
+
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+@*<link href="http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">*@
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+@scripts = @{Seq(
+    "jquery.validate.js",
+/*    "jquery.js",*/
+    "jquery.dataTables.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "managecust.js"
+)}
+
+
+<div class="col-sm-user">
+    @frame_rd("Customer Administration",user,"customers",stylesheets,scripts){
+        <div class="box-body">
+            <table id="customers" class="display">
+                <thead>
+                <tr>
+                    <th><a href="#" id ="linkaddnewvendor">ADD NEW</a></th>
+                    <th><div class="title">Customer</div></th>
+                  @*  <th><div class="title">Contact name</div></th>*@
+                    <th><div class="title">Market</div></th>
+                    <th><div class="title">Subdivisions</div></th>
+                    <th><div class="title">Active</div></th>
+                </tr>
+                </thead>
+                    @customers.filter(!_.name.isEmpty).sortBy(_.name).reverse.map { c =>
+                        @views.html.customers.cust_rd(c)
+                    }
+                    @customers.filter(_.name.isEmpty).map { c =>
+                        @views.html.customers.cust_rd(c)
+                    }
+
+            </table>
+         </div>
+
+    <tr>
+        <td>
+            <button id="qbexport"  class="btn-excel">export to QB format</button>
+        </td>
+    </tr>
+   }
+
+</div>
+
+
+
+<div class="modal" id="customermodal" style="">
+    <div class="box-bodyX">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+            <div class="title">
+                <label id="vendivselectedtext"></label>
+            </div>
+
+        </div>
+        <div class="modal-body">
+
+            <div id="addnewvendorfrontdiv">
+                <td>
+                    <fieldset class="newCustomerview">
+                        <label class="mylabel">select market</label>
+                        <select id="newCustomerMarket" class="userAuthority">
+                            <option value="">All Markets</option>
+                            @markets.toSeq.sortBy(_.id).map { m =>
+                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                            }
+                        </select>
+                        <div class="newcust">
+                            <label>Customer name</label>
+                            <input type="text" id ="newCustomerName"  class="form-control">
+                            <input value="Add Customer" type = "submit" id="buttonaddcustomer">
+                        </div>
+                    </fieldset>
+                </td>
+
+            </div>
+
+            <div id="accordion">
+                <h3>Update customer information</h3>
+                <div id="updatevendorinformationdiv">
+
+                    <div class="">
+                        <label class = "mylabel" for="name">Name</label>
+                        <div>
+                            <input type="text" id="name" name="name" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="address1">Address1</label>
+                        <div>
+                            <input type="text" id="address1" name="address1" value="" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <label class = "mylabel" for="address2">Address2</label>
+                        <div>
+                            <input type="text" id="address2" name="address2" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="city">City</label>
+                        <div>
+                            <input type="text" id="city" name="city" value="" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <label class = "mylabel" for="state">State</label>
+                        <div>
+                            <input type="text" id="state" name="state" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="zip">Zip</label>
+                        <div>
+                            <input type="text" id="zip" name="zip" value="" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <label class = "mylabel" for="contact_name">Contact name</label>
+                        <div>
+                            <input type="text" id="contact_name" name="contact_name" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="contact_number1">Contact number1</label>
+                        <div>
+                            <input type="text" id="contact_number1" name="contact_number1" value="" class="form-control">
+                        </div>
+                    </div>
+
+
+                    <div class="">
+                        <label class = "mylabel" for="contact_number2">Contact number2</label>
+                        <div>
+                            <input type="text" id="contact_number2" contact_number2="name" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="contact_fax">Contact fax</label>
+                        <div>
+                            <input type="text" id="contact_fax" name="contact_fax" value="" class="form-control">
+                        </div>
+                    </div>
+
+
+                    <div class="">
+                        <label class = "mylabel" for="contact_email1">Contact email 1</label>
+                        <div>
+                            <input type="text" id="contact_email1" name="contact_email1" value="" class="form-control">
+                        </div>
+                    </div>
+                    <div class="">
+                        <label class = "mylabel" for="contact_email2">Contact email 2</label>
+                        <div>
+                            <input type="text" id="contact_email2" name="contact_email2" value="" class="form-control">
+                        </div>
+                    </div>
+
+
+                    <div class="">
+                        <label class = "mylabel" for="contact_email3">Contact email 3</label>
+                        <div>
+                            <input type="text" id="contact_email3" name="contact_email3" value="" class="form-control">
+                        </div>
+                    </div>
+                    <input id="dataDiv" type="hidden" name="id"  value="">
+                    <input id="addorupdate" type="hidden" name="id"  value="0">
+                    <a href="#" id="updatevendorinformation" class="btn btn-primary">Update customer information</a>
+
+                </div>
+                <h3>customer subdivision</h3>
+                <div id="updatecustomersubdivdiv">
+                    <fieldset class="subdiv" >
+                        <div class="title" id="addsubdivlabel">Add a subdivision</div>
+                        <table cellspacing="0">
+                            <tr>
+                                <td>
+                                    <input type="text" id ="newSubdivision" class="form-control">
+                                </td>
+                                <td>
+                                    <input value="Add" type ="submit" class="buttonaddsubdivision">
+                                </td>
+
+                                <td>
+                                    <select id="innersubdivisionSelect" class="subdivisionSelector">
+                                    </select>
+                                </td>
+                            </tr>
+
+                             </table>
+                    </fieldset>
+@* DODAAVAM ZA SUBDIVISION DELOVI === *@
+                    <fieldset class="subdivdetails" >
+                        <div class="">
+                            <label class = "mylabel" for="name">Name</label>
+                            <div>
+                                <input type="text" id="names" name="name" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="address1">Address1</label>
+                            <div>
+                                <input type="text" id="address1s" name="address1" value="" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="">
+                            <label class = "mylabel" for="address2">Address2</label>
+                            <div>
+                                <input type="text" id="address2s" name="address2" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="city">City</label>
+                            <div>
+                                <input type="text" id="citys" name="city" value="" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="">
+                            <label class = "mylabel" for="state">State</label>
+                            <div>
+                                <input type="text" id="states" name="state" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="zip">Zip</label>
+                            <div>
+                                <input type="text" id="zips" name="zip" value="" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="">
+                            <label class = "mylabel" for="contact_name">Contact name</label>
+                            <div>
+                                <input type="text" id="contact_names" name="contact_name" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="contact_number1">Contact number1</label>
+                            <div>
+                                <input type="text" id="contact_number1s" name="contact_number1" value="" class="form-control">
+                            </div>
+                        </div>
+
+
+                        <div class="">
+                            <label class = "mylabel" for="contact_number2">Contact number2</label>
+                            <div>
+                                <input type="text" id="contact_number2s" contact_number2="name" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="contact_fax">Contact fax</label>
+                            <div>
+                                <input type="text" id="contact_faxs" name="contact_fax" value="" class="form-control">
+                            </div>
+                        </div>
+
+
+                        <div class="">
+                            <label class = "mylabel" for="contact_email1">Contact email 1</label>
+                            <div>
+                                <input type="text" id="contact_email1s" name="contact_email1" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="contact_email2">Contact email 2</label>
+                            <div>
+                                <input type="text" id="contact_email2s" name="contact_email2" value="" class="form-control">
+                            </div>
+                        </div>
+
+
+                        <div class="">
+                            <label class = "mylabel" for="contact_email3">Contact email 3</label>
+                            <div>
+                                <input type="text" id="contact_email3s" name="contact_email3" value="" class="form-control">
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class = "mylabel" for="url">url</label>
+                            <div>
+                                <input type="text" id="url" name="url" value="" class="form-control">
+                            </div>
+                        </div>
+                        <input id="dataDivs" type="hidden" name="id"  value="">
+                        <table>
+                            <tr>
+                                <td>
+                        <a href="#" id="updatecustomersubinformation" class="btn btn-primary">Update subdivision</a>
+                                </td>
+                                <td>
+                        <a href="#" id="deletecustomersub" class="btn btn-info">Delete subdivision</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </fieldset>
+
+                </div>
+           @*_________________________*@
+                <h3>Update customer market</h3>
+                <div id="updatecustomermarketinformationdiv">
+                    <fieldset class="newCustomerview">
+                        <label class="mylabel">select market</label>
+                        <select id="editCustomerMarket" class="userAuthority">
+                            <option value="">All Markets</option>
+                            @markets.toSeq.sortBy(_.id).map { m =>
+                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                            }
+                        </select>
+                        <input id="addorupdate" type="hidden" name="id"  value="0">
+                        <a href="#" id="updatecustomermarket" class="btn btn-primary">Update customer market</a>
+                    </fieldset>
+                </div>
+                @*__________________________*@
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" class="btn" id="close">Close</a>
+            @*    <input type="submit" class="btn btn-success" value="Save">*@
+        </div>
+
+    </div>
+</div>
+

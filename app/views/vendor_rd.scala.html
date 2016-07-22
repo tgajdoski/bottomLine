@@ -1,0 +1,177 @@
+@(user: User, lineitems: List[Lineitem])
+@applyVendorItemFilter(vi: VendorItem) = @{
+if (lineitems.filter(_.item==vi.item).filter(_.vendor==vi.vendor).isEmpty) false
+else true
+}
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+)}
+@scripts = @{Seq(
+)}
+@frame_rd("Invoice Errors",user,"vendors",stylesheets,scripts) {
+        @if(!lineitems.isEmpty){
+        <script>
+            $(function(){
+                $(".invoice").click(function(){
+                    target = $(this);
+                    po = "";
+                    if (target.hasClass("invoice")) {
+                        po = prompt("Please enter a Purchase Order #, or just click OK to add line automatically.", "...");
+                    }
+                    jsRoutes.controllers.Lineitems_rd.updateLineitem(target.parent().parent().attr("data-lineitem-id")).ajax({
+                        data: {po:po},
+                        success: function(){
+                            target.replaceWith($("<span/>").attr("class","salesorder").html(po));
+                        }
+                    });
+                });
+                $(".addToQB").click(function(){
+                    target = $(this);
+                    type = target.attr("data-type");
+                    if ((type!="job"&&type!="subdivision")
+                        ||(type=="job"&&confirm("This job's customer and/or subdivision MAY be added to QuickBooks if they aren't already linked. Are you sure?"))
+                        ||(type=="subdivision"&&confirm("This subdivision's customer MAY be added to QuickBooks if it isn't already linked. Are you sure?"))) {
+                        jsRoutes.controllers.Lineitems_rd.addToQuickbooks().ajax({
+                            data: {id:target.attr("data-id"),type:type},
+                            success: function(){
+                                target.replaceWith("...");
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+        <style>
+        
+        table th, table td{
+        	font-size: 14px;
+        	font-weight: normal;
+        	border: 1px solid #efefef;
+        	padding: 5px;
+        	background: #fff;
+        	height: 50px;
+        }
+        table{
+        	width: 100%;
+        }
+        
+        h1{
+        	padding: 3px; margin: 0px; white-space: pre-wrap; border: none;  width: 100%;
+        	display: block;
+        	border-bottom: 5px solid #6eba6e;
+        	padding-bottom: 3px;
+        	padding-top: 10px;
+        	
+        	padding-left: 5px;
+        	font-size: 24px;
+        	background: #fff;
+        	margin-bottom: 0;
+        }
+        
+        </style>
+        
+        <div class="container theme-showcase" role="main">
+                <div class="box-bodyl">
+        <h1>QuickBooks Errors:</h1>
+        <table style="width:100%;">
+            <thead>
+            <tr>
+                <th>Job</th>
+                <th>Vendor</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Units</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @lineitems.map { lineitem =>
+            <tr data-lineitem-id="@lineitem.id">
+                <td>@lineitem.job.id</td>
+                <td>@(if (lineitem.vendor != null) lineitem.vendor.name)</td>
+                <td>@(if (lineitem.item != null) lineitem.item.name)</td>
+                <td>@("%.1f".format(lineitem.quantity))</td>
+                <td>$@("%.2f".format(lineitem.rate))</td>
+                <td>@lineitem.units</td>
+                <td>$@("%,.2f".format(lineitem.quantity*lineitem.rate))</td>
+                @if(user.authority >= Secured.MANAGER && lineitem.job != null){<td style="width: 52px;text-align:center;">
+                @if(lineitem.qb_refnumber!=null && lineitem.qb_refnumber!="" && lineitem.qb_refnumber!="ERR" && lineitem.itemType!= null){
+                <span class="purchaseorder">@Html(lineitem.qb_refnumber)</span>
+                }
+                @if(lineitem.qb_refnumber==null||lineitem.qb_refnumber==""||lineitem.qb_refnumber=="ERR"){
+                <button class="invoice">INV</button>
+                }
+            </td>}
+            </tr>
+            }
+            </tbody>
+        </table>
+        <br />
+        <h1>Objects missing from QuickBooks:</h1>
+        <table style="width:760px;">
+            <tbody>
+            @lineitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.subdivision!=null).map(_.subdivision).toList.distinct.filter(_.customer!=null).map(_.customer).toList.distinct.filter(_.qb_listid==null).map{ customer =>
+            <tr>
+                <td>Customer</td>
+                <td>@customer.name</td>
+                <td></td>
+                <td></td>
+                <td><button data-id="@customer.id" data-type="customer" class="addToQB">ADD</button></td>
+            </tr>
+            }
+            @lineitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.subdivision!=null).map(_.subdivision).toList.distinct.filter(_.qb_listid==null).map{ subdivision =>
+            <tr>
+                <td>Subdivision</td>
+                <td>@subdivision.customer.name</td>
+                <td>@subdivision.name</td>
+                <td></td>
+                <td><button data-id="@subdivision.id" data-type="subdivision" class="addToQB">ADD</button></td>
+            </tr>
+            }
+            @lineitems.filter(_.job!=null).map(_.job).toList.distinct.filter(_.qb_listid==null).map{ job =>
+            <tr>
+                <td>Job</td>
+                <td>@job.subdivision.customer.name</td>
+                <td>@job.subdivision.name</td>
+                <td>@job.id Lot @job.lot</td>
+                <td><button data-id="@job.id" data-type="job" class="addToQB">ADD</button></td>
+            </tr>
+            }
+            @lineitems.map(_.vendor).toList.distinct.filter(_.qb_listid==null).map{ vendor =>
+            <tr>
+                <td>Vendor</td>
+                <td></td>
+                <td>@vendor.name</td>
+                <td></td>
+                <td><button data-id="@vendor.id" data-type="vendor" class="addToQB">ADD</button></td>
+            </tr>
+            }
+            @lineitems.filter(_.itemType.name=="labor").map(_.vendor).toList.distinct.flatMap(_.vendorItems).toList.distinct.filter(applyVendorItemFilter(_)).filter(_.qb_listid==null).map{ vendorItem =>
+            <tr>
+                <td>Vendor/Item</td>
+                <td></td>
+                <td>@vendorItem.vendor.name</td>
+                <td>@vendorItem.item.name</td>
+                <td><button data-id="@vendorItem.id" data-type="vendor_item" class="addToQB">ADD</button></td>
+            </tr>
+            }
+            @lineitems.filter(_.itemType.name!="labor").map(_.item).toList.distinct.filter(_.qb_listid==null).map{ item =>
+            <tr>
+                <td>Item</td>
+                <td></td>
+                <td></td>
+                <td>@item.name</td>
+                <td><button data-id="@item.id" data-type="item" class="addToQB">ADD</button></td>
+            </tr>
+            }
+            </tbody>
+        </table>
+        </div></div>
+        }
+}

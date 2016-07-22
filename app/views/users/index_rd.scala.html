@@ -1,0 +1,94 @@
+@(user: User, users: List[User])
+
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+
+@scripts = @{Seq(
+    "jquery.js",
+    "jquery.dataTables.js",
+    "jquery.validate.js",
+    "noty/packaged/jquery.noty.packaged.min.js",
+    "dataTables.tableTools.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "jquery-ui.js",
+    "addusers.js"
+)}
+
+
+<div class="col-sm-user">
+    @frame_rd("User Administration",user,"users",stylesheets,scripts){
+        <div class="box-body">
+            <table id="users" class="display">
+                <thead>
+                <tr>
+                    <th><a href="@routes.Users_rd.addUser()">+</a></th>
+                    <th><div class="title">Username</div></th>
+                    <th><div class="title">Last Activity</div></th>
+                    <th><div class="title">Authority</div></th>
+                    <th><div class="title">Reset password</div></th>
+                    <th><div class="title">Active</div></th>
+                </tr>
+                </thead>
+                    @users.filter(!_.logins.isEmpty).sortBy(_.logins.sortBy(_.updateTimestamp).last.updateTimestamp).reverse.map { u =>
+                        @views.html.users.user_rd(u)
+                    }
+                    @users.filter(_.logins.isEmpty).map { u =>
+                        @views.html.users.user_rd(u)
+                    }
+
+            </table>
+         </div>
+    }
+
+
+
+    <div class="modal" id="resetuser" style="">
+        <div class="box-bodyX">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+                <div class="title">
+                    <label id="userselected"></label>
+                </div>
+
+            </div>
+            <div class="modal-body">
+
+                <div id="changeuserpass">
+                    <td>
+
+                            <div class="newcust">
+                                <label>new password</label>
+                                <input type="password" id ="newuserpass"  class="form-control">
+                                <input value="reset password" type = "submit" id="resteuserpass">
+                                <input id="dataDiv" type="hidden" name="id"  value="">
+                            </div>
+
+                    </td>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn" id="close">Close</a>
+                @*    <input type="submit" class="btn btn-success" value="Save">*@
+            </div>
+        </div>
+
+
+
+
+</div>
+
+</div>

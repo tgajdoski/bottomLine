@@ -1,0 +1,19 @@
+@(user: User, saleitem: Saleitem)
+
+    @getYearMonthDay(s: Saleitem) = @{val f = new java.text.SimpleDateFormat("MM-dd-yyyy");f.format(s.saleitemdate)}
+
+<tr class="saleitem" data-saleitem-id="@saleitem.id">
+    <td style="width: 20px;">@if(user.authority >= Secured.MANAGER){<a class="deleteSaleitem" style="cursor: pointer;">x</a>}</td>
+    <td style="width: 240px;"><textarea style="padding: 3px; margin: 0; white-space:pre-wrap; border: none; height: 1.2em; width: 100%;" class="name">@saleitem.name</textarea></td>
+    <td style="width: 60px;"><input class="quantity" value="@saleitem.quantity"/></td>
+    <td style="width: 48px;"><input class="units" value="@saleitem.units"/></td>
+    @if(user.authority >= Secured.MANAGER){<td style="width: 60px;"><input class="rate" value="@saleitem.rate"/></td>}
+    @if(user.authority >= Secured.MANAGER){<td style="width: 96px;"><input class="saleprice" value="@saleitem.saleprice"/></td>}
+    @if(user.authority >= Secured.MANAGER && saleitem.job != null){<td style="width: 52px;text-align:center;">
+        @if(saleitem.saleitemdate != null){
+        <input class="labdatepicker" type="text" value="@getYearMonthDay(saleitem)" placeholder = "MM-DD-YYYY" style="width: 80px;">
+        }else{
+        <input class="labdatepicker" type="text"  placeholder = "MM-DD-YYYY" style="width: 80px;">
+        }
+    </td>}
+</tr>

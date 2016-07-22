@@ -1,0 +1,69 @@
+@(task: Task, assigns: List[Assigns], managers: List[User], orderedconcrete: Map[Long, Integer], orderedmaterial: Map[Long, Integer], orderedlabor: Map[Long, Integer])
+@isCompleted() = @{if (task.completed) true else false}
+
+
+    @getAssigns(t: Task) = @{
+        if (t!= null){
+            assigns.find(_.taskid == t.id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+    @getAassignManager(t: Task) = @{
+        if (getAssigns(t)!= null){
+            getAssigns(t).fieldmanagerid
+        }
+        else
+            0
+    }
+
+    @getimageconc(t:Task) = @{
+         orderedconcrete.get(task.id).intValue()
+     }
+
+    @getimagematerial(t:Task) = @{
+        orderedmaterial.get(task.id)intValue()
+     }
+
+    @getimagelabor(t:Task) = @{
+        orderedlabor.get(task.id)intValue()
+    }
+
+
+    @getUserById(id: Long ) = @{
+        if (id!= null){
+            managers.find(_.id == id).getOrElse(null)
+        }
+        else
+            null
+    }
+
+
+<option value="@task.id"  title="@task.notes" >
+    <strong style="font-weight: bold;cursor: pointer;">@task.cardOrder</strong>
+    <abbr title="@task.job.jobCategory.name" style="font-weight: bold;color: red; !important">@task.job.jobCategory.abbr</abbr>
+    <a class="openJob" href="/jobs/@task.job.id" style="font-weight: bold;text-decoration:none; !important @(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.id</a>
+    <span style="@(if(getimageconc(task)==2) "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/ico_truck.png")"/>
+    </span>
+    <span style="@(if(getimageconc(task)==1)  "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/ico_truck_gray.png")"/>
+    </span>
+    <span style="@(if(getimagematerial(task)==2)  "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/material.png")"/>
+    </span>
+    <span style="@(if(getimagematerial(task)==1)  "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/material_gray.png")"/>
+    </span>
+    <span style="@(if(getimagelabor(task)==2)  "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/labor.png")"/>
+    </span>
+    <span style="@(if(getimagelabor(task)==1)  "display: inline;" else "display: none;")">
+        <img src="@routes.Assets.at("images/labor_gray.png")"/>
+    </span>
+
+
+    <a class="openTask" href="/jobs/@task.job.id?task=@task.id" style="font-weight: bold;text-decoration:none;@(if (isCompleted()) "color:rgb(211,211,211);")">@task.job.subdivision.name @task.job.lot@(if (!task.managers.isEmpty && task.managers.head.user!=null) " - "+task.managers.head.user.username)@(if(getAssigns(task)!= null && getAassignManager(task) != 0) " - " + getUserById(getAssigns(task).fieldmanagerid).name)</a>
+   <!-- <span class="@(if (!isCompleted()) "notes")">@task.notes</span>-->
+</option>

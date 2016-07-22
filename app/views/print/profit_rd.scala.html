@@ -1,0 +1,391 @@
+@(user: User, jobs: List[Job], font:String)
+@getSale(s: List[Saleitem]) = @{
+        if (s.isEmpty()) 0.0d
+        else s.foldLeft(0.0d)(_ + _.saleprice)
+}
+@getCost(l: List[Lineitem]) = @{
+        if (l.isEmpty()) 0.0d
+        else l.foldLeft(0.0d)((a,b) => a + b.quantity * b.rate)
+}
+@getManagerProfit(j: Job) = @{
+        var sale = getSale(j.saleitems);
+        var actual = getCost(j.lineitems.filter(_.taskType!=null));
+        var budget = getCost(j.lineitems.filter(_.taskType==null));
+        var offset = budget - actual;
+        var profit = sale - actual;
+        if (offset <= 0.0d) {
+            if ((profit*0.15d+offset) < 0.0d) 0.0d
+            else (profit*0.15d+offset)
+        }
+        else (profit*0.15d+offset*0.5d)
+}
+@getFFIProfit(j: Job) = @{
+        var sale = getSale(j.saleitems);
+        var actual = getCost(j.lineitems.filter(_.taskType!=null));
+        var budget = getCost(j.lineitems.filter(_.taskType==null));
+        var offset = budget - actual;
+        var profit = sale - actual;
+        if (offset <= 0.0d) {
+            if ((profit*0.15d+offset) < 0.0d) (profit+offset)
+            else (profit*0.85d)
+        }
+        else (profit*0.85d+offset*0.5d)
+}
+
+
+    @stylesheets = @{Seq(
+
+    )}
+
+    @scripts = @{Seq(
+        "jquery.js",
+        "jquery-ui.js",
+        "frontProfitPrint.js"
+    )}
+
+<!doctype html>
+<!--[if lt IE 9]><html class="ie"><![endif]-->
+<!--[if gte IE 9]><!--><html><!--<![endif]-->
+
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+        <title>Item Report</title>
+        <link rel="shortcut icon" type="image/x-icon" href="@routes.Assets.at("images/2013.07.03.50.192.62.201.ico")">
+        @stylesheets.map { stylesheet =>
+            <link rel="stylesheet" href="@routes.Assets.at("stylesheets/"+stylesheet)"/>
+        }
+        <style>
+        table { page-break-inside:auto }
+        tr    { page-break-inside:avoid; page-break-after:auto }
+        a, a:visited {
+        color: #00F;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        }
+
+        #headerBar {
+        width: 100%;
+        z-index: 2;
+        position: fixed;
+        background-color: #EEE;
+        }
+
+        #headerBar>div {
+        display: inline;
+        }
+        #welcome {
+        margin-right: 10px;
+        padding: 5px 0px;
+        float: right;
+        }
+        #search {
+        margin-left: 10px;
+        padding: 2px 0px;
+        float: left;
+        }
+        #headerBar>div.nav {
+        margin-left: 10px;
+        padding: 5px 0px;
+        float: left;
+        }
+        #headerBar>div.nav>a {
+        color: #9C9;
+        }
+        #headerBar>div.nav>a.active {
+        border-bottom: 4px solid #696;
+        }
+
+        #content {
+        top: 31px;
+        position: relative;
+        float: left;
+        width: 100%;
+        }
+
+        #content input {
+        width: 100%;
+        border: 0px none;
+        text-align: right;
+        margin: 0;
+        padding: 0;
+        }
+
+        #home table {
+        overflow:hidden;
+        border:1px solid #d3d3d3;
+        background:#fefefe;
+        width:100%;
+        max-width: 768px;
+        margin:0 auto 0;
+        -moz-border-radius:5px; /* FF1+ */
+        -webkit-border-radius:5px; /* Saf3-4 */
+        border-radius:5px;
+        -moz-box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        -webkit-box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #home th, #home td:not(.formElement) {padding:18px 28px 18px; text-align:center; }
+
+        #home th {padding-top:22px; text-shadow: 1px 1px 1px #fff; background:#e8eaeb;}
+
+        #home td {border-top:1px solid #e0e0e0; border-right:1px solid #e0e0e0;}
+
+        #home tr:nth-child(odd) td {background:#f6f6f6;}
+
+        #home td:first-child, #home th:first-child {text-align:left}
+
+        #home td:last-child {border-right:none;}
+
+        /*
+        Background gradients are completely unnecessary but a neat effect.
+        */
+
+        #home td {
+        background: -moz-linear-gradient(100% 25% 90deg, #fefefe, #f9f9f9);
+        background: -webkit-gradient(linear, 0% 0%, 0% 25%, from(#f9f9f9), to(#fefefe));
+        }
+
+        #home tr:nth-child(odd) td {
+        background: -moz-linear-gradient(100% 25% 90deg, #f6f6f6, #f1f1f1);
+        background: -webkit-gradient(linear, 0% 0%, 0% 25%, from(#f1f1f1), to(#f6f6f6));
+        }
+
+        #home th {
+        background: -moz-linear-gradient(100% 20% 90deg, #e8eaeb, #ededed);
+        background: -webkit-gradient(linear, 0% 0%, 0% 20%, from(#ededed), to(#e8eaeb));
+        }
+
+        /*
+        I know this is annoying, but we need additional styling so webkit will recognize rounded corners on background elements.  Nice write up of this issue: http://www.onenaught.com/posts/266/css-inner-elements-breaking-border-radius
+
+        And, since we've applied the background colors to td/th element because of IE, Gecko browsers also need it.
+        */
+
+        #home tr:first-child th:first-child {
+        -moz-border-radius-topleft:5px;
+        -webkit-border-top-left-radius:5px; /* Saf3-4 */
+        }
+
+        #home tr:first-child th:last-child {
+        -moz-border-radius-topright:5px;
+        -webkit-border-top-right-radius:5px; /* Saf3-4 */
+        }
+
+        #home tr:last-child td:first-child {
+        -moz-border-radius-bottomleft:5px;
+        -webkit-border-bottom-left-radius:5px; /* Saf3-4 */
+        }
+
+        #home tr:last-child td:last-child {
+        -moz-border-radius-bottomright:5px;
+        -webkit-border-bottom-right-radius:5px; /* Saf3-4 */
+        }
+
+        td.formElement {
+        overflow:hidden;
+        padding:18px 0px 18px 5px;
+        }
+
+        td.formElement>div>label>select, td.formElement>input {
+        margin:0;
+        padding:0;
+        border:0;
+        outline:0;
+        font-size:100%;
+        vertical-align:baseline;
+        background:transparent;
+        text-align:center;
+        display: inline-block;
+        width: 100%;
+        }
+
+        #home label {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        }
+
+        .notIE label:after {
+        content: '';
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        display: inline-block;
+        top: 0px;
+        right: 0px;
+        background: no-repeat right center white;
+        pointer-events: none;
+        }
+        #home tr:nth-child(odd) td label:after {background:#f6f6f6;}
+
+        #calendar>thead, #calendar>tbody, #calendar>thead>tr, #calendar>tbody>tr,
+        #calendar>thead>tr>th, #calendar>tbody>tr>td
+        {
+        border: 1px solid #000;
+        }
+
+        #calendar ol, #calendar li, #content select, #jobNotes
+        {
+        margin: 0;
+        padding: 0;
+        }
+
+        #content select, #jobNotes
+        {
+        display: inline-block;
+        }
+
+        #calHead td
+        {
+        vertical-align: middle;
+        }
+
+        #content h1
+        {
+        margin: 0;
+        padding: 0;
+        font-size: 1.6em;
+        line-height: 1.2em;
+        }
+
+        #saleitems textarea
+        {
+        min-height: 1em;
+        }
+
+        .planitem, .planitemtotals
+        {
+        border-top: 1px solid rgb(51, 51, 51);
+        }
+        .planitemheader
+        {
+        border-top: 3px double #333;
+        }
+        .dimension TD, #budgetitems TD
+        {
+        border-top: 1px dotted #333;
+        }
+        .dimension TD INPUT, .planitemtotals TR TD INPUT, .saleitem TD INPUT, #budgetitems TD INPUT,
+        .used, .left, .hasClass, .noClass, #actualitems .quantity,  #actualitems .rate, .cost, .overhead, .saleprice,
+        .markup, .actualcost, .actualmarkup, .diffcost, .vendor>input, .item>input,
+        .vendor>select, .item>select
+        {
+        width: 100%;
+        border: 0px none;
+        text-align: right;
+        }
+        #totalcost, #grossprofit, #pctprofit, #ppsqft, #managerprofit, #ffiprofit
+        {
+        text-align: right;
+        }
+        #totallnft, #totalsqft, #totalcuyds
+        {
+        width: 100%;
+        border: 0px none;
+        text-align: right;
+        background-color: #FF0;
+        }
+        .feet, .inches
+        {
+        background-color: rgb(173, 216, 230);
+        }
+        .lnft, .sqft
+        {
+        background-color: #ff9;
+        }
+        .noPrint
+        {
+        background-color: #DDD;
+        }
+        @@page
+        {
+        size: 11.69in 8.27in;
+        }
+        @@media print {
+        #dialog,#headerBar,#addSaleitem,#addBudgetLineitem,#attachment,#copyToPlans,#applyTemplate { display: none }
+        #deleteJob,#deletePlan,.deleteSaleitem,.addition,.subtraction,.deleteDimension,.deleteLineitem,.deleteAttachment,.deleteTask { display: none }
+        .noPrint,.options,.addTask,.addActualLineitem { display: none }
+        }
+        </style>
+
+            <!--[if lt IE 9]>
+    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+        @scripts.map { script =>
+            <script type="text/javascript" src="@routes.Assets.at("javascripts/"+script)"></script>
+        }
+    </head>
+<div class="container theme-showcase" role="main">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="box-body">
+
+                <div id="accordion" >
+                @jobs.groupBy(_.market).map {
+                    case (m, marketJobs) => {
+                        <h3 style="font-size: 16px; padding: 10px; cursor: pointer; background: #ccc; color: #000; border: 1px solid #efefef; border-radius: 5px;">@m.city, @m.state JOB</h3>
+                        <div style="padding-left: 30px;">
+                            <p>
+                        <table style="width:900px;">
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 5px; background: #EFEFEF;">@m.city, @m.state JOB</td>
+                                    <td style="padding: 5px; background: #EFEFEF;">FINAL SALE</td>
+                                    <td style="padding: 5px; background: #EFEFEF;">APPLIED COST</td>
+                                    <td style="padding: 5px; background: #EFEFEF;">BUDGET NOT SPENT</td>
+                                    <td style="padding: 5px; background: #EFEFEF;">FFI GROSS PROFIT</td>
+                                    <td style="padding: 5px; background: #EFEFEF;">PROFIT/SALE</td>
+                                </tr>
+                                @marketJobs.sortBy(_.id).map { j =>
+                                    <tr>
+                                        <td style="padding: 5px;"><a href="@routes.Jobs_rd.loadJob(j.id)">@j.subdivision.customer.name @j.subdivision.name @j.lot</a></td>
+                                        <td style="padding: 5px;">$@("%,.2f".format(getSale(j.saleitems)))</td>
+                                        <td style="padding: 5px;">$@("%,.2f".format(getCost(j.lineitems.filter(_.taskType!=null))))</td>
+                                        <td style="padding: 5px;">$@("%,.2f".format(getCost(j.lineitems.filter(_.taskType==null))-getCost(j.lineitems.filter(_.taskType!=null))))</td>
+                                        <td style="padding: 5px;">$@("%,.2f".format(getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null))))</td>
+                                        <td style="padding: 5px;">@("%.2f".format(100*(1-getCost(j.lineitems.filter(_.taskType!=null))/getSale(j.saleitems))))%</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td style="padding: 5px;">@m.city, @m.state TOTAL:</td>
+                                    <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))</td>
+                                    <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                                    <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType==null))-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                                    <td style="padding: 5px;">$@("%,.2f".format(marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                                    <td style="padding: 5px;">@("%.2f".format(100*marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))/marketJobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))%</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6"><hr/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                            </p>
+                        </div>
+
+                    }
+
+                }
+                </div>
+                <table style="width:900px;">
+                    <tbody>
+                        <tr>
+                            <td style="padding: 5px;">GRAND TOTAL:</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getCost(j.lineitems.filter(_.taskType==null))-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                            <td style="padding: 5px;">$@("%,.2f".format(jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))))</td>
+                            <td style="padding: 5px;">@("%.2f".format(100*jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems)-getCost(j.lineitems.filter(_.taskType!=null)))/jobs.foldLeft(0.0d)((a,j) => a + getSale(j.saleitems))))%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    </body>
+
+</html>

@@ -1,0 +1,42 @@
+@(user: User, budgetItems: List[BudgetItem], lineitems: List[Lineitem], tasks: List[Task], jobassigns: List[Assigns], users: List[User])
+<div id="actualitems">
+    @{val temp = budgetItems.groupBy(_.taskType);views.html.actuals.tasktype_new(user, null, temp(null), lineitems, tasks.filter(_.taskType==null), jobassigns, users)}
+    @{val temp = budgetItems.groupBy(_.taskType)-null;temp.toSeq.sortBy(_._1.id).map {
+    case (taskType, budgetItems) => {
+        if(taskType.id > 3)
+            views.html.actuals.tasktype_new(user, taskType, budgetItems, lineitems, tasks.filter(_.taskType==taskType), jobassigns, users)
+        /*    taskType*/
+        }
+        }}
+</div>
+<table style="width:960px;border-top:1px solid #333;">
+    <tbody>
+    <tr>
+        <td style="width:48px;">TOTALS</td>
+        <td style="width:96px;"></td>
+        <td style="width:336px;"></td>
+        <td style="width:120px;" style="width:120px;" class="cost"/></td>
+        <td style="width:120px;" style="width:120px;" class="overhead"/></td>
+        <td style="width:120px;" style="width:120px;" class="saleprice"/></td>
+        <td style="width:120px;" style="width:120px;" class="markup"/></td>
+    </tr>
+    <tr>
+        <td style="width:48px;">ACTUALS</td>
+        <td style="width:96px;"></td>
+        <td style="width:336px;"></td>
+        <td style="width:120px;" style="width:120px;" class="actualcost"/></td>
+        <td style="width:120px;"></td>
+        <td style="width:120px;"></td>
+        <td style="width:120px;" style="width:120px;" class="actualmarkup"/></td>
+    </tr>
+    <tr>
+        <td style="width:48px;">DIFF</td>
+        <td style="width:96px;"></td>
+        <td style="width:336px;"></td>
+        <td style="width:120px;" style="width:120px;" class="diffcost"/></td>
+        <td style="width:120px;"></td>
+        <td style="width:120px;"></td>
+        <td style="width:120px;"></td>
+    </tr>
+    </tbody>
+</table>

@@ -1,0 +1,39 @@
+@(user: User)
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "theme.css",
+    "font-awesome.min.css",
+    "jquery-ui.css"
+)}
+@scripts = @{Seq(
+    "sendemail.js"
+)}
+@frame_rd("Sending Email test", user, "emailsend",stylesheets, scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="box-bodyX">
+            <table cellspacing="0">
+                <tr>
+                    <td>
+                            <div class="title">send email test</div>
+                                <label class="mylabel">To</label>
+                                <input type="text" id ="emailto"  class="form-control">
+
+                                <label class="mylabel">From</label>
+                                <input type="text" id ="emailfrom"  class="form-control">
+
+                                <label class="mylabel">Subject</label>
+                                <input type="text" id ="subject"  class="form-control">
+
+                                <label class="mylabel">Body</label>
+                                <textarea rows="4" cols="50"  id ="bodyto">
+                                    At w3schools.com you will learn how to make a website. We offer free tutorials in all web development technologies.
+                                </textarea>
+
+                                <input value="Send" type = "submit" id="buttonsend" class="btn btn-success">
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,7 @@
+@(plans: List[Plan])
+<select id="planSelect">
+    <option></option>
+    @plans.toSeq.sortBy(_.name).map { plan =>
+    <option value="@plan.id">@plan.name</option>
+    }
+</select>

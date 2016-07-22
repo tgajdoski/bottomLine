@@ -1,0 +1,66 @@
+@(labors: List[Labor],  markettotals: Map[Long, Double],  vendortotals: Map[Long, Double])
+
+@formatDate(d: Date) = @{val f = new java.text.SimpleDateFormat("MM-dd-yyyy");f.format(d)}
+
+@getmarketTotal(marketid: Long) = @{
+markettotals.get(marketid)
+}
+
+@getvendorTotal(vendorid: Long) = @{
+vendortotals.get(vendorid)
+}
+
+
+@labors.groupBy(_.market).map {
+case (v, lab) => {
+<tr style="border-bottom:2pt solid black; border-top:2pt solid black;">
+    <td style="padding: 5px; text-align:center;">@(if (v != null) v.city else "MISC")</td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px; text-align:center; border:1pt solid black;">$@("%,.2f".format(markettotals.get(v.id)))</td>
+    <td style="padding: 5px;"></td>
+</tr>
+
+
+@lab.groupBy(_.vendor).map {
+case (i, l) => {
+
+<tr> <!-- <tr style="border-bottom:.5pt solid black;border-top:.5pt solid black;">-->
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px; text-align:center;">@(if (i != null) i.name else "MISC")</td>
+    <td style="padding: 5px;">@i.id</td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px; text-align:center;  border:1pt solid black;">$@("%,.2f".format(vendortotals.get(i.id)))</td>
+    <td style="padding: 5px;"></td>
+</tr>
+@l.sortBy(_.labordate).map { m=>
+<tr>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;"></td>
+    <td style="padding: 5px;text-align:center;">@formatDate(m.labordate)</td>
+    <td style="padding: 5px;text-align:center;">@m.payrate</td>
+    <td style="padding: 5px;text-align:center;">@m.amounthours</td>
+    <td style="padding: 5px;text-align:center;">$@("%,.2f".format(m.payrate * m.amounthours))</td>
+    <td style="padding: 5px;text-align:center;">@m.note </td>
+</tr>
+}
+
+//
+}}
+
+}}
+
+
+<!--
+
+
+@for((key, value) <- markettotals){
+@key - @value
+}
+-->

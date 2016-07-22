@@ -1,0 +1,291 @@
+@(user: User, markets: List[Market],  vendors: List[Vendor], acctypes: List[AccountType])
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/south-street/jquery-ui.css">
+<!--<link rel="stylesheet" href="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/jqueryui/dataTables.jqueryui.css">-->
+
+
+
+
+@stylesheets = @{Seq(
+    "bootstrap.min.css",
+    "bootstrap-theme.min.css",
+    "../play-jquery-tabletools/css/TableTools.css",
+    "../play-jquery-tabletools/css/TableTools_JUI.css",
+    "jquery.dataTables.css",
+    "theme.css"
+)}
+@scripts = @{Seq(
+    "jquery-1.10.2.js",
+    "jquery-ui.js",
+/*    "jquery.js",*/
+    "jquery.dataTables.js",
+"noty/packaged/jquery.noty.packaged.min.js",
+    "../play-jquery-tabletools/js/TableTools.min.js",
+    "listbills.js"
+
+)}
+@frame_rd("Firm Foundations, Inc",user,"home",stylesheets,scripts) {
+    <div class="container theme-showcase" role="main">
+        <div class="row">
+            <div class="col-sm-11">
+                <div class="box-body">
+                    <div class="title"> bills list </div>
+                    <br>
+                       <table cellspacing="0">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <p style="padding-left: 20px;">
+                                        <label> <span>Select market </span> </label>
+                                        <br>
+
+                                        <select  id="marketSelect" class="userAuthority">
+                                            <option value="0">All Markets</option>
+                                            @markets.toSeq.sortBy(_.id).map { m =>
+                                                <option value="@m.id" data-url="@m.url">@m.city, @m.state</option>
+                                            }
+                                        </select>
+                                        <br>
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p style="padding-left: 20px;">
+                                        <label> <span>Select vendor </span> </label>
+                                        <br>
+                                        <select id="vendorSelect" class="userAuthority">
+                                            <option value="">All Vendors</option>
+                                            @vendors.toSeq.sortBy(_.name).map { m =>
+                                            <option value="@m.id">@m.name</option>
+                                            }
+                                        </select>
+                                        <br>
+                                        </p>
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" id="bybilldate" value="1" checked> search by bill dates<br>
+                                    </td>
+
+                                            <td>
+                                                <p style="padding-left: 20px;">
+                                                 <label> <span>Select start bill date effective </span> </label>
+                                                    <input type="text" class ="form-control" id="startdatepicker"></p>
+                                            </td>
+                                            <td>
+                                                <p style="padding-left: 20px;">
+                                                    <label> <span>Select end bill date effective </span> </label>
+                                                    <input type="text" class ="form-control" id="enddatepicker" ></p>
+                                            </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" id="byenterdate" value="2"> search by enter dates<br>
+                                    </td>
+
+                                            <td>
+                                                <p style="padding-left: 20px;">
+                                                    <label> <span>Select start enter date </span> </label>
+                                                    <input type="text" class ="form-control" id="startenterdatepicker"></p>
+                                            </td>
+                                            <td>
+                                                <p style="padding-left: 20px;"><label> <span>Select end enter date </span> </label>
+                                                    <input type="text" class ="form-control" id="endenterdatepicker" ></p>
+                                            </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div>
+                        <p>
+                            <button type="submit" class="btn btn-success">Search bills</button>
+                        </p>
+                    </div>
+                    <div id="reportot" style="margin-right:50px;margin-top:70px;float:left; width: 100%;">
+
+                        <table id="reporttable" class="display dataTable" width="100%" cellspacing="0" role="grid" aria-describedby="overall profit report" style="width: 100%;">
+                            <thead>
+                            <tr>
+                                <th>edit</th>
+                                <th>del</th>
+                                <th>Bill date effective</th>
+                                <th>Bill number</th>
+                                <th>Market</th>
+                                <th>Vendor</th>
+                                <th>Amount</th>
+                                <th>Job number</th>
+                                <th>Due date</th>
+                                <th>Incurred date</th>
+                                <th>Enter date</th>
+                                <th>Terms full name</th>
+                                <th>Account full name</th>
+                                <th>Class code</th>
+                                <th>Note</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                        <tr>
+                            <td>
+                                <button id="qbexport"  class="btn-excel">export to QB format</button>
+                            </td>
+                        </tr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+<div class="modalbill" id="billmodal" style="">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+    </div>
+    <div class="modal-body">
+
+        <table cellspacing="0">
+
+            <tbody>
+            <tr>
+                <td>
+                    <label> <span>Select market </span> </label>
+                    <br>
+                    <select id="marketSelectmodal" class="userAuthority" disabled>
+                        <option value="0">All Markets</option>
+                        @markets.toSeq.sortBy(_.id).map { m =>
+                        <option value="@m.id">@m.city, @m.state</option>
+                        }
+                    </select>
+                    <br>
+                </td>
+
+                <td>
+                    <label> <span>Select vendor </span> </label>
+                    <br>
+                    <select id="vendorSelectmodal" class="userAuthority" disabled>
+                        @vendors.toSeq.sortBy(_.id).map { m =>
+                        <option value="@m.id">@m.name</option>
+                        }
+                    </select>
+                    <br>
+                </td>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+            <tr>
+                <td>
+                    <label> <span>Bill date (Effective)</span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="startdatepickermodal"  >
+                    <br>
+                </td>
+
+                <td>
+                    <label> <span>terms full name </span> </label>
+                    <br>
+                    <select id="termsfullname" class="userAuthority">
+                        <option value="1">Due on Date Specified</option>
+                        <option value="2">Due on Receipt</option>
+                        <option value="3">Net 10</option>
+                        <option value="4">Net 15</option>
+                        <option value="5">Net 30</option>
+                        <option value="6">Net 45</option>
+                        <option value="7">Net 60</option>
+                    </select>
+                    <br>
+                </td>
+
+
+
+            </tr>
+            <tr>
+                <td>
+                    <label> <span>Due date </span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="duedatepicker">
+                    <br>
+                </td>
+                <td>
+                    <label> <span>Incurred Date</span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="incurreddatepicker">
+                    <br>
+                </td>
+
+            </tr>
+            <tr>
+
+                <td>
+                    <label> <span>account full name </span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="accountfullname">
+                    <br>
+                </td>
+                <td>
+                    <label> <span>Select account type </span> </label>
+                    <br>
+                    <select id="accounttypeSelect" class="userAuthority">
+                        @acctypes.toSeq.sortBy(_.id).map { m =>
+                        <option value="@m.id">@m.account, @m.tpe</option>
+                        }
+                    </select>
+                    <br>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <label> <span>Bill Number</span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="billnumber" >
+                    <br>
+                </td>
+
+                <td>
+                    <label> <span>Amount </span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="amount" >
+                    <br>
+                </td>
+            </tr>
+            <tr>
+
+                <td>
+                    <label> <span>job number </span> </label>
+                    <br>
+                    <input type="text" class ="form-control" id="jobnumber" >
+                    <br>
+                </td>
+
+                <td>
+                    <label> <span>Note</span> </label>
+                    <br>
+                    <textarea rows="2" cols="20" id ="note" class="note"></textarea>
+                </td>
+                <td>
+                    <div>
+                        <p>
+
+                            <button type="submit" class="btnnn btn-success">Save</button>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+            <input type="hidden" id="idnoskrieno" >
+        </table>
+
+    </div>
+    <div class="modal-footer">
+        <!--<a href="#" class="btn" id="close">Close</a>-->
+    </div>
+</div>
+

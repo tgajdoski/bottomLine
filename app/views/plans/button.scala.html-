@@ -1,0 +1,3 @@
+@(planItem: PlanItem)
+
+<button class="addPlanItem" data-plan-item-id="@planItem.id">@planItem.name</button>
